@@ -333,6 +333,10 @@ const slice = createSlice({
           } else {
             visList = ['heatmap', 'barplot', 'scatter'];
           }
+        } else if (script === 'CellCell') {
+          if (name === 'CellCell') {
+            visList = ['heatmap'];
+          }
         }
 
         try {
