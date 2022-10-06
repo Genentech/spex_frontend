@@ -10,6 +10,7 @@ const initialState = {
   jobs: {},
   jobTypes: {},
   jobsFeatureExtraction: {},
+  jobs_zscore: {},
 };
 
 let api;
@@ -51,6 +52,14 @@ const slice = createSlice({
       const normalizedJobs = jobs.map(normalizeJob);
       state.jobsFeatureExtraction = hash(normalizedJobs || [], 'id');
     },
+
+    fetchJobZscore: startFetching,
+    fetchJobZScoreSuccess: (state, { payload: { jobs, pipelineId } }) => {
+      stopFetching(state);
+      const normalizedJobs = jobs.map(normalizeJob);
+      state.jobs_zscore[pipelineId] = hash(normalizedJobs || [], 'id');
+    },
+
 
     fetchJobs: startFetching,
     fetchJobsSuccess: (state, { payload: jobs }) => {
@@ -95,6 +104,10 @@ const slice = createSlice({
 
     clearJobFeatureExtraction: (state) => {
       state.jobsFeatureExtraction = {};
+    },
+
+    clearJobZScore: (state) => {
+      state.jobs_zscore = {};
     },
 
     requestFail(state, { payload: { message } }) {
@@ -149,12 +162,30 @@ const slice = createSlice({
         initApi();
 
         try {
-          const url = `${baseUrl}/find/feature_extraction/100`;
+          const url = `${baseUrl}/find/?name=feature_extraction&status=100`;
           const { data } = yield call(api.get, url);
           const result = (Array.isArray(data.data) ? data.data : [])
             .filter((job) => job.tasks.length > 0);
 
           yield put(actions.fetchJobFeatureExtractionSuccess(result));
+        } catch (error) {
+          yield put(actions.requestFail(error));
+          // eslint-disable-next-line no-console
+          console.error(error.message);
+        }
+      },
+    },
+
+    [actions.fetchJobZscore]: {
+      * saga({ payload: pipelineId }) {
+        initApi();
+
+        try {
+          const url = `${baseUrl}/find/?pipeline_id=${pipelineId}&name=zscore&name=transformation&status=100`;
+          const { data } = yield call(api.get, url);
+          const result = (Array.isArray(data.data) ? data.data : [])
+            .filter((job) => job.tasks.length > 0);
+          yield put(actions.fetchJobZScoreSuccess( { pipelineId, jobs: result } ));
         } catch (error) {
           yield put(actions.requestFail(error));
           // eslint-disable-next-line no-console
@@ -268,6 +299,11 @@ const slice = createSlice({
     getJobsByParams: () => createSelector(
       [getState],
       (state) => state.jobsFeatureExtraction,
+    ),
+
+    getJobsByPipeline: (pipelineId) => createSelector(
+      [getState],
+      (state) => state.jobs_zscore[pipelineId] || {},
     ),
 
     getJob: (id) => createSelector(

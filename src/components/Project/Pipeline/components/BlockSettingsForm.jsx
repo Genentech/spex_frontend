@@ -124,6 +124,8 @@ const getFieldComponent = (type) => {
       return Controls.TransferList;
     case 'job_id':
       return Controls.SelectJobs;
+    case 'pipeline_job_id':
+      return Controls.SelectJobsPipeline;
     case 'channel':
     case 'channels':
       return Select;
@@ -317,7 +319,8 @@ const BlockSettingsForm = (props) => {
       {...tail}
       initialValues={initialValues}
       render={({ form, handleSubmit, submitting }) => {
-        const disabled = initialValues.id !== 'new';
+        // const disabled = initialValues.id !== 'new';
+        const disabled = false;
         if (onForm) {
           onForm(form);
         }
