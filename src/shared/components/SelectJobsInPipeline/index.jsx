@@ -58,7 +58,7 @@ const SelectJobsPipeline = (props) => {
     () => {
       let return_val = [];
       (Object.keys(jobs) || []).forEach((el) => {
-        return_val.push({ value: `${el}`, label: `${el} ${jobs[el].name}` });
+        return_val.push({ value: `${jobs[el].tasks[0].id}`, label: `${jobs[el].tasks[0].id} ${jobs[el].name}` });
       });
       return return_val;
     },
