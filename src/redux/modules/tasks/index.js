@@ -332,6 +332,8 @@ const slice = createSlice({
             visList = ['heatmap', 'scatter'];
           } else if (name === 'dml') {
             visList = ['scatter'];
+          } else if (name === 'qfmatch') {
+            visList = ['scatter'];
           } else {
             visList = ['heatmap', 'barplot', 'scatter'];
           }
