@@ -3,7 +3,6 @@ import React, { useState, useMemo, useEffect } from 'react';
 import Refresh from '@material-ui/icons/Refresh';
 import Repeat from '@material-ui/icons/Repeat';
 import createFocusOnFirstFieldDecorator from 'final-form-focus-on-first-field';
-import intersectionBy from 'lodash/intersectionBy';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
@@ -218,16 +217,21 @@ const BlockSettingsForm = (props) => {
 
   const projectImagesChannelsOptions = useMemo(
     () => {
-      const channels = Object.values(projectImagesDetails).map((item) => item.channels);
-      const intersectionChannels = intersectionBy(...channels, 'label');
-      return intersectionChannels.map((el) => ({
+      let selectedImgChannels = [];
+      if (Object.keys(projectImagesDetails).length > 0 && activeImageIds.length > 0) {
+        activeImageIds.forEach((im_id) => {
+          selectedImgChannels = projectImagesDetails[im_id].channels;
+        });
+      }
+
+      return selectedImgChannels.map((el) => ({
         value: el.label,
         label: el.label,
         color: el.color,
         index: el.value,
       }));
     },
-    [projectImagesDetails],
+    [projectImagesDetails, activeImageIds],
   );
 
   const status = block?.id === 'new' ? 'New' : statusFormatter(block.status);
