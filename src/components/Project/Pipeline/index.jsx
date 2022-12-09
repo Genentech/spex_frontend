@@ -164,7 +164,7 @@ const Pipeline = () => {
   const pipelineId = matchPipelinePath ? matchPipelinePath.params.id : undefined;
 
   const pipeline = useSelector(pipelineSelectors.getPipeline(projectId, pipelineId));
-  const jobs = useSelector(jobsSelectors.getJobs);
+  const jobs = useSelector(jobsSelectors.getJobsByPipelineId(pipelineId));
   const tasks = useSelector(tasksSelectors.getTasks);
   const results = useSelector(tasksSelectors.getResults);
   const jobTypes = useSelector(jobsSelectors.getJobTypes);
@@ -629,12 +629,12 @@ const Pipeline = () => {
 
   useEffect(
     () => {
-      dispatch(jobsActions.fetchJobs());
+      dispatch(jobsActions.fetchJobsByPipelineId(pipelineId));
       return () => {
         dispatch(jobsActions.clearJobs());
       };
     },
-    [dispatch, refresher],
+    [dispatch, refresher, pipelineId],
   );
 
   useEffect(
