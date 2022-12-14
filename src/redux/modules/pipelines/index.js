@@ -39,12 +39,11 @@ const slice = createSlice({
 
     fetchPipelinesSuccess: (state, { payload: { projectId, data } }) => {
       stopFetching(state);
-      const hashedPipelines = hash(data || [], 'id');
-      if (JSON.stringify(hashedPipelines) === JSON.stringify( { } ) ) {
-        state.pipelines[projectId] = [];
-      } else {
-        state.pipelines[projectId] = hashedPipelines;
-      }
+      let hashedPipelines = hash(data || [], 'id');
+
+      if (Object.keys(hashedPipelines).length > 0) {
+        state.pipelines = hashedPipelines;
+      };
     },
 
     fetchPipelinesForVisSuccess: (state, { payload: { projectId, data } }) => {
@@ -59,8 +58,7 @@ const slice = createSlice({
 
     createPipelineSuccess: (state, { payload: pipeline }) => {
       stopFetching(state);
-      const hashedKey = hash([pipeline] || [], 'id');
-      state.pipelines[pipeline.project] = { ...state.pipelines[pipeline.project], ...hashedKey };
+      state.pipelines[pipeline.id] = pipeline;
     },
 
     updatePipelineSuccess: (state, { payload: pipeline }) => {
@@ -68,9 +66,9 @@ const slice = createSlice({
       state.pipelines[pipeline.id] = pipeline;
     },
 
-    deletePipelineSuccess(state, { payload: [projectId, pipelineId] }) {
+    deletePipelineSuccess(state, { payload: [pipelineId] }) {
       stopFetching(state);
-      delete state.pipelines[projectId][pipelineId];
+      delete state.pipelines[pipelineId];
     },
 
     createJobSuccess: (state) => {
@@ -315,7 +313,7 @@ const slice = createSlice({
 
     getPipelines: (projectId) => createSelector(
       [getState],
-      (state) => state?.pipelines[projectId],
+      (state) => state?.pipelines,
     ),
 
     getPipelinesWithTasksForVis: (projectId) => createSelector(
@@ -325,7 +323,7 @@ const slice = createSlice({
 
     getPipeline: (projectId, pipelineId) => createSelector(
       [getState],
-      (state) => state?.pipelines[projectId]?.[pipelineId],
+      (state) => state?.pipelines[pipelineId],
     ),
   }),
 });

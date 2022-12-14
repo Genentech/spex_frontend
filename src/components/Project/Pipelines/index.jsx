@@ -26,11 +26,29 @@ const Pipelines = () => {
   const matchProjectPath = matchPath(location.pathname, { path: `/${PathNames.projects}/:id` });
   const projectId = matchProjectPath ? matchProjectPath.params.id : undefined;
 
-  const pipelines = useSelector(pipelineSelectors.getPipelines(projectId)) || {};
-
   const [pipelineToManage, setPipelineToManage] = useState(null);
   const [pipelineToDelete, setPipelineToDelete] = useState(null);
   const [refresher, setRefresher] = useState(null);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const fetched_pipelines = useSelector(pipelineSelectors.getPipelines(projectId)) || {};
+  let filtered_pipelines = {};
+
+  filtered_pipelines = useMemo(
+    () => {
+        let data = {};
+        Object.keys(fetched_pipelines).forEach((key) => {
+            if ( fetched_pipelines[key]['project'] === projectId ) {
+                let obj = {};
+                obj[key] = fetched_pipelines[key];
+                data = { ...data, ...obj };
+            }
+          },
+        );
+        return data;
+    },
+    [fetched_pipelines, projectId],
+  );
 
   const onManagePipelineModalOpen = useCallback(
     (pipeline) => {
@@ -230,7 +248,7 @@ const Pipelines = () => {
 
       <Table
         columns={columns}
-        data={Object.values(pipelines)}
+        data={Object.values(filtered_pipelines)}
       />
 
       {pipelineToManage && (
