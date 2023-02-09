@@ -341,6 +341,10 @@ const slice = createSlice({
           if (name === 'CellCell') {
             visList = ['heatmap'];
           }
+        } else if (script === 'spatial') {
+          if (name === 'spatial') {
+            visList = ['scatter'];
+          }
         }
 
         try {
