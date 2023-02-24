@@ -16,7 +16,7 @@ import ImageListItem from '@mui/material/ImageListItem';
 import classNames from 'classnames';
 import dagre from 'dagre';
 import cloneDeep from 'lodash/cloneDeep';
-import ReactFlow, { ReactFlowProvider, Controls, Background, isNode } from 'react-flow-renderer';
+import ReactFlow, { ReactFlowProvider, Controls, Background, isNode, ControlButton } from 'react-flow-renderer';
 import { useDispatch, useSelector } from 'react-redux';
 import { matchPath, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
@@ -304,6 +304,13 @@ const Pipeline = () => {
     [dispatch, jobs],
   );
 
+  const onStartPipeline = useCallback(
+    () => {
+      dispatch(jobsActions.startPipeline(pipelineId));
+    },
+    [dispatch, pipelineId],
+  );
+
   const onJobRestart = useCallback(
     (_) => {
       const job = {
@@ -341,6 +348,7 @@ const Pipeline = () => {
       if (block.id === 'new') {
         return;
       }
+      dispatch(jobsActions.fetchJobsByPipelineId(pipelineId));
 
       const job = jobs[block.id];
       if (!job) {
@@ -383,7 +391,7 @@ const Pipeline = () => {
         tasks: jobTasks,
       });
     },
-    [jobTypes, jobs, pipelineId, projectId],
+    [jobTypes, jobs, pipelineId, projectId, dispatch],
   );
 
   const onJobReload = useCallback(
@@ -574,7 +582,7 @@ const Pipeline = () => {
     [dispatch, pipeline, projectId, pipelineId],
   );
 
-  useEffect(
+    useEffect(
     () => {
       if (!selectedBlock || !jobs?.[selectedBlock.id]) {
         return;
@@ -685,8 +693,8 @@ const Pipeline = () => {
 
   return (
     <ReactFlowProvider>
-      <Container>
-        <FlowWrapper>
+      <Container style={{ position: 'relative' }}>
+        <FlowWrapper style={{ height: 'calc(100% - 40px)' }}>
           <ReactFlow
             nodeTypes={nodeTypes}
             elements={elements}
@@ -697,8 +705,21 @@ const Pipeline = () => {
             nodesConnectable={false}
             elementsSelectable={false}
             snapToGrid
+            style={{ height: '100%' }}
           >
-            <Controls showInteractive={false} />
+            <Controls showInteractive={false}>
+              <ControlButton
+                style={{
+                backgroundColor: 'green',
+                color: 'white',
+                whiteSpace: 'nowrap',
+                zIndex: 99, width: '80%',
+                }}
+                onClick={onStartPipeline}
+              > Start ▶
+              </ControlButton>
+            </Controls>
+
             <Background />
           </ReactFlow>
 

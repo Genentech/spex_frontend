@@ -102,6 +102,8 @@ const slice = createSlice({
       delete state.jobs[id];
     },
 
+    startPipeline: startFetching,
+
     clearJobs: (state) => {
       state.jobs = {};
     },
@@ -122,7 +124,6 @@ const slice = createSlice({
       stopFetching(state);
       state.error = message;
     },
-
     cancel: stopFetching,
   },
 
@@ -212,6 +213,24 @@ const slice = createSlice({
           const result = (Array.isArray(data.data) ? data.data : [])
               .filter((job) => job.tasks.length > 0);
           yield put(actions.fetchJobsByPipelineIdSuccess( { pipelineId, jobs: result } ));
+        } catch (error) {
+          yield put(actions.requestFail(error));
+          // eslint-disable-next-line no-console
+          console.error(error.message);
+        }
+      },
+    },
+
+    [actions.startPipeline]: {
+      * saga({ payload: pipelineId }) {
+        initApi();
+
+        try {
+          const url = `${baseUrl}/find/?pipeline_id=${pipelineId}`;
+          const { data } = yield call(api.put, url, { status: 0 });
+          const result = (Array.isArray(data.data) ? data.data : [])
+            .filter((job) => job.tasks.length > 0);
+          yield put(actions.fetchJobsByPipelineIdSuccess({ pipelineId, jobs: result } ));
         } catch (error) {
           yield put(actions.requestFail(error));
           // eslint-disable-next-line no-console
