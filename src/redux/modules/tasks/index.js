@@ -125,8 +125,7 @@ const slice = createSlice({
       stopFetching(state);
       state.results[id] = state.results[id] || {};
       state.results[id][key] = arr;
-      state.results.currentTask = id;
-    },
+      },
 
     fetchTaskVisSuccess: (state, { payload: { id, visName, data } }) => {
       stopFetching(state);
@@ -249,7 +248,10 @@ const slice = createSlice({
         initApi();
 
         try {
-          const url_keys = `${baseUrl}/file/${id}?key=${key}`;
+          let url_keys = `${baseUrl}/file/${id}?key=${key}`;
+          if (key === 'dataframe') {
+            url_keys = `${baseUrl}/anndata/${id}`;
+          };
 
           const res = yield call(api.get, url_keys, { responseType: 'blob' });
 
@@ -267,6 +269,8 @@ const slice = createSlice({
             let ext = type.split('/')[1];
             if (ext === 'vnd.ms-excel') {
               ext = 'csv';
+            } else if (ext === 'octet-stream') {
+              ext = 'h5ad';
             }
             yield saveFile(res.data, `${id}_result_${key}.${ext}`);
           }
