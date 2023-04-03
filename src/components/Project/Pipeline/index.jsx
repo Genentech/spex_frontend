@@ -28,6 +28,7 @@ import { actions as tasksActions, selectors as tasksSelectors } from '@/redux/mo
 
 import Button from '+components/Button';
 import ConfirmModal, { ConfirmActions } from '+components/ConfirmModal';
+import Form, { Field, Controls as ControlsForm } from '+components/Form';
 import NoData from '+components/NoData';
 import { ScrollBarMixin } from '+components/ScrollBar';
 import { Box } from '+components/Tabs';
@@ -41,6 +42,8 @@ import BlockSettingsFormWrapper from './components/BlockSettingsFormWrapper';
 import Container from './components/Container';
 import FlowWrapper from './components/FlowWrapper';
 import OutputWrapper from './components/OutputWrapper';
+import {selectors as projectsSelectors} from '@/redux/modules/projects';
+import {actions as omeroActions, selectors as omeroSelectors} from '@/redux/modules/omero';
 
 const jobRefreshInterval = 6e4; // 1 minute
 
@@ -157,6 +160,9 @@ const Pipeline = () => {
 
   const matchProjectPath = matchPath(location.pathname, { path: `/${PathNames.projects}/:id` });
   const projectId = matchProjectPath ? matchProjectPath.params.id : undefined;
+  const project = useSelector(projectsSelectors.getProject(projectId));
+  const [activeImageIds, setActiveImageIds] = useState(project?.omeroIds || []);
+  const projectImagesDetails = useSelector(omeroSelectors.getImagesDetails(project?.omeroIds || []));
 
   const matchPipelinePath = matchPath(location.pathname, {
     path: `/${PathNames.projects}/${projectId}/${PathNames.pipelines}/:id`,
@@ -217,6 +223,26 @@ const Pipeline = () => {
     [pipeline, selectedBlock],
   );
 
+  const projectImagesChannelsOptions = useMemo(
+    () => {
+      let selectedImgChannels = [];
+      if (Object.keys(projectImagesDetails).length > 0 && activeImageIds.length > 0) {
+        activeImageIds.forEach((im_id) => {
+          selectedImgChannels = projectImagesDetails[im_id].channels;
+        });
+      }
+
+      return selectedImgChannels.map((el) => ({
+        value: el.label,
+        label: el.label,
+        color: el.color,
+        index: el.value,
+      }));
+    },
+    [projectImagesDetails, activeImageIds],
+  );
+
+
   const onJobCancel = useCallback(
     () => {
       setActionWithBlock(null);
@@ -255,6 +281,24 @@ const Pipeline = () => {
       });
     },
     [dispatch, selectedBlock, nameReturnKey],
+  );
+
+  useEffect(
+    () => {
+      if (!project?.omeroIds.length) {
+        return;
+      }
+
+      dispatch(omeroActions.fetchImagesDetails(project?.omeroIds));
+    },
+    [dispatch, project?.omeroIds],
+  );
+
+  useEffect(
+    () => {
+      setActiveImageIds(project?.omeroIds || []);
+    },
+    [project?.omeroIds],
   );
 
   useEffect(
@@ -482,6 +526,10 @@ const Pipeline = () => {
 
         return acc;
       }, {});
+      const onSubmit = (values) => {
+        console.log(values);
+      };
+
 
       return (
         <Accordion>
@@ -500,7 +548,25 @@ const Pipeline = () => {
                           secondary={`[${statusFormatter(item.status)}] ${item.name}`}
                         />
                         <ListItem component="div">
-                          Results
+                          Results for channels
+
+                        </ListItem>
+                        <ListItem component="div" key={`channels-${item.id}`}>
+                          <Form
+                            onSubmit={onSubmit}
+                            render={({ handleSubmit }) => (
+                              <form onSubmit={handleSubmit}>
+                                <div style={{ overflow: 'auto', maxHeight: '300px' }}>
+                                  <Field
+                                    name={`channels-${item.id}`}
+                                    component={ControlsForm.SelectNew}
+                                    type="channels"
+                                    options={projectImagesChannelsOptions}
+                                  />
+                                </div>
+                              </form>
+                            )}
+                          />
                         </ListItem>
                         {!resultKeys[item.id] ? (
                           <ListItem component="div">

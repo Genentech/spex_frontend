@@ -3,6 +3,8 @@ import TextField from '@material-ui/core/TextField';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
+import IconButton from '@material-ui/core/IconButton';
+import SelectAllIcon from '@material-ui/icons/SelectAll';
 
 const Option = styled.div`
   :before {
@@ -50,17 +52,36 @@ const SelectNew = (props) => {
     [onChange, onlyOneValue],
   );
 
+  const handleSelectAll = () => {
+    if (!onlyOneValue) {
+      onChange(options.map((option) => option.value));
+    }
+  };
+
   const renderInput = useCallback(
     (params) => (
       <TextField
         {...params}
+        InputProps={{
+          ...params.InputProps,
+          endAdornment: (
+            <>
+              {!onlyOneValue && (
+                <IconButton onClick={handleSelectAll} size="small">
+                  <SelectAllIcon />
+                </IconButton>
+              )}
+              {params.InputProps.endAdornment}
+            </>
+          ),
+        }}
         helperText={showError ? meta.error || meta.submitError : undefined}
         error={showError}
         label={tail.label || ''}
         variant="outlined"
       />
     ),
-    [tail.label, showError, meta.error, meta.submitError],
+    [tail.label, showError, meta.error, meta.submitError, onlyOneValue],
   );
 
   return (
@@ -74,6 +95,7 @@ const SelectNew = (props) => {
       disableCloseOnSelect
       value={fixedValue}
       onChange={doChange}
+      clearOnEscape={false}
     />
   );
 };
