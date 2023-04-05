@@ -1,10 +1,10 @@
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback, useState } from 'react';
+import IconButton from '@material-ui/core/IconButton';
 import TextField from '@material-ui/core/TextField';
+import SelectAllIcon from '@material-ui/icons/SelectAll';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import IconButton from '@material-ui/core/IconButton';
-import SelectAllIcon from '@material-ui/icons/SelectAll';
 
 const Option = styled.div`
   :before {
@@ -34,6 +34,8 @@ const SelectNew = (props) => {
 
   const showError = ((meta.submitError && !meta.dirtySinceLastSubmit) || meta.error) && meta.touched;
   const onChange = input.onChange || props.onChange;
+  const [selectedChannels, setSelectedChannels] = useState([]);
+
 
   const fixedValue = useMemo(
     () => {
@@ -48,15 +50,17 @@ const SelectNew = (props) => {
   const doChange = useCallback(
     (_, val) => {
       onChange?.(onlyOneValue ? val?.value : val?.map((el) => el.value));
+      setSelectedChannels(val);
+      props.onSelectedChannelsChange?.(val);
     },
     [onChange, onlyOneValue],
   );
 
-  const handleSelectAll = () => {
+  const handleSelectAll = useCallback(() => {
     if (!onlyOneValue) {
       onChange(options.map((option) => option.value));
     }
-  };
+  }, [onChange, onlyOneValue, options]);
 
   const renderInput = useCallback(
     (params) => (
@@ -65,14 +69,14 @@ const SelectNew = (props) => {
         InputProps={{
           ...params.InputProps,
           endAdornment: (
-            <>
+            <React.Fragment>
               {!onlyOneValue && (
                 <IconButton onClick={handleSelectAll} size="small">
                   <SelectAllIcon />
                 </IconButton>
               )}
               {params.InputProps.endAdornment}
-            </>
+            </React.Fragment>
           ),
         }}
         helperText={showError ? meta.error || meta.submitError : undefined}
@@ -81,7 +85,7 @@ const SelectNew = (props) => {
         variant="outlined"
       />
     ),
-    [tail.label, showError, meta.error, meta.submitError, onlyOneValue],
+    [tail.label, showError, meta.error, meta.submitError, onlyOneValue, handleSelectAll],
   );
 
   return (
@@ -125,6 +129,7 @@ SelectNew.propTypes = {
   ]),
   onChange: PropTypes.func,
   onlyOneValue: PropTypes.bool,
+  onSelectedChannelsChange: PropTypes.func,
 };
 
 SelectNew.defaultProps = {
@@ -134,6 +139,7 @@ SelectNew.defaultProps = {
   value: [],
   onChange: null,
   onlyOneValue: false,
+  onSelectedChannelsChange: null,
 };
 
 export default SelectNew;

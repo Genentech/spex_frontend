@@ -23,7 +23,9 @@ import styled from 'styled-components';
 
 import PathNames from '@/models/PathNames';
 import { actions as jobsActions, selectors as jobsSelectors } from '@/redux/modules/jobs';
+import { actions as omeroActions, selectors as omeroSelectors } from '@/redux/modules/omero';
 import { actions as pipelineActions, selectors as pipelineSelectors } from '@/redux/modules/pipelines';
+import { selectors as projectsSelectors } from '@/redux/modules/projects';
 import { actions as tasksActions, selectors as tasksSelectors } from '@/redux/modules/tasks';
 
 import Button from '+components/Button';
@@ -42,8 +44,6 @@ import BlockSettingsFormWrapper from './components/BlockSettingsFormWrapper';
 import Container from './components/Container';
 import FlowWrapper from './components/FlowWrapper';
 import OutputWrapper from './components/OutputWrapper';
-import {selectors as projectsSelectors} from '@/redux/modules/projects';
-import {actions as omeroActions, selectors as omeroSelectors} from '@/redux/modules/omero';
 
 const jobRefreshInterval = 6e4; // 1 minute
 
@@ -150,6 +150,7 @@ const createGraphLayout = (elements, direction = 'LR') => {
   });
 };
 
+
 const sortTaskById = ({ id: a }, { id: b }) => {
   return +a - +b;
 };
@@ -161,7 +162,10 @@ const Pipeline = () => {
   const matchProjectPath = matchPath(location.pathname, { path: `/${PathNames.projects}/:id` });
   const projectId = matchProjectPath ? matchProjectPath.params.id : undefined;
   const project = useSelector(projectsSelectors.getProject(projectId));
+
   const [activeImageIds, setActiveImageIds] = useState(project?.omeroIds || []);
+  const [selectedChannelsByTask, setSelectedChannelsByTask] = useState({});
+
   const projectImagesDetails = useSelector(omeroSelectors.getImagesDetails(project?.omeroIds || []));
 
   const matchPipelinePath = matchPath(location.pathname, {
@@ -272,15 +276,17 @@ const Pipeline = () => {
   const onLoadVisualize = useCallback(
     () => {
       selectedBlock.tasks.forEach((item) => {
+        const channels = selectedChannelsByTask[item.id];
         dispatch(tasksActions.fetchTaskVisualize({
           id: item.id,
           name: item.name,
           key: nameReturnKey[item.name],
           script: selectedBlock.script,
+          channels,
         }));
       });
     },
-    [dispatch, selectedBlock, nameReturnKey],
+    [dispatch, selectedBlock, nameReturnKey, selectedChannelsByTask],
   );
 
   useEffect(
@@ -504,7 +510,7 @@ const Pipeline = () => {
     [dispatch],
   );
 
-  const tasksRender = useMemo(
+    const tasksRender = useMemo(
     () => {
       if (!selectedBlock?.tasks?.length) {
         return null;
@@ -527,7 +533,6 @@ const Pipeline = () => {
         return acc;
       }, {});
       const onSubmit = (values) => {
-        console.log(values);
       };
 
 
@@ -562,6 +567,9 @@ const Pipeline = () => {
                                     component={ControlsForm.SelectNew}
                                     type="channels"
                                     options={projectImagesChannelsOptions}
+                                    onSelectedChannelsChange={(val) => {
+                                      setSelectedChannelsByTask((prevState) => ({ ...prevState, [item.id]: val }));
+                                    }}
                                   />
                                 </div>
                               </form>
@@ -635,7 +643,7 @@ const Pipeline = () => {
         </Accordion>
       );
     },
-    [onLoadValue, selectedBlock, tasks, results, onLoadVisualize, currImages],
+    [onLoadValue, selectedBlock, tasks, results, onLoadVisualize, currImages, projectImagesChannelsOptions],
   );
 
   useEffect(

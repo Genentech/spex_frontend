@@ -317,7 +317,7 @@ const slice = createSlice({
     },
 
     [actions.fetchTaskVisualize]: {
-      * saga({ payload: { id, name, key, script } }) {
+      * saga({ payload: { id, name, key, script, channels } }) {
         let visList = [];
         if (script === 'segmentation' || script === 'cell_seg') {
           const labels_list = ['load_tiff, background_subtract'];
