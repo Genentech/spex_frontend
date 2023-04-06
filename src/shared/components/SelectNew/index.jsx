@@ -29,6 +29,7 @@ const SelectNew = (props) => {
     onlyOneValue,
     input,
     meta,
+    onSelectedChannelsChange,
     ...tail
   } = props;
 
@@ -51,14 +52,18 @@ const SelectNew = (props) => {
     (_, val) => {
       onChange?.(onlyOneValue ? val?.value : val?.map((el) => el.value));
       setSelectedChannels(val);
-      props.onSelectedChannelsChange?.(val);
+      if (typeof onSelectedChannelsChange === 'function') {
+        onSelectedChannelsChange(val);
+      }
     },
-    [onChange, onlyOneValue],
+    [onChange, onlyOneValue, onSelectedChannelsChange],
   );
 
   const handleSelectAll = useCallback(() => {
     if (!onlyOneValue) {
-      onChange(options.map((option) => option.value));
+      const allValues = options.map((option) => option.value);
+      onChange(allValues);
+      setSelectedChannels(allValues);
     }
   }, [onChange, onlyOneValue, options]);
 
