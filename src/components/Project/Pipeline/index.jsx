@@ -787,7 +787,7 @@ const Pipeline = () => {
                 backgroundColor: 'green',
                 color: 'white',
                 whiteSpace: 'nowrap',
-                zIndex: 99, width: '80%',
+                zIndex: 99, width: '80% ',
                 }}
                 onClick={onStartPipeline}
               > Start ▶

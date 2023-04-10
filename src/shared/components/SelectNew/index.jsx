@@ -35,6 +35,7 @@ const SelectNew = (props) => {
 
   const showError = ((meta.submitError && !meta.dirtySinceLastSubmit) || meta.error) && meta.touched;
   const onChange = input.onChange || props.onChange;
+  // eslint-disable-next-line no-unused-vars
   const [selectedChannels, setSelectedChannels] = useState([]);
 
 

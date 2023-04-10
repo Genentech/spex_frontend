@@ -5,6 +5,7 @@ import styled from 'styled-components';
 
 import ImagePicker from '+components/ImagePicker';
 import { Option as SelectOption } from '+components/Select';
+import SelectFile from '+components/SelectFile';
 import SelectJobs from '+components/SelectJobs';
 import SelectJobsPipeline from '+components/SelectJobsInPipeline';
 import SelectNew from '+components/SelectNew';
@@ -38,6 +39,7 @@ const Controls = {
   SelectJobs,
   SelectJobsPipeline,
   SelectNew,
+  SelectFile,
   Slider,
   TransferList,
   ImagePicker,

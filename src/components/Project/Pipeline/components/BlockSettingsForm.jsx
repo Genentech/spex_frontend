@@ -125,6 +125,8 @@ const getFieldComponent = (type) => {
       return Controls.SelectJobs;
     case 'pipeline_job_id':
       return Controls.SelectJobsPipeline;
+    case 'filepath':
+      return Controls.SelectFile;
     case 'channel':
     case 'channels':
       return Select;
