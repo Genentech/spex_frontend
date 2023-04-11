@@ -8,6 +8,8 @@ const initialState = {
   isFetching: false,
   error: '',
   files: {},
+  selectedFile: null,
+  fileKeys: [],
 };
 
 let api;
@@ -25,6 +27,7 @@ const slice = createSlice({
   initialState,
   reducers: {
     fetchFiles: startFetching,
+    checkFile: startFetching,
     uploadFile: startFetching,
     deleteFile: startFetching,
 
@@ -33,9 +36,14 @@ const slice = createSlice({
       state.files = hash(files || [], 'id');
     },
 
+    checkFileSuccess: (state, { payload: keys }) => {
+      state.fileKeys = keys;
+    },
+
     uploadFileSuccess: (state, { payload: file }) => {
       stopFetching(state);
       state.files[file.id] = file;
+      state.selectedFile = file;
     },
 
     deleteFileSuccess(state, { payload: id }) {
@@ -72,10 +80,24 @@ const slice = createSlice({
       },
     },
 
+    [actions.checkFile]: {
+      *saga({ payload: filename }) {
+        initApi();
+
+        try {
+          const url = `${baseUrl}/check-file?filename=${filename}`;
+          const { data } = yield call(api.get, url);
+          yield put(actions.checkFileSuccess(data.keys));
+        } catch (error) {
+          yield put(actions.requestFail(error));
+          console.error(error.message);
+        }
+      },
+    },
+
     [actions.uploadFile]: {
       * saga({ payload: file }) {
         initApi();
-        console.log('file', file);
 
         try {
           const url = `${baseUrl}`;
