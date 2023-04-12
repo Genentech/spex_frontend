@@ -35,6 +35,7 @@ const FilePicker = ({ input, meta, onFileChange, ...tail }) => {
         dispatch(fileActions.uploadFile(selectedFile));
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error(error);
     }
   }, [dispatch, selectedFile]);

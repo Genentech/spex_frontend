@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { Switch, Route } from 'react-router-dom';
-
+import Files from '@/components/Files';
 import Layout from '@/components/Layout';
 import NotFound404 from '@/components/NotFound404';
 import Project from '@/components/Project';
@@ -38,6 +38,7 @@ const PrivateRoutes = () => {
           path={[ `/${PathNames.projects}` ]}
           component={Projects}
         />
+        <Route exact path={`/${PathNames.files}`} component={Files} />
         <Route
           exact
           path={[
@@ -46,6 +47,7 @@ const PrivateRoutes = () => {
             `/${PathNames.projects}/:id/${PathNames.pipelines}`,
             `/${PathNames.projects}/:id/${PathNames.pipelines}/:id`,
             `/${PathNames.projects}/:id/${PathNames.visualization}`,
+
           ]}
           component={Project}
         />

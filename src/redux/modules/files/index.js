@@ -2,14 +2,13 @@ import { call, put } from 'redux-saga/effects';
 import backendClient from '@/middleware/backendClient';
 import { createSlice, createSelector, startFetching, stopFetching } from '@/redux/utils';
 
-import hash from '@/shared/utils/hash';
 
 const initialState = {
   isFetching: false,
   error: '',
   files: {},
   selectedFile: null,
-  fileKeys: [],
+  fileKeys: {},
 };
 
 let api;
@@ -31,13 +30,18 @@ const slice = createSlice({
     uploadFile: startFetching,
     deleteFile: startFetching,
 
-    fetchFilesSuccess: (state, { payload: files }) => {
+    fetchFilesSuccess: (state, { payload: data }) => {
       stopFetching(state);
-      state.files = hash(files || [], 'id');
+      const rootChildren = data.tree[''].children;
+      state.files = rootChildren.map(child => {
+        const [filename, fileData] = Object.entries(child)[0];
+        return { filename, ...fileData };
+      });
     },
 
-    checkFileSuccess: (state, { payload: keys }) => {
-      state.fileKeys = keys;
+    checkFileSuccess: (state, { payload: { fileName, keys } }) => {
+      stopFetching(state);
+      state.fileKeys[fileName] = keys; // Измените на добавление ключей для соответствующего имени файла
     },
 
     uploadFileSuccess: (state, { payload: file }) => {
@@ -71,7 +75,7 @@ const slice = createSlice({
         try {
           const url = `${baseUrl}`;
           const { data } = yield call(api.get, url);
-          yield put(actions.fetchFilesSuccess(data.data));
+          yield put(actions.fetchFilesSuccess(data));
         } catch (error) {
           yield put(actions.requestFail(error));
           // eslint-disable-next-line no-console
@@ -81,15 +85,16 @@ const slice = createSlice({
     },
 
     [actions.checkFile]: {
-      *saga({ payload: filename }) {
+      *saga({ payload: file }) {
         initApi();
 
         try {
-          const url = `${baseUrl}/check-file?filename=${filename}`;
+          const url = `${baseUrl}/check-file?filename=${file.name}`;
           const { data } = yield call(api.get, url);
-          yield put(actions.checkFileSuccess(data.keys));
+          yield put(actions.checkFileSuccess({ fileName: file.name, keys: data['keys'] }));
         } catch (error) {
           yield put(actions.requestFail(error));
+          // eslint-disable-next-line no-console
           console.error(error.message);
         }
       },
@@ -146,6 +151,11 @@ const slice = createSlice({
     getFile: (id) => createSelector(
       [getState],
       (state) => state?.files[id],
+    ),
+
+    getFileKeys: createSelector(
+      [getState],
+      (state) => state?.fileKeys,
     ),
   }),
 });

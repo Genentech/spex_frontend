@@ -7,6 +7,7 @@ const PathNames = {
   visualization: 'visualization',
   dataset: 'dataset',
   img: 'img',
+  files: 'files',
 };
 
 export default PathNames;
