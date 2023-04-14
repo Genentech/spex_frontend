@@ -20,25 +20,25 @@ const FilePicker = ({ input, meta, onFileChange, ...tail }) => {
   const handleFileChange = useCallback(
     (e) => {
       const file = e.target.files[0];
-      onChange?.(file);
       setSelectedFile(file);
-      if (typeof onFileChange === 'function') {
-        onFileChange(file);
-      }
     },
-    [onChange, onFileChange],
+    [],
   );
 
   const handleUpload = useCallback(async () => {
     try {
       if (selectedFile) {
+        onChange?.(selectedFile);
+        if (typeof onFileChange === 'function') {
+          onFileChange(selectedFile);
+        }
         dispatch(fileActions.uploadFile(selectedFile));
       }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(error);
     }
-  }, [dispatch, selectedFile]);
+  }, [dispatch, selectedFile, onChange, onFileChange]);
 
   const renderInput = useCallback(() => {
     return (
@@ -76,12 +76,20 @@ const FilePicker = ({ input, meta, onFileChange, ...tail }) => {
   }, [tail, showError, meta.error, meta.submitError, selectedFile, handleFileChange]);
 
   return (
-    <React.Fragment>
-      {renderInput()}
-      <Button variant="contained" color="primary" onClick={handleUpload} disabled={!selectedFile}>
-        Upload
-      </Button>
-    </React.Fragment>
+    <div>
+      <div style={{ display: 'flex' }}>
+        {renderInput()}
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleUpload}
+          disabled={!selectedFile}
+          style={{ marginLeft: '1rem', marginTop: '16px', marginBottom: '5px' }}
+        >
+          Upload
+        </Button>
+      </div>
+    </div>
   );
 };
 

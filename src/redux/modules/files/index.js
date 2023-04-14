@@ -2,7 +2,6 @@ import { call, put } from 'redux-saga/effects';
 import backendClient from '@/middleware/backendClient';
 import { createSlice, createSelector, startFetching, stopFetching } from '@/redux/utils';
 
-
 const initialState = {
   isFetching: false,
   error: '',
@@ -33,7 +32,7 @@ const slice = createSlice({
     fetchFilesSuccess: (state, { payload: data }) => {
       stopFetching(state);
       const rootChildren = data.tree[''].children;
-      state.files = rootChildren.map(child => {
+      state.files = rootChildren.map((child) => {
         const [filename, fileData] = Object.entries(child)[0];
         return { filename, ...fileData };
       });
@@ -41,18 +40,20 @@ const slice = createSlice({
 
     checkFileSuccess: (state, { payload: { fileName, keys } }) => {
       stopFetching(state);
-      state.fileKeys[fileName] = keys; // Измените на добавление ключей для соответствующего имени файла
+      state.fileKeys[fileName] = keys;
     },
 
     uploadFileSuccess: (state, { payload: file }) => {
       stopFetching(state);
-      state.files[file.id] = file;
-      state.selectedFile = file;
+      if (file !== undefined) {
+        state.files = [...state.files, file];
+        state.selectedFile = file;
+      }
     },
 
     deleteFileSuccess(state, { payload: id }) {
       stopFetching(state);
-      delete state.files[id];
+      state.files = state.files.filter((file) => file.filename !== id);
     },
 
     clearFiles: (state) => {
@@ -112,6 +113,7 @@ const slice = createSlice({
             headers: { 'Content-Type': 'multipart/form-data' },
           });
           yield put(actions.uploadFileSuccess(data.data));
+          yield put(actions.fetchFiles());
         } catch (error) {
           yield put(actions.requestFail(error));
           // eslint-disable-next-line no-console
@@ -125,9 +127,9 @@ const slice = createSlice({
         initApi();
 
         try {
-          const url = `${baseUrl}/${id}`;
+          const url = `${baseUrl}?path=${id.name}`;
           yield call(api.delete, url);
-          yield put(actions.deleteFileSuccess(id));
+          yield put(actions.deleteFileSuccess(id.name));
         } catch (error) {
           yield put(actions.requestFail(error));
           // eslint-disable-next-line no-console

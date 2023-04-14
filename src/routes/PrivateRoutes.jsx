@@ -5,7 +5,7 @@ import Files from '@/components/Files';
 import Layout from '@/components/Layout';
 import NotFound404 from '@/components/NotFound404';
 import Project from '@/components/Project';
-import Projects from '@/components/Projects';
+import ProjectFiles from '@/components/ProjectFiles';
 
 import PathNames from '@/models/PathNames';
 import { actions as authActions } from '@/redux/modules/users/auth';
@@ -31,12 +31,12 @@ const PrivateRoutes = () => {
         <Route
           exact
           path={[ '/' ]}
-          component={Projects}
+          component={ProjectFiles} // Изменено на ProjectFiles
         />
         <Route
           exact
           path={[ `/${PathNames.projects}` ]}
-          component={Projects}
+          component={ProjectFiles} // Изменено на ProjectFiles
         />
         <Route exact path={`/${PathNames.files}`} component={Files} />
         <Route

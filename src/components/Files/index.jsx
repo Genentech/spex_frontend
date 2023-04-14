@@ -2,8 +2,8 @@ import React, { useMemo, useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { actions as filesActions, selectors as filesSelectors } from '@/redux/modules/files';
-
 import Button, { ButtonSizes, ButtonColors } from '+components/Button';
+import FilePicker from '+components/SelectFile';
 import Table, { ButtonsCell } from '+components/Table';
 
 const Files = () => {
@@ -11,8 +11,23 @@ const Files = () => {
 
   const filesData = useSelector(filesSelectors.getFiles);
   const fileKeys = useSelector(filesSelectors.getFileKeys);
+
   useEffect(() => {
     dispatch(filesActions.fetchFiles());
+  }, [dispatch]);
+
+  const onFileChange = useCallback((file) => {
+    dispatch(filesActions.uploadFile(file));
+  }, [dispatch]);
+
+  const handleDelete = useCallback(async (fileName) => {
+    try {
+      await dispatch(filesActions.deleteFile(fileName));
+      await dispatch(filesActions.fetchFiles());
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+    }
   }, [dispatch]);
 
   const files = useMemo(() => {
@@ -65,6 +80,14 @@ const Files = () => {
                 >
                   Check
                 </Button>
+                <Button
+                  size={ButtonSizes.small}
+                  color={ButtonColors.secondary}
+                  variant="outlined"
+                  onClick={() => handleDelete(original)}
+                >
+                  Delete
+                </Button>
               </ButtonsCell>
             ),
             [original],
@@ -76,19 +99,23 @@ const Files = () => {
         Cell: ({ row: { original } }) =>
           useMemo(
             () => (
-              <div>
-                {fileKeys[original.name] && fileKeys[original.name].join(', ')}
-              </div>
+              <div>{fileKeys[original.name] && fileKeys[original.name].join(', ')}</div>
             ),
             [original],
           ),
       },
     ],
-    [onCheckFile, fileKeys],
+    [fileKeys, handleDelete, onCheckFile],
   );
 
   return (
-    <Table columns={columns} data={files} />
+    <React.Fragment>
+      <FilePicker onFileChange={onFileChange} />
+      <Table
+        columns={columns}
+        data={files}
+      />
+    </React.Fragment>
   );
 };
 
