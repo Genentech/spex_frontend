@@ -1,8 +1,9 @@
-import React, { useMemo, useCallback, useEffect } from 'react';
+import React, { useMemo, useCallback, useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { actions as filesActions, selectors as filesSelectors } from '@/redux/modules/files';
 import Button, { ButtonSizes, ButtonColors } from '+components/Button';
+import ConfirmModal, { ConfirmActions } from '+components/ConfirmModal';
 import FilePicker from '+components/SelectFile';
 import Table, { ButtonsCell } from '+components/Table';
 
@@ -12,6 +13,8 @@ const Files = () => {
   const filesData = useSelector(filesSelectors.getFiles);
   const fileKeys = useSelector(filesSelectors.getFileKeys);
 
+  const [fileToDelete, setFileToDelete] = useState(null);
+
   useEffect(() => {
     dispatch(filesActions.fetchFiles());
   }, [dispatch]);
@@ -20,15 +23,32 @@ const Files = () => {
     dispatch(filesActions.uploadFile(file));
   }, [dispatch]);
 
-  const handleDelete = useCallback(async (fileName) => {
-    try {
-      await dispatch(filesActions.deleteFile(fileName));
-      await dispatch(filesActions.fetchFiles());
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(error);
-    }
-  }, [dispatch]);
+  const onDeleteFileModalOpen = useCallback(
+    (file) => {
+      setFileToDelete(file);
+    },
+    [],
+  );
+
+  const onDeleteFileModalClose = useCallback(
+    () => {
+      setFileToDelete(null);
+    },
+    [],
+  );
+
+  const onDeleteFileModalSubmit = useCallback(
+    async () => {
+      try {
+        await dispatch(filesActions.deleteFile(fileToDelete));
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error(error);
+      }
+      setFileToDelete(null);
+    },
+    [dispatch, fileToDelete],
+  );
 
   const files = useMemo(() => {
     const filesArray = [];
@@ -84,7 +104,7 @@ const Files = () => {
                   size={ButtonSizes.small}
                   color={ButtonColors.secondary}
                   variant="outlined"
-                  onClick={() => handleDelete(original)}
+                  onClick={() => onDeleteFileModalOpen(original)}
                 >
                   Delete
                 </Button>
@@ -105,7 +125,7 @@ const Files = () => {
           ),
       },
     ],
-    [fileKeys, handleDelete, onCheckFile],
+    [fileKeys, onDeleteFileModalOpen, onCheckFile],
   );
 
   return (
@@ -115,6 +135,15 @@ const Files = () => {
         columns={columns}
         data={files}
       />
+      {fileToDelete && (
+        <ConfirmModal
+          action={ConfirmActions.delete}
+          item={fileToDelete.name}
+          onClose={onDeleteFileModalClose}
+          onSubmit={onDeleteFileModalSubmit}
+          open
+        />
+      )}
     </React.Fragment>
   );
 };

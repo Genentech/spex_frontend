@@ -51,9 +51,9 @@ const slice = createSlice({
       }
     },
 
-    deleteFileSuccess(state, { payload: id }) {
+    deleteFileSuccess(state, { payload: name }) {
       stopFetching(state);
-      state.files = state.files.filter((file) => file.filename !== id);
+      state.files = state.files.filter((file) => file.filename !== name);
     },
 
     clearFiles: (state) => {
@@ -123,13 +123,15 @@ const slice = createSlice({
     },
 
     [actions.deleteFile]: {
-      * saga({ payload: id }) {
+      * saga({ payload: file }) {
         initApi();
-
+        const name = file.name;
         try {
-          const url = `${baseUrl}?path=${id.name}`;
-          yield call(api.delete, url);
-          yield put(actions.deleteFileSuccess(id.name));
+          const url = `${baseUrl}?path=${name}`;
+          const { data } = yield call(api.delete, url);
+          if (data.success) {
+            yield put(actions.deleteFileSuccess(name));
+          };
         } catch (error) {
           yield put(actions.requestFail(error));
           // eslint-disable-next-line no-console

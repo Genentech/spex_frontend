@@ -1,5 +1,4 @@
 import React, { useCallback, useState } from 'react';
-import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import TextField from '@material-ui/core/TextField';
@@ -7,6 +6,7 @@ import FolderOpenIcon from '@material-ui/icons/FolderOpen';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 import { actions as fileActions } from '@/redux/modules/files';
+import Button, { ButtonSizes, ButtonColors } from '+components/Button';
 
 const FilePicker = ({ input, meta, onFileChange, ...tail }) => {
   const dispatch = useDispatch();
@@ -51,7 +51,16 @@ const FilePicker = ({ input, meta, onFileChange, ...tail }) => {
           accept=".h5ad, *"
           style={{ display: 'none' }}
         />
-        <label htmlFor="file-picker-input" style={{ position: 'relative', cursor: 'pointer' }}>
+        <label
+          htmlFor="file-picker-input"
+          style={{ position: 'relative', cursor: 'pointer' }}
+          onClick={(event) => {
+            if (!selectedFile) {
+              handleUpload();
+              document.getElementById('file-picker-input').click();
+            }
+          }}
+        >
           <TextField
             InputProps={{
               readOnly: true,
@@ -68,23 +77,22 @@ const FilePicker = ({ input, meta, onFileChange, ...tail }) => {
             error={showError}
             label={tail.label || 'Select'}
             variant="outlined"
-            style={{ pointerEvents: 'none' }}
+            style={{ flexGrow: 1, transform: 'scaleY(0.80)' }}
           />
         </label>
       </React.Fragment>
     );
-  }, [tail, showError, meta.error, meta.submitError, selectedFile, handleFileChange]);
+  }, [tail, showError, meta.error, meta.submitError, selectedFile, handleFileChange, handleUpload]);
 
   return (
     <div>
-      <div style={{ display: 'flex' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
         {renderInput()}
         <Button
-          variant="contained"
-          color="primary"
+          size={ButtonSizes.medium}
+          color={ButtonColors.primary}
           onClick={handleUpload}
           disabled={!selectedFile}
-          style={{ marginLeft: '1rem', marginTop: '16px', marginBottom: '5px' }}
         >
           Upload
         </Button>

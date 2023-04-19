@@ -1,6 +1,6 @@
 import React from 'react';
-import Projects from '@/components/Projects';
 import Files from '@/components/Files';
+import Projects from '@/components/Projects';
 
 const ProjectFiles = () => {
   return (
