@@ -329,9 +329,13 @@ const Pipeline = () => {
       setActionWithBlock(null);
       setSelectedBlock(null);
 
+      const validOmeroIds = values.params?.omeroIds
+        ? values.params.omeroIds.filter((id) => project.omeroIds.includes(id))
+        : jobs[values.rootId]?.omeroIds;
+
       const normalizedValues = {
         ...values,
-        omeroIds: values.params?.omeroIds || jobs[values.rootId]?.omeroIds,
+        omeroIds: validOmeroIds,
       };
 
       if (normalizedValues.id === 'new') {
@@ -351,7 +355,7 @@ const Pipeline = () => {
 
       dispatch(pipelineActions.createJob(normalizedValues));
     },
-    [dispatch, jobs],
+    [dispatch, jobs, project],
   );
 
   const onStartPipeline = useCallback(

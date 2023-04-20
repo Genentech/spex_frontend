@@ -217,24 +217,24 @@ const BlockSettingsForm = (props) => {
     [projectImagesThumbnails, projectImagesDetails],
   );
 
-  const projectImagesChannelsOptions = useMemo(
-    () => {
-      let selectedImgChannels = [];
-      if (Object.keys(projectImagesDetails).length > 0 && activeImageIds.length > 0) {
-        activeImageIds.forEach((im_id) => {
-          selectedImgChannels = projectImagesDetails[im_id].channels;
-        });
-      }
+  const projectImagesChannelsOptions = useMemo(() => {
+    let selectedImgChannels = [];
 
-      return selectedImgChannels.map((el) => ({
-        value: el.label,
-        label: el.label,
-        color: el.color,
-        index: el.value,
-      }));
-    },
-    [projectImagesDetails, activeImageIds],
-  );
+    if (Object.keys(projectImagesDetails).length > 0 && activeImageIds.length > 0) {
+      activeImageIds.forEach((im_id) => {
+        if (projectImagesDetails.hasOwnProperty(im_id)) {
+          selectedImgChannels = projectImagesDetails[im_id].channels;
+        }
+      });
+    }
+
+    return selectedImgChannels.map((el) => ({
+      value: el.label,
+      label: el.label,
+      color: el.color,
+      index: el.value,
+    }));
+  }, [projectImagesDetails, activeImageIds]);
 
   const status = block?.id === 'new' ? 'New' : statusFormatter(block.status);
   const header = `[${status}] ${block.description || block.name || ''}`;

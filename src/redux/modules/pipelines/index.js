@@ -290,9 +290,9 @@ const slice = createSlice({
           yield call(api.delete, pipelineUrl);
 
           const jobUrl = `/jobs/${jobId}`;
+
           yield call(api.delete, jobUrl);
           yield put(jobsActions.deleteJobSuccess(jobId));
-
           yield put(actions.fetchPipeline({ projectId, pipelineId }));
 
           yield put(actions.deleteJobSuccess());

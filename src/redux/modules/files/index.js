@@ -31,8 +31,7 @@ const slice = createSlice({
 
     fetchFilesSuccess: (state, { payload: data }) => {
       stopFetching(state);
-      const rootChildren = data.tree[''].children;
-      state.files = rootChildren.map((child) => {
+      state.files = data.tree.map((child) => {
         const [filename, fileData] = Object.entries(child)[0];
         return { filename, ...fileData };
       });
