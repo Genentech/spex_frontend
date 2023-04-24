@@ -550,95 +550,100 @@ const Pipeline = () => {
               <Grid container>
                 {selectedBlock.tasks.map((item) => (
                   <Grid item xs={12} key={item.id}>
-                    <Grid item xs={12}>
-                      <List dense component="div">
-                        <ListItemText
-                          primary={`task id: ${item.id}`}
-                          secondary={`[${statusFormatter(item.status)}] ${item.name}`}
-                        />
-                        <ListItem component="div">
-                          Results for channels
-
-                        </ListItem>
-                        <ListItem component="div" key={`channels-${item.id}`}>
-                          <Form
-                            onSubmit={onSubmit}
-                            render={({ handleSubmit }) => (
-                              <form onSubmit={handleSubmit}>
-                                <div style={{ overflow: 'auto', maxHeight: '300px' }}>
-                                  <Field
-                                    name={`channels-${item.id}`}
-                                    component={ControlsForm.SelectNew}
-                                    type="channels"
-                                    options={projectImagesChannelsOptions}
-                                    onSelectedChannelsChange={(val) => {
-                                      setSelectedChannelsByTask((prevState) => ({ ...prevState, [item.id]: val }));
-                                    }}
-                                  />
-                                </div>
-                              </form>
-                            )}
-                          />
-                        </ListItem>
-                        {!resultKeys[item.id] ? (
-                          <ListItem component="div">
-                            No Data
-                          </ListItem>
-                        ) : resultKeys[item.id].map(({ key, value }) => (
-                          <ListItem component="div" key={key}>
+                    <Accordion>
+                      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                        Task ID: {item.id}
+                      </AccordionSummary>
+                      <AccordionDetails>
+                        <Grid item xs={12}>
+                          <List dense component="div">
                             <ListItemText
-                              primary={(
-                                <Button
-                                  size="small"
-                                  variant="outlined"
-                                  onClick={onLoadVisualize}
-                                  data-key={key}
-                                  data-task-id={item.id}
-                                  startIcon={<WallpaperIcon />}
-                                >
-                                  Render value
-                                </Button>
-                              )}
-                              secondary={(
-                                <Button
-                                  onClick={onLoadValue}
-                                  size="small"
-                                  variant="outlined"
-                                  startIcon={<GetAppIcon />}
-                                  data-key={key}
-                                  data-task-id={item.id}
-                                >
-                                  Download value
-                                </Button>
-                              )}
+                              secondary={`[${statusFormatter(item.status)}] ${item.name}`}
                             />
-                            {value != null && (
-                              <ResultValue>
-                                <pre>
-                                  {value || ''}
-                                </pre>
-                              </ResultValue>
-                            )}
-                          </ListItem>
-                        ))}
-                      </List>
-                    </Grid>
-                    <Grid item xs={12}>
-                      <ImageList cols={1}>
-                        {Object.keys(Object(currImages[item.id])).map((key) => (
-                          <ImageListItem key={`${item.id}-${key}-${item.id}`}>
-                            <p>
-                              <Box
-                                key={`${item.id}-${key}-${item.id}`}
-                                component="img"
-                                src={currImages[item.id][key]}
-                                alt={key}
+                            <ListItem component="div">
+                              Results for channels
+                            </ListItem>
+                            <ListItem component="div" key={`channels-${item.id}`}>
+                              <Form
+                                onSubmit={onSubmit}
+                                render={({ handleSubmit }) => (
+                                  <form onSubmit={handleSubmit}>
+                                    <div style={{ overflow: 'auto', maxHeight: '300px' }}>
+                                      <Field
+                                        name={`channels-${item.id}`}
+                                        component={ControlsForm.SelectNew}
+                                        type="channels"
+                                        options={projectImagesChannelsOptions}
+                                        onSelectedChannelsChange={(val) => {
+                                          setSelectedChannelsByTask((prevState) => ({ ...prevState, [item.id]: val }));
+                                        }}
+                                      />
+                                    </div>
+                                  </form>
+                                )}
                               />
-                            </p>
-                          </ImageListItem>
-                        ))}
-                      </ImageList>
-                    </Grid>
+                            </ListItem>
+                            {!resultKeys[item.id] ? (
+                              <ListItem component="div">
+                                No Data
+                              </ListItem>
+                            ) : resultKeys[item.id].map(({ key, value }) => (
+                              <ListItem component="div" key={key}>
+                                <ListItemText
+                                  primary={(
+                                    <Button
+                                      size="small"
+                                      variant="outlined"
+                                      onClick={onLoadVisualize}
+                                      data-key={key}
+                                      data-task-id={item.id}
+                                      startIcon={<WallpaperIcon />}
+                                    >
+                                      Render value
+                                    </Button>
+                                  )}
+                                  secondary={(
+                                    <Button
+                                      onClick={onLoadValue}
+                                      size="small"
+                                      variant="outlined"
+                                      startIcon={<GetAppIcon />}
+                                      data-key={key}
+                                      data-task-id={item.id}
+                                    >
+                                      Download value
+                                    </Button>
+                                  )}
+                                />
+                                {value != null && (
+                                  <ResultValue>
+                                    <pre>
+                                      {value || ''}
+                                    </pre>
+                                  </ResultValue>
+                                )}
+                              </ListItem>
+                            ))}
+                          </List>
+                        </Grid>
+                        <Grid item xs={12}>
+                          <ImageList cols={1}>
+                            {Object.keys(Object(currImages[item.id])).map((key) => (
+                              <ImageListItem key={`${item.id}-${key}-${item.id}`}>
+                                <p>
+                                  <Box
+                                    key={`${item.id}-${key}-${item.id}`}
+                                    component="img"
+                                    src={currImages[item.id][key]}
+                                    alt={key}
+                                  />
+                                </p>
+                              </ImageListItem>
+                            ))}
+                          </ImageList>
+                        </Grid>
+                      </AccordionDetails>
+                    </Accordion>
                   </Grid>
                 ))}
               </Grid>

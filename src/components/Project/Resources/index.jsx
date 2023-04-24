@@ -21,8 +21,8 @@ import Table, { ButtonsCell } from '+components/Table';
 import ButtonsContainer from '../components/ButtonsContainer';
 
 import ImageCell from './components/ImageCell';
+import ManageFilesModal from './components/ManageFilesModal';
 import ManageImagesFormModal from './components/ManageImagesFormModal';
-import ManageResourcesModal from './components/ManageResourcesModal';
 import ManageTasksModal from './components/ManageTasksModal';
 import RecourseCell from './components/RecourseCell';
 import TaskCell from './components/TaskCell';
@@ -51,7 +51,7 @@ const Resources = () => {
 
   const [manageImagesModalOpen, setManageImagesModalOpen] = useState(false);
   const [manageTasksModalOpen, setManageTasksModalOpen] = useState(false);
-  const [manageResourcesModalOpen, setManageResourcesModalOpen] = useState(false);
+  const [manageFilesModalOpen, setManageFilesModalOpen] = useState(false);
 
   const onDeleteProjectResource = useCallback(
     (resource) => {
@@ -65,6 +65,9 @@ const Resources = () => {
           break;
         case 'resource':
           newProject.resource_ids = newProject.resource_ids.filter((id) => id !== resource.id);
+          break;
+        case 'file':
+          newProject.file_names = newProject.file_names.filter((id) => id !== resource.id);
           break;
         default:
           break;
@@ -97,6 +100,8 @@ const Resources = () => {
               return (<TaskCell {...original} />);
             case 'resource':
               return (<RecourseCell {...original} />);
+            case 'file':
+              return <span>{original.name}</span>;
             default:
               return original.type;
           }
@@ -125,6 +130,15 @@ const Resources = () => {
       ),
     }]),
     [onDeleteProjectResource],
+  );
+
+  const fileData = useMemo(
+    () => (project?.file_names || []).map((name, index) => ({
+      id: name,
+      undefined,
+      type: 'file',
+    })),
+    [project],
   );
 
   const imageData = useMemo(
@@ -157,9 +171,18 @@ const Resources = () => {
   );
 
   const tableData = useMemo(
-    () => ([...imageData, ...taskData, ...resourceData]),
-    [imageData, taskData, resourceData],
+    () => ([...fileData, ...imageData, ...taskData, ...resourceData]),
+    [fileData, imageData, taskData, resourceData],
   );
+
+  const projectFileIds = useMemo(() => {
+    return new Set(project?.file_names || []);
+  }, [project]);
+
+  const projectFiles = useMemo(() => {
+    return fileData.filter((file) => projectFileIds.has(file.id));
+  }, [fileData, projectFileIds]);
+
 
   const onToggle = useCallback(
     () => {
@@ -212,11 +235,6 @@ const Resources = () => {
     [dispatch],
   );
 
-  const onManageTasksModalOpen = useCallback(
-    () => { setManageTasksModalOpen(true); },
-    [],
-  );
-
   const onManageTasksClose = useCallback(
     () => { setManageTasksModalOpen(false); },
     [],
@@ -232,21 +250,20 @@ const Resources = () => {
     [dispatch],
   );
 
-  const onManageResourcesModalOpen = useCallback(
-    () => { setManageResourcesModalOpen(true); },
-    [],
-  );
+  const onManageFilesModalOpen = useCallback(() => {
+    setManageFilesModalOpen(true);
+  }, []);
 
-  const onManageResourcesClose = useCallback(
-    () => { setManageResourcesModalOpen(false); },
-    [],
-  );
+  const onManageFilesModalClose = useCallback(() => {
+    setManageFilesModalOpen(false);
+  }, []);
 
-  const onResourcesChanged = useCallback(
+
+  const onFilesChanged = useCallback(
     (project, values) => {
-      setManageResourcesModalOpen(false);
-      const resource_ids = values.map((el) => el.id || el);
-      const updateData = { ...project, resource_ids };
+      setManageFilesModalOpen(false);
+      const file_names = values.map((el) => el.id || el);
+      const updateData = { ...project, file_names };
       dispatch(projectsActions.updateProject(updateData));
     },
     [dispatch],
@@ -316,8 +333,7 @@ const Resources = () => {
                 <ClickAwayListener onClickAway={onToggleClose}>
                   <MenuList autoFocusItem={open} id="menu-list-grow" onKeyDown={onKeyDownInMenu}>
                     <MenuItem onClick={onManageImagesModalOpen}>Images</MenuItem>
-                    <MenuItem onClick={onManageTasksModalOpen}>Tasks</MenuItem>
-                    <MenuItem onClick={onManageResourcesModalOpen} disabled>Resources</MenuItem>
+                    <MenuItem onClick={onManageFilesModalOpen}>Files</MenuItem>
                   </MenuList>
                 </ClickAwayListener>
               </Paper>
@@ -353,13 +369,15 @@ const Resources = () => {
         />
       )}
 
-      {manageResourcesModalOpen && (
-        <ManageResourcesModal
-          header="Manage Resources"
+      {manageFilesModalOpen && (
+        <ManageFilesModal
+          header="Manage Files"
           project={project}
-          onClose={onManageResourcesClose}
-          onSubmit={onResourcesChanged}
-          open
+          onClose={onManageFilesModalClose}
+          onSubmit={onFilesChanged}
+          checkedIds={[...projectFileIds]}
+          selectedRows={projectFiles}
+          open={manageFilesModalOpen}
         />
       )}
     </Fragment>
