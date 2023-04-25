@@ -13,9 +13,6 @@ const ManageFilesModal = styled((props) => {
     className,
     header,
     project,
-    checkedIds,
-    closeButtonText,
-    submitButtonText,
     onClose,
     open,
     onSubmit,
@@ -43,8 +40,8 @@ const ManageFilesModal = styled((props) => {
   );
 
   const data = useMemo(
-    () => Object.values(files),
-    [files],
+    () => Object.values(files).filter((file) => !project.file_names.includes(file.filename)),
+    [files, project],
   );
 
   const emitSubmit = useCallback(
@@ -59,7 +56,9 @@ const ManageFilesModal = styled((props) => {
         }
       }).filter((filename) => filename !== null);
 
-      onSubmit(project, selectedFilenames);
+      const updatedFileNames = Array.from(new Set([...project.file_names, ...selectedFilenames]));
+
+      onSubmit(project, updatedFileNames);
     },
     [onSubmit, selectedRows, project, files],
   );
@@ -76,10 +75,10 @@ const ManageFilesModal = styled((props) => {
   );
 
   useEffect(() => {
-    if (checkedIds.length) {
-      setSelectedRows(data.filter((row) => checkedIds.includes(row.filename)));
+    if (project && project.file_names) {
+      setSelectedRows(data.filter((row) => project.file_names.includes(row.filename)));
     }
-  }, [checkedIds, data]);
+  }, [project, data]);
 
   return (
     <Modal
@@ -94,8 +93,8 @@ const ManageFilesModal = styled((props) => {
           data={data}
           allowRowSelection
           onSelectedRowsChange={setSelectedRows}
-          selectedRowIds={project?.file_names}
-          initialSelectedRowIds={checkedIds}
+          selectedRowIds={selectedRows.map((row) => row.filename)}
+          initialSelectedRowIds={project?.file_names}
         />
       </ModalBody>
       <ModalFooter>
@@ -103,13 +102,13 @@ const ManageFilesModal = styled((props) => {
           color={ButtonColors.secondary}
           onClick={onClose}
         >
-          {closeButtonText}
+          Cancel
         </Button>
         <Button
           color={ButtonColors.primary}
           onClick={emitSubmit}
         >
-          {submitButtonText}
+          Attach
         </Button>
       </ModalFooter>
     </Modal>
@@ -122,9 +121,6 @@ ManageFilesModal.propTypes = {
   className: PropTypes.string,
   header: PropTypes.string,
   open: PropTypes.bool,
-  checkedIds: PropTypes.arrayOf(PropTypes.string),
-  closeButtonText: PropTypes.string,
-  submitButtonText: PropTypes.string,
   onClose: PropTypes.func,
   onSubmit: PropTypes.func,
 };
