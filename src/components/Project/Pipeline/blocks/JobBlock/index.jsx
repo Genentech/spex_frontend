@@ -3,6 +3,7 @@ import React, { Fragment, memo } from 'react';
 import IconButton from '@material-ui/core/IconButton';
 import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
+import ReplayIcon from '@material-ui/icons/Replay';
 import PropTypes from 'prop-types';
 import { Handle } from 'react-flow-renderer';
 
@@ -41,6 +42,16 @@ const JobBlock = (props) => {
               <AddIcon fontSize="small" />
             </IconButton>
           )}
+
+          {data.onRestart && ( // добавьте этот блок кода
+            <IconButton
+              disabled={data.id === 'new'}
+              onClick={() => data.onRestart(data)}
+            >
+              <ReplayIcon fontSize="small" />
+            </IconButton>
+          )}
+
         </Buttons>
       </Container>
 
@@ -67,6 +78,7 @@ JobBlock.propTypes = {
     direction: PropTypes.string,
     onAdd: PropTypes.func,
     onDelete: PropTypes.func,
+    onRestart: PropTypes.func,
   }).isRequired,
   isConnectable: PropTypes.bool.isRequired,
 };
