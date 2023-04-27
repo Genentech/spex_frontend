@@ -114,10 +114,11 @@ const slice = createSlice({
           yield put(actions.uploadFileSuccess(data.data));
           yield put(actions.fetchFiles());
         } catch (error) {
-          yield put(actions.requestFail(error));
-          // eslint-disable-next-line no-console
-          console.error(error.message);
-        }
+            const errorMessage = error.response?.data?.error || 'An error occurred while uploading the file';
+            yield put(actions.requestFail({ message: errorMessage }));
+            // eslint-disable-next-line no-console
+            console.error(error.message);
+          }
       },
     },
 
@@ -160,6 +161,12 @@ const slice = createSlice({
       [getState],
       (state) => state?.fileKeys,
     ),
+
+    getError: createSelector(
+      [getState],
+      (state) => state?.error,
+    ),
+
   }),
 });
 

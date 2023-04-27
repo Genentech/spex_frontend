@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { actions as filesActions, selectors as filesSelectors } from '@/redux/modules/files';
 import Button, { ButtonSizes, ButtonColors } from '+components/Button';
 import ConfirmModal, { ConfirmActions } from '+components/ConfirmModal';
+import ErrorMessage from '+components/ErrorMessage';
 import FilePicker from '+components/SelectFile';
 import Table, { ButtonsCell } from '+components/Table';
 
@@ -12,15 +13,24 @@ const Files = () => {
 
   const filesData = useSelector(filesSelectors.getFiles);
   const fileKeys = useSelector(filesSelectors.getFileKeys);
+  const error = useSelector(filesSelectors.getError);
 
   const [fileToDelete, setFileToDelete] = useState(null);
+  // eslint-disable-next-line no-unused-vars
+  const [localError, setLocalError] = useState(null);
 
   useEffect(() => {
     dispatch(filesActions.fetchFiles());
   }, [dispatch]);
 
-  const onFileChange = useCallback((file) => {
-    dispatch(filesActions.uploadFile(file));
+  useEffect(() => {
+    if (error) {
+      setLocalError(error);
+    }
+  }, [error]);
+
+  const onFileChange = useCallback(async (file) => {
+    await dispatch(filesActions.uploadFile(file));
   }, [dispatch]);
 
   const onDeleteFileModalOpen = useCallback(
@@ -130,6 +140,7 @@ const Files = () => {
 
   return (
     <React.Fragment>
+      {error && <ErrorMessage message={error} />}
       <FilePicker onFileChange={onFileChange} />
       <Table
         columns={columns}
