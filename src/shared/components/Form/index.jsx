@@ -9,6 +9,7 @@ import SelectFile from '+components/SelectFile';
 import SelectJobs from '+components/SelectJobs';
 import SelectJobsPipeline from '+components/SelectJobsInPipeline';
 import SelectNew from '+components/SelectNew';
+import SingleTransferList from '+components/SingleTransferList';
 import Slider from '+components/Slider';
 import TransferList from '+components/TransferList';
 
@@ -41,6 +42,7 @@ const Controls = {
   SelectNew,
   SelectFile,
   Slider,
+  SingleTransferList,
   TransferList,
   ImagePicker,
 };

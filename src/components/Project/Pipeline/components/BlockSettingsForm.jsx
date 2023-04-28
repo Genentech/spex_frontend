@@ -125,8 +125,8 @@ const getFieldComponent = (type) => {
       return Controls.SelectJobs;
     case 'pipeline_job_id':
       return Controls.SelectJobsPipeline;
-    case 'filepath':
-      return Controls.SelectFile;
+    case 'file':
+      return Controls.SingleTransferList;
     case 'channel':
     case 'channels':
       return Select;
@@ -154,7 +154,7 @@ const getFieldParser = (type) => {
   }
 };
 
-const getFieldAdditionalProps = (type, block, { imagesOptions, imagesChannelsOptions }) => {
+const getFieldAdditionalProps = (type, block, { imagesOptions, imagesChannelsOptions, filesOptions }) => {
   switch (type) {
     case 'omero':
       return { options: imagesOptions };
@@ -165,6 +165,8 @@ const getFieldAdditionalProps = (type, block, { imagesOptions, imagesChannelsOpt
         onlyOneValue: true,
         options: imagesChannelsOptions,
       };
+    case 'file':
+      return { options: filesOptions, multiple: false };
     default:
       return {};
   }
@@ -215,6 +217,15 @@ const BlockSettingsForm = (props) => {
         });
       }),
     [projectImagesThumbnails, projectImagesDetails],
+  );
+
+  const projectFilesOptions = useMemo(
+    () => (project?.file_names || []).map((fileName, index) => ({
+      id: `file-${index}`,
+      title: fileName,
+      value: fileName,
+    })),
+    [project],
   );
 
   const projectImagesChannelsOptions = useMemo(() => {
@@ -376,6 +387,7 @@ const BlockSettingsForm = (props) => {
                       {...getFieldAdditionalProps(field.type, block, {
                         imagesOptions: projectImagesOptions,
                         imagesChannelsOptions: projectImagesChannelsOptions,
+                        filesOptions: projectFilesOptions,
                       })}
                       disabled={disabled}
                     />

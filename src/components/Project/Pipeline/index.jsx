@@ -333,8 +333,12 @@ const Pipeline = () => {
         ? values.params.omeroIds.filter((id) => project.omeroIds.includes(id))
         : jobs[values.rootId]?.omeroIds;
 
+      const { filename, ...params } = values.params;
+      const file_names = filename ? [filename.value] : [null];
+
       const normalizedValues = {
         ...values,
+        params: { ...params, file_names },
         omeroIds: validOmeroIds,
       };
 
@@ -690,6 +694,7 @@ const Pipeline = () => {
           name: job.name,
           status: job.status,
           omeroIds: job.omeroIds,
+          file_names: job.file_names,
           description,
           folder: params.folder,
           script: params.script,

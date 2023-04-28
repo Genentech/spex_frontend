@@ -31,12 +31,12 @@ const PrivateRoutes = () => {
         <Route
           exact
           path={[ '/' ]}
-          component={ProjectFiles} // Изменено на ProjectFiles
+          component={ProjectFiles}
         />
         <Route
           exact
           path={[ `/${PathNames.projects}` ]}
-          component={ProjectFiles} // Изменено на ProjectFiles
+          component={ProjectFiles}
         />
         <Route exact path={`/${PathNames.files}`} component={Files} />
         <Route
