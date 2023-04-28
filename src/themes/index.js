@@ -2,6 +2,7 @@ import { createMuiTheme } from '@material-ui/core/styles';
 import { createGlobalStyle } from 'styled-components';
 import dark from './dark';
 import light from './light';
+import 'typeface-roboto';
 
 const themes = {};
 export const addTheme = (name, theme) => {
@@ -25,7 +26,7 @@ const GlobalStyle = createGlobalStyle`
     -webkit-font-feature-settings: "liga" on, "calt" on;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Roboto', sans-serif;
   }
   
   button:not(#id_fake_for_hack) {
