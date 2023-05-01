@@ -33,31 +33,32 @@ const SingleTransferList = styled((props) => {
     input,
     leftTitle,
     rightTitle,
+    // eslint-disable-next-line no-unused-vars
+    file_names,
     meta,
   } = props;
 
   const invalid = meta.error && meta.touched;
-  const value = input?.value || props.value;
+  const initialValue = props.file_names || props.value;
   const onChange = input.onChange || props.onChange;
-
   const [checked, setChecked] = useState(null);
+  const [currentValue, setCurrentValue] = useState(initialValue);
 
   const fixedValue = useMemo(
     () => {
-      const arr = Array.isArray(value) ? value : [value];
       if (!options?.length) {
-        return arr;
+        return [];
       }
-      return arr.map((val) => {
-        const foundedOption = options.find((item) => item.id === (val.id || val));
-        if (foundedOption) {
-          const { disabled, ...rest } = foundedOption;
+      const arr = Array.isArray(currentValue) ? currentValue : [currentValue];
+      return arr
+        .map((val) => options.find((item) => item.title === (val.title || val)))
+        .filter(Boolean)
+        .map((item) => {
+          const { disabled, ...rest } = item;
           return rest;
-        }
-        return val.id ? val : { id: val };
-      });
+        });
     },
-    [options, value],
+    [options, currentValue],
   );
 
   const fixedOptions = useMemo(
@@ -67,6 +68,7 @@ const SingleTransferList = styled((props) => {
 
   const onCheckedRight = useCallback(
     () => {
+      setCurrentValue(checked);
       onChange(checked);
       setChecked(null);
     },
@@ -75,7 +77,7 @@ const SingleTransferList = styled((props) => {
 
   const onToggle = useCallback(
     (newValue) => () => {
-      if (checked && checked.id === newValue.id) {
+      if (checked && checked.title === newValue.title) {
         setChecked(null);
       } else {
         setChecked(newValue);
@@ -296,6 +298,7 @@ SingleTransferList.defaultProps = {
   options: [],
   input: {},
   value: [],
+  file_names: [],
   leftTitle: 'Choices',
   rightTitle: 'Chosen',
   not: PropTypes.func,

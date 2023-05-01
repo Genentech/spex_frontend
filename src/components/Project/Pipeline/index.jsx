@@ -334,12 +334,13 @@ const Pipeline = () => {
         : jobs[values.rootId]?.omeroIds;
 
       const { filename, ...params } = values.params;
-      const file_names = filename ? [filename.value] : [null];
+      const file_names = filename ? [filename] : [null];
 
       const normalizedValues = {
         ...values,
-        params: { ...params, file_names },
+        params: { ...params },
         omeroIds: validOmeroIds,
+        file_names: file_names,
       };
 
       if (normalizedValues.id === 'new') {
@@ -402,11 +403,11 @@ const Pipeline = () => {
   );
 
   const onBlockClick = useCallback(
-    (_, block) => {
+    async (_, block) => {
       if (block.id === 'new') {
         return;
       }
-      dispatch(jobsActions.fetchJobsByPipelineId(pipelineId));
+      await dispatch(jobsActions.fetchJobsByPipelineId(pipelineId));
 
       const job = jobs[block.id];
       if (!job) {
@@ -441,6 +442,7 @@ const Pipeline = () => {
         id: job.id,
         name: job.name,
         status: job.status,
+        file_names: job.file_names,
         omeroIds: job.omeroIds,
         folder: params.folder,
         script: params.script,

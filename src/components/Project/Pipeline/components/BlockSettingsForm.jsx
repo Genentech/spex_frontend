@@ -149,6 +149,8 @@ const getFieldParser = (type) => {
       return Parsers.channel;
     case 'int':
       return Parsers.number;
+    case 'file':
+      return Parsers.file;
     default:
       return undefined;
   }
@@ -163,10 +165,14 @@ const getFieldAdditionalProps = (type, block, { imagesOptions, imagesChannelsOpt
     case 'channel':
       return {
         onlyOneValue: true,
-        options: imagesChannelsOptions,
+        inputValue: imagesChannelsOptions,
       };
     case 'file':
-      return { options: filesOptions, multiple: false };
+      return {
+        options: filesOptions,
+        file_names:  block.file_names,
+      };
+
     default:
       return {};
   }
@@ -284,6 +290,7 @@ const BlockSettingsForm = (props) => {
       projectId: block.projectId,
       pipelineId: block.pipelineId,
       rootId: block.rootId,
+      file_names: block.file_names,
       params: {
         ...block.params,
         folder: block.folder,
@@ -470,6 +477,7 @@ const propTypes = {
     pipelineId: PropTypes.string,
     status: PropTypes.number,
     omeroIds: PropTypes.arrayOf(PropTypes.string),
+    file_names: PropTypes.arrayOf(PropTypes.string),
     rootId: PropTypes.string,
     script_path: PropTypes.string,
     folder: PropTypes.string,

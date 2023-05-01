@@ -225,7 +225,7 @@ const slice = createSlice({
             name: job.name,
             // folder: job.folder,
             // script: job.script,
-            // part: job.part,
+            file_names: job.file_names,
             params: job.params,
             omeroIds: job.omeroIds,
             content: 'empty',
@@ -259,7 +259,7 @@ const slice = createSlice({
             name: job.name,
             // folder: job.folder,
             // script: job.script,
-            // part: job.part,
+            file_names: job.file_names,
             params: job.params,
             omeroIds: job.omeroIds,
             content: 'empty',
@@ -272,6 +272,8 @@ const slice = createSlice({
             projectId: job.projectId,
             pipelineId: job.pipelineId,
           }));
+
+          yield put(jobsActions.fetchJobsByPipelineId(job.pipelineId));
 
           yield put(actions.updateJobSuccess());
         } catch (error) {
