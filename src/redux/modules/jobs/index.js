@@ -104,6 +104,9 @@ const slice = createSlice({
 
     startPipeline: startFetching,
 
+    downloadJob: startFetching,
+    downloadJobSuccess: stopFetching,
+
     clearJobs: (state) => {
       state.jobs = {};
     },
@@ -323,6 +326,31 @@ const slice = createSlice({
         }
       },
     },
+
+    [actions.downloadJob]: {
+      * saga({ payload: { jobId, fileName } }) {
+        initApi();
+
+        try {
+          const url = `${baseUrl}/merged_result/${jobId}`;
+          const { data } = yield call(api.get, url, { responseType: 'blob' });
+
+          const downloadUrl = window.URL.createObjectURL(new Blob([data]));
+          const link = document.createElement('a');
+          link.href = downloadUrl;
+          link.setAttribute('download', fileName);
+          document.body.appendChild(link);
+          link.click();
+          link.parentNode.removeChild(link);
+
+          yield put(actions.downloadJobSuccess());
+        } catch (error) {
+          yield put(actions.requestFail(error));
+          // eslint-disable-next-line no-console
+          console.error(error.message);
+        }
+      },
+    },
   }),
 
   selectors: (getState) => ({
@@ -359,6 +387,11 @@ const slice = createSlice({
     getJob: (id) => createSelector(
       [getState],
       (state) => state.jobs[id],
+    ),
+
+    isDownloadInProgress: createSelector(
+      [getState],
+      (state) => state.isFetching,
     ),
   }),
 });

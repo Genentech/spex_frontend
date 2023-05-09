@@ -2,14 +2,14 @@ import React, { useState, useCallback } from 'react';
 import Divider from '@material-ui/core/Divider';
 import Drawer from '@material-ui/core/Drawer';
 import { makeStyles } from '@material-ui/core/styles';
-import AppsIcon from '@material-ui/icons/Apps';
-import DoneAll from '@material-ui/icons/DoneAll';
 import DoubleArrowIcon from '@material-ui/icons/DoubleArrow';
-import FolderIcon from '@material-ui/icons/Folder';
 import classNames from 'classnames';
 import { matchPath, useHistory, useLocation } from 'react-router-dom';
 
 import PathNames from '@/models/PathNames';
+import DashboardICon from '@/shared/components/Icons/DashboardIcon';
+import ProjectIcon from '@/shared/components/Icons/ProjectIcon';
+import WorkFlowIcon from '@/shared/components/Icons/WorkFlowIcon';
 
 import List, { ListItem, ListItemIcon, ListItemText } from '+components/List';
 import { getFromStorage, saveToStorage } from '+utils/localStorage';
@@ -149,7 +149,7 @@ const Project = () => {
             onClick={onSidebarItemClick(resourcesUrl)}
             button
           >
-            <ListItemIcon><FolderIcon /></ListItemIcon>
+            <ListItemIcon><ProjectIcon fontSize="large" /></ListItemIcon>
             <ListItemText primary="Resources" />
           </ListItem>
 
@@ -159,7 +159,7 @@ const Project = () => {
             onClick={onSidebarItemClick(pipelinesUrl)}
             button
           >
-            <ListItemIcon><AppsIcon /></ListItemIcon>
+            <ListItemIcon><WorkFlowIcon fontSize="large" /></ListItemIcon>
             <ListItemText primary="Build Analysis" />
           </ListItem>
 
@@ -169,7 +169,7 @@ const Project = () => {
             onClick={onSidebarItemClick(resultsUrl)}
             button
           >
-            <ListItemIcon><DoneAll /></ListItemIcon>
+            <ListItemIcon><DashboardICon fontSize="large" /></ListItemIcon>
             <ListItemText primary="Results" />
           </ListItem>
 

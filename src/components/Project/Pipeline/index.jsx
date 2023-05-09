@@ -468,6 +468,38 @@ const Pipeline = () => {
     [dispatch, selectedBlock, onBlockClick],
   );
 
+  const onDownload = useCallback(
+    async (_, block) => {
+      if (block.id === 'new') {
+        return;
+      }
+
+      const job = jobs[block.id];
+      if (!job) {
+        return;
+      }
+
+      // Customize the file name based on your requirements
+      const fileName = `job_${job.id}.zip`;
+
+      dispatch(jobsActions.downloadJob({ jobId: job.id, fileName }));
+    },
+    [jobs, dispatch],
+  );
+
+  const onJobDownload = useCallback(
+    (_) => {
+      if (selectedBlock.id === 'new') {
+        return;
+      }
+
+      if (selectedBlock.id) {
+        onDownload(_, selectedBlock);
+      }
+    },
+    [selectedBlock, onDownload],
+  );
+
   const onBlockAdd = useCallback(
     (block) => {
       setActionWithBlock(null);
@@ -821,6 +853,7 @@ const Pipeline = () => {
                 onSubmit={onJobSubmit}
                 onRestart={onJobRestart}
                 onReload={onJobReload}
+                onDownload={onJobDownload}
               />
             ) : (
               <NoData>Select block</NoData>

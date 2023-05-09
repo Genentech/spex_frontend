@@ -1,5 +1,6 @@
 /* eslint-disable react/jsx-sort-default-props */
 import React, { useState, useMemo, useEffect } from 'react';
+import GetAppIcon from '@material-ui/icons/GetApp';
 import Refresh from '@material-ui/icons/Refresh';
 import Repeat from '@material-ui/icons/Repeat';
 import createFocusOnFirstFieldDecorator from 'final-form-focus-on-first-field';
@@ -83,7 +84,9 @@ const RightPanel = styled.div`
 `;
 
 const Footer = styled.div`
-  align-self: flex-end;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 
   :empty {
     display: none;
@@ -196,6 +199,7 @@ const BlockSettingsForm = (props) => {
     onRestart,
     onReload,
     onForm,
+    onDownload,
     onLoadKeys,
     ...tail
   } = props;
@@ -407,40 +411,52 @@ const BlockSettingsForm = (props) => {
                   color={ButtonColors.secondary}
                   onClick={(event) => {
                     form.restart();
-                    onRestart(event);
+                    onDownload(event);
                   }}
-                  title="Restart the block"
+                  title="Download"
                 >
-                  <Repeat />
-                  Restart
+                  <GetAppIcon />
                 </Button>
-                <Button
-                  color={ButtonColors.secondary}
-                  onClick={(event) => {
-                    onReload(event);
-                    form.restart();
-                  }}
-                  title="Refresh state of the block"
-                >
-                  <Refresh />
-                  refresh
-                </Button>
-                <Button
-                  color={ButtonColors.secondary}
-                  onClick={(event) => {
-                    form.restart();
-                    onClose(event);
-                  }}
-                >
-                  Close
-                </Button>
-                <Button
-                  type="submit"
-                  color={ButtonColors.primary}
-                  disabled={submitting || disabled}
-                >
-                  Submit
-                </Button>
+                <div>
+                  <Button
+                    color={ButtonColors.secondary}
+                    onClick={(event) => {
+                      form.restart();
+                      onRestart(event);
+                    }}
+                    title="Restart the block"
+                  >
+                    <Repeat />
+                    Restart
+                  </Button>
+                  <Button
+                    color={ButtonColors.secondary}
+                    onClick={(event) => {
+                      onReload(event);
+                      form.restart();
+                    }}
+                    title="Refresh state of the block"
+                  >
+                    <Refresh />
+                    refresh
+                  </Button>
+                  <Button
+                    color={ButtonColors.secondary}
+                    onClick={(event) => {
+                      form.restart();
+                      onClose(event);
+                    }}
+                  >
+                    Close
+                  </Button>
+                  <Button
+                    type="submit"
+                    color={ButtonColors.primary}
+                    disabled={submitting || disabled}
+                  >
+                    Submit
+                  </Button>
+                </div>
               </Footer>
             </FormRenderer>
           </Container>
@@ -516,6 +532,10 @@ const propTypes = {
   /**
    * A callback fired when load keys button clicked.
    */
+  onDownload: PropTypes.func,
+  /**
+   * A callback fired when load keys button clicked.
+   */
   onLoadKeys: PropTypes.func,
 };
 
@@ -530,6 +550,7 @@ const defaultProps = {
   onSubmit: () => {},
   onRestart: () => {},
   onReload: () => {},
+  onDownload: () => {},
   onLoadKeys: () => {},
 };
 
