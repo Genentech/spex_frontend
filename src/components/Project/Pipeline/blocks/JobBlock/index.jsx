@@ -10,6 +10,12 @@ import { Handle } from 'react-flow-renderer';
 import Buttons from './components/Buttons';
 import Container from './components/Container';
 import Name from './components/Name';
+import Status from './components/Status';
+import statusFormatter from '+utils/statusFormatter';
+
+const iconButtonStyle = {
+  padding: '6px',
+};
 
 const JobBlock = (props) => {
   const {
@@ -22,11 +28,14 @@ const JobBlock = (props) => {
   return (
     <Fragment>
       <Container>
-        {data.name && <Name>{data.name}</Name>}
-
+        <Name>
+          {data.name && <span>{data.name}</span>}
+          {data.status && <Status>({statusFormatter(data.status)})</Status>}
+        </Name>
         <Buttons>
           {data.onDelete && (
             <IconButton
+              style={iconButtonStyle}
               disabled={data.id === 'new'}
               onClick={() => data.onDelete(data)}
             >
@@ -36,6 +45,7 @@ const JobBlock = (props) => {
 
           {data.onAdd && (
             <IconButton
+              style={iconButtonStyle}
               disabled={data.id === 'new'}
               onClick={() => data.onAdd(data)}
             >
@@ -43,8 +53,9 @@ const JobBlock = (props) => {
             </IconButton>
           )}
 
-          {data.onRestart && ( // добавьте этот блок кода
+          {data.onRestart && (
             <IconButton
+              style={iconButtonStyle}
               disabled={data.id === 'new'}
               onClick={() => data.onRestart(data)}
             >
@@ -74,6 +85,7 @@ JobBlock.propTypes = {
   data: PropTypes.shape({
     id: PropTypes.string,
     name: PropTypes.string,
+    status: PropTypes.string,
     value: PropTypes.string,
     direction: PropTypes.string,
     onAdd: PropTypes.func,

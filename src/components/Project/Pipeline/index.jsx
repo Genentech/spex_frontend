@@ -334,7 +334,7 @@ const Pipeline = () => {
         : jobs[values.rootId]?.omeroIds;
 
       const { filename, ...params } = values.params;
-      const file_names = filename ? [filename] : [null];
+      const file_names = filename ? [filename] : [];
 
       const normalizedValues = {
         ...values,
@@ -348,6 +348,18 @@ const Pipeline = () => {
       }
 
       if (normalizedValues.id) {
+        const currentJob = jobs[normalizedValues.id];
+
+        const sortedCurrentOmeroIds = [...currentJob.omeroIds].sort();
+        const sortedValidOmeroIds = [...validOmeroIds].sort();
+
+        if (
+          JSON.stringify(sortedCurrentOmeroIds) !==
+          JSON.stringify(sortedValidOmeroIds)
+        ) {
+          normalizedValues.status = -2;
+        }
+
         dispatch(pipelineActions.updateJob(normalizedValues));
         return;
       }

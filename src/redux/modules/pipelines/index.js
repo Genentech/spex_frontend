@@ -263,6 +263,7 @@ const slice = createSlice({
             params: job.params,
             omeroIds: job.omeroIds,
             content: 'empty',
+            status: job.status,
           };
           const jobUrl = `/jobs/${job.id}`;
           const { data } = yield call(api.put, jobUrl, updateParams);
