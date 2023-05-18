@@ -39,11 +39,13 @@ import statusFormatter from '+utils/statusFormatter';
 import JobBlock from './blocks/JobBlock';
 import StartBlock from './blocks/StartBlock';
 import AddBlockForm from './components/AddBlockForm';
-import BlockSettingsForm from './components/BlockSettingsForm';
+// import BlockSettingsForm from './components/BlockSettingsForm';
 import BlockSettingsFormWrapper from './components/BlockSettingsFormWrapper';
 import Container from './components/Container';
 import FlowWrapper from './components/FlowWrapper';
 import OutputWrapper from './components/OutputWrapper';
+import ImageViewer from '+components/ImageViewer';
+import ThumbnailsViewer from '+components/ThumbnailsViewer';
 
 const jobRefreshInterval = 6e4; // 1 minute
 
@@ -63,6 +65,18 @@ const ResultValue = styled.div`
   
   ${ScrollBarMixin}
 `;
+
+const ImageViewerContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  background-color: #ccc;
+  border-radius: 4px;
+  //overflow: hidden;
+`;
+
 
 const addNewVirtualJobToPipeline = (rootId, newJob, node) => {
   if (node.id === rootId) {
@@ -155,7 +169,7 @@ const sortTaskById = ({ id: a }, { id: b }) => {
   return +a - +b;
 };
 
-const Pipeline = () => {
+const Process = () => {
   const dispatch = useDispatch();
   const location = useLocation();
 
@@ -165,16 +179,14 @@ const Pipeline = () => {
 
   const [activeImageIds, setActiveImageIds] = useState(project?.omeroIds || []);
   const [selectedChannelsByTask, setSelectedChannelsByTask] = useState({});
-
   const projectImagesDetails = useSelector(omeroSelectors.getImagesDetails(project?.omeroIds || []));
 
-  const matchPipelinePath = matchPath(location.pathname, {
-    path: `/${PathNames.projects}/${projectId}/${PathNames.pipelines}/:id`,
+  const matchProcessPath = matchPath(location.pathname, {
+    path: `/${PathNames.projects}/${projectId}/${PathNames.processes}/:id`,
   });
-  const pipelineId = matchPipelinePath ? matchPipelinePath.params.id : undefined;
-
-  const pipeline = useSelector(pipelineSelectors.getPipeline(projectId, pipelineId));
-  const jobs = useSelector(jobsSelectors.getJobsByPipelineId(pipelineId));
+  const processId = matchProcessPath ? matchProcessPath.params.id : undefined;
+  const pipeline = useSelector(pipelineSelectors.getPipeline(projectId, processId));
+  const jobs = useSelector(jobsSelectors.getJobsByPipelineId(processId));
   const tasks = useSelector(tasksSelectors.getTasks);
   const results = useSelector(tasksSelectors.getResults);
   const jobTypes = useSelector(jobsSelectors.getJobTypes);
@@ -378,9 +390,9 @@ const Pipeline = () => {
 
   const onStartPipeline = useCallback(
     () => {
-      dispatch(jobsActions.startPipeline(pipelineId));
+      dispatch(jobsActions.startPipeline(processId));
     },
-    [dispatch, pipelineId],
+    [dispatch, processId],
   );
 
   const onJobRestart = useCallback(
@@ -420,13 +432,13 @@ const Pipeline = () => {
       if (block.id === 'new') {
         return;
       }
-      await dispatch(jobsActions.fetchJobsByPipelineId(pipelineId));
+      await dispatch(jobsActions.fetchJobsByPipelineId(processId));
 
       const job = jobs[block.id];
       if (!job) {
         setSelectedBlock({
           projectId,
-          pipelineId,
+          processId,
           ...block,
         });
         return;
@@ -450,7 +462,7 @@ const Pipeline = () => {
       setSelectedBlock({
         ...jobType,
         projectId,
-        pipelineId,
+        processId,
         errors,
         id: job.id,
         name: job.name,
@@ -464,7 +476,7 @@ const Pipeline = () => {
         tasks: jobTasks,
       });
     },
-    [jobTypes, jobs, pipelineId, projectId, dispatch],
+    [jobTypes, jobs, processId, projectId, dispatch],
   );
 
   const onJobReload = useCallback(
@@ -519,7 +531,7 @@ const Pipeline = () => {
 
       setSelectedBlock((prevValue) => ({
         projectId,
-        pipelineId,
+        processId,
         rootId: prevValue?.id,
         id: 'new',
         status: 0,
@@ -527,21 +539,21 @@ const Pipeline = () => {
         ...block,
       }));
     },
-    [jobs, pipelineId, projectId],
+    [jobs, processId, projectId],
   );
 
   const onBlockDelete = useCallback(
     () => {
       dispatch(pipelineActions.deleteJob({
         projectId,
-        pipelineId,
+        processId,
         jobId: selectedBlock.id,
       }));
 
       setActionWithBlock(null);
       setSelectedBlock(null);
     },
-    [dispatch, pipelineId, projectId, selectedBlock],
+    [dispatch, processId, projectId, selectedBlock],
   );
 
   const onLoad = useCallback(
@@ -708,12 +720,12 @@ const Pipeline = () => {
 
   useEffect(
     () => {
-      if (pipeline || !projectId || !pipelineId) {
+      if (pipeline || !projectId || !processId) {
         return;
       }
-      dispatch(pipelineActions.fetchPipeline({ projectId, pipelineId }));
+      dispatch(pipelineActions.fetchPipeline({ projectId, processId }));
     },
-    [dispatch, pipeline, projectId, pipelineId],
+    [dispatch, pipeline, projectId, processId],
   );
 
   useEffect(() => {
@@ -743,7 +755,7 @@ const Pipeline = () => {
         const { description, params_meta } = jobTypeBlocks.find((el) => el.script_path === params.part) || {};
         setSelectedBlock({
           projectId,
-          pipelineId,
+          processId,
           id: job.id,
           name: job.name,
           status: job.status,
@@ -759,7 +771,7 @@ const Pipeline = () => {
         });
       }
     },
-    [selectedBlock, jobs, projectId, pipelineId, jobTypes],
+    [selectedBlock, jobs, projectId, processId, jobTypes],
   );
 
   useEffect(
@@ -779,12 +791,12 @@ const Pipeline = () => {
 
   useEffect(
     () => {
-      dispatch(jobsActions.fetchJobsByPipelineId(pipelineId));
+      dispatch(jobsActions.fetchJobsByPipelineId(processId));
       return () => {
         dispatch(jobsActions.clearJobs());
       };
     },
-    [dispatch, refresher, pipelineId],
+    [dispatch, refresher, processId],
   );
 
   useEffect(
@@ -864,45 +876,12 @@ const Pipeline = () => {
 
             <Background />
           </ReactFlow>
-
           <BlockSettingsFormWrapper>
-            {selectedBlock?.id ? (
-              <BlockSettingsForm
-                block={selectedBlock}
-                onClose={onJobCancel}
-                onSubmit={onJobSubmit}
-                onRestart={onJobRestart}
-                onReload={onJobReload}
-                onDownload={onJobDownload}
-              />
-            ) : (
-              <NoData>Select block</NoData>
-            )}
+            <ImageViewer
+              editable={false}
+            />
           </BlockSettingsFormWrapper>
         </FlowWrapper>
-
-        <OutputWrapper>
-          {tasksRender}
-          {!!selectedBlock?.errors?.length && (
-            <Accordion>
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <ErrorIcon /> Errors
-              </AccordionSummary>
-              <AccordionDetails>
-                <List dense component="div">
-                  {selectedBlock.errors.map((item) => (
-                    <ListItem key={item.id}>
-                      <ListItemText primary={`task id: ${item.id}`} />
-                      <pre>
-                        {item.error}
-                      </pre>
-                    </ListItem>
-                  ))}
-                </List>
-              </AccordionDetails>
-            </Accordion>
-          )}
-        </OutputWrapper>
 
         {actionWithBlock === 'add' && selectedBlock?.id && (
           <AddBlockForm
@@ -929,4 +908,4 @@ const Pipeline = () => {
   );
 };
 
-export default Pipeline;
+export default Process;

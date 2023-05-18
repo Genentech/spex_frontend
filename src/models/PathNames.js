@@ -4,6 +4,7 @@ const PathNames = {
   tasks: 'tasks',
   resources: 'resources',
   pipelines: 'pipelines',
+  processes: 'processes',
   results: 'results',
   dataset: 'dataset',
   img: 'img',

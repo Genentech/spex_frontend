@@ -7,7 +7,7 @@ import classNames from 'classnames';
 import { matchPath, useHistory, useLocation } from 'react-router-dom';
 
 import PathNames from '@/models/PathNames';
-import DashboardICon from '@/shared/components/Icons/DashboardIcon';
+// import DashboardICon from '@/shared/components/Icons/DashboardIcon';
 import ProjectIcon from '@/shared/components/Icons/ProjectIcon';
 import WorkFlowIcon from '@/shared/components/Icons/WorkFlowIcon';
 
@@ -17,6 +17,8 @@ import { getFromStorage, saveToStorage } from '+utils/localStorage';
 import Container from './components/Container';
 import Pipeline from './Pipeline';
 import Pipelines from './Pipelines';
+import Process from './Process';
+import Processes from './Processes';
 import Resources from './Resources';
 import Results from './Results';
 
@@ -80,17 +82,23 @@ const Project = () => {
   const matchProjectPath = matchPath(location.pathname, { path: `/${PathNames.projects}/:id` });
   const projectId = matchProjectPath ? matchProjectPath.params.id : undefined;
 
-  const matchPipelinePath = matchPath(location.pathname, { path: `/${PathNames.projects}/${projectId}/${PathNames.pipelines}/:id` });
-  const pipelineId = matchPipelinePath ? matchPipelinePath.params.id : undefined;
+  const mathcProcessPath = matchPath(location.pathname, { path: `/${PathNames.projects}/${projectId}/${PathNames.processes}/:id` });
+  const processId = mathcProcessPath ? mathcProcessPath.params.id : undefined;
+  const mathcPipelinePath = matchPath(location.pathname, { path: `/${PathNames.projects}/${projectId}/${PathNames.pipelines}/:id` });
+  const pipelineId = mathcPipelinePath ? mathcPipelinePath.params.id : undefined;
 
   const resourcesUrl = `/${PathNames.projects}/${projectId}`;
+  const resultsUrl = `/${PathNames.projects}/${projectId}/${PathNames.results}`;
+  const processesUrl = `/${PathNames.projects}/${projectId}/${PathNames.processes}`;
+  const processesPipelineUrl = `/${PathNames.projects}/${projectId}/${PathNames.processes}/${processId}`;
   const pipelinesUrl = `/${PathNames.projects}/${projectId}/${PathNames.pipelines}`;
   const pipelineUrl = `/${PathNames.projects}/${projectId}/${PathNames.pipelines}/${pipelineId}`;
-  const resultsUrl = `/${PathNames.projects}/${projectId}/${PathNames.results}`;
 
   const showResources = !!matchPath(location.pathname, { path: resourcesUrl, exact: true });
-  const showPipelines = !!matchPath(location.pathname, { path: pipelinesUrl, exact: true });
-  const showPipeline = !!matchPath(location.pathname, { path: pipelineUrl, exact: true });
+  const ShowProcesses = !!matchPath(location.pathname, { path: processesUrl, exact: true });
+  const ShowProcess = !!matchPath(location.pathname, { path: processesPipelineUrl, exact: true });
+  const ShowPipelines = !!matchPath(location.pathname, { path: pipelinesUrl, exact: true });
+  const ShowPipeline = !!matchPath(location.pathname, { path: pipelineUrl, exact: true });
   const showResults = !!matchPath(location.pathname, { path: resultsUrl });
 
   const [sidebarOpened, setSidebarOpened] = useState(getFromStorage('sidebarOpened') === 'true');
@@ -155,30 +163,22 @@ const Project = () => {
 
           <ListItem
             className={classes.listItem}
-            selected={showPipelines || showPipeline}
-            onClick={onSidebarItemClick(pipelinesUrl)}
+            selected={ShowProcesses || ShowProcess}
+            onClick={onSidebarItemClick(processesUrl)}
             button
           >
             <ListItemIcon><WorkFlowIcon fontSize="large" /></ListItemIcon>
-            <ListItemText primary="Build Analysis" />
-          </ListItem>
-
-          <ListItem
-            className={classes.listItem}
-            selected={showResults || showResults}
-            onClick={onSidebarItemClick(resultsUrl)}
-            button
-          >
-            <ListItemIcon><DashboardICon fontSize="large" /></ListItemIcon>
-            <ListItemText primary="Results" />
+            <ListItemText primary="Batch processing" />
           </ListItem>
 
         </List>
       </Drawer>
 
       {showResources && <Resources />}
-      {showPipelines && <Pipelines />}
-      {showPipeline && <Pipeline />}
+      {ShowProcesses && <Processes />}
+      {ShowProcess && <Process />}
+      {ShowPipelines && <Pipelines />}
+      {ShowPipeline && <Pipeline />}
       {showResults && <Results />}
     </Container>
   );
