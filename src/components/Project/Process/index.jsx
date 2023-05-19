@@ -6,8 +6,10 @@ import Grid from '@material-ui/core/Grid';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
+import Typography from '@material-ui/core/Typography';
 import DynamicFeedOutlinedIcon from '@material-ui/icons/DynamicFeedOutlined';
 import ErrorIcon from '@material-ui/icons/Error';
+
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import GetAppIcon from '@material-ui/icons/GetApp';
 import WallpaperIcon from '@material-ui/icons/Wallpaper';
@@ -31,7 +33,6 @@ import { actions as tasksActions, selectors as tasksSelectors } from '@/redux/mo
 import Button from '+components/Button';
 import ConfirmModal, { ConfirmActions } from '+components/ConfirmModal';
 import Form, { Field, Controls as ControlsForm } from '+components/Form';
-import NoData from '+components/NoData';
 import { ScrollBarMixin } from '+components/ScrollBar';
 import { Box } from '+components/Tabs';
 import statusFormatter from '+utils/statusFormatter';
@@ -67,14 +68,9 @@ const ResultValue = styled.div`
 `;
 
 const ImageViewerContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
+  flex-grow: 1;
+  flex-shrink: 1;
   height: 100%;
-  background-color: #ccc;
-  border-radius: 4px;
-  //overflow: hidden;
 `;
 
 
@@ -847,63 +843,105 @@ const Process = () => {
 
   return (
     <ReactFlowProvider>
-      <Container style={{ position: 'relative' }}>
-        <FlowWrapper style={{ height: 'calc(100% - 40px)' }}>
-          <ReactFlow
-            nodeTypes={nodeTypes}
-            elements={elements}
-            onElementClick={onBlockClick}
-            onPaneClick={onPaneClick}
-            onLoad={onLoad}
-            nodesDraggable={false}
-            nodesConnectable={false}
-            elementsSelectable={false}
-            snapToGrid
-            style={{ height: '100%' }}
+      <Grid
+        container
+        spacing={2}
+        direction='row'
+      >
+        <Grid
+          item
+          container
+          direction='row'
+          xs='4'
+        >
+          <Grid
+            item
+            container
+            direction='column'
+            xs='12'
+            style={{ height: '30%' }}
           >
-            <Controls showInteractive={false}>
-              <ControlButton
-                style={{
-                backgroundColor: 'green',
-                color: 'white',
-                whiteSpace: 'nowrap',
-                zIndex: 99, width: '80% ',
-                }}
-                onClick={onStartPipeline}
-              > Start ▶
-              </ControlButton>
-            </Controls>
+            <FlowWrapper>
+              <ReactFlow
+                nodeTypes={nodeTypes}
+                elements={elements}
+                onElementClick={onBlockClick}
+                onPaneClick={onPaneClick}
+                onLoad={onLoad}
+                nodesDraggable={false}
+                nodesConnectable={false}
+                elementsSelectable={false}
+                snapToGrid
+              >
+                <Controls showInteractive={false}>
+                  <ControlButton
+                    style={{
+                    backgroundColor: 'green',
+                    color: 'white',
+                    whiteSpace: 'nowrap',
+                    zIndex: 99, width: '80% ',
+                    }}
+                    onClick={onStartPipeline}
+                  > Start ▶
+                  </ControlButton>
+                </Controls>
 
-            <Background />
-          </ReactFlow>
-          <BlockSettingsFormWrapper>
+                <Background />
+              </ReactFlow>
+            </FlowWrapper>
+          </Grid>
+          <Grid
+            item
+            container
+            direction='column'
+            xs='12'
+            style={{ height: '10%' }}
+          >
+            <Typography variant="body2" gutterBottom>
+              Section 1
+            </Typography>
+          </Grid>
+          <Grid
+            item
+            container
+            direction='column'
+            xs='12'
+            style={{ height: '50%' }}
+          >
+            <Typography variant="body2" gutterBottom>
+              Section 2
+            </Typography>
+          </Grid>
+        </Grid>
+        <Grid item xs={8}>
+          <Container>
             <ImageViewer
               editable={false}
             />
-          </BlockSettingsFormWrapper>
-        </FlowWrapper>
+          </Container>
+        </Grid>
+      </Grid>
 
-        {actionWithBlock === 'add' && selectedBlock?.id && (
-          <AddBlockForm
-            header="Add Block"
-            jobTypes={jobTypes}
-            selectedBlock={selectedBlock}
-            onClose={() => setActionWithBlock(null)}
-            onSubmit={onBlockAdd}
-            open
-          />
-        )}
+      {actionWithBlock === 'add' && selectedBlock?.id && (
+        <AddBlockForm
+          header="Add Block"
+          jobTypes={jobTypes}
+          selectedBlock={selectedBlock}
+          onClose={() => setActionWithBlock(null)}
+          onSubmit={onBlockAdd}
+          open
+        />
+      )}
 
-        {actionWithBlock === 'delete' && selectedBlock?.id && (
-          <ConfirmModal
-            action={ConfirmActions.delete}
-            item={selectedBlock.name}
-            onClose={() => setActionWithBlock(null)}
-            onSubmit={onBlockDelete}
-            open
-          />
-        )}
-      </Container>
+      {actionWithBlock === 'delete' && selectedBlock?.id && (
+        <ConfirmModal
+          action={ConfirmActions.delete}
+          item={selectedBlock.name}
+          onClose={() => setActionWithBlock(null)}
+          onSubmit={onBlockDelete}
+          open
+        />
+      )}
     </ReactFlowProvider>
   );
 };

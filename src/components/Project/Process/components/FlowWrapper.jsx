@@ -6,11 +6,11 @@ export default styled.div`
   width: 100%;
   flex-grow: 0;
   flex-shrink: 0;
-  min-height: 30%;
-  max-height: 30%;
+  min-height: 100%;
+  max-height: 100%;
   
   .react-flow {
-    width: 30%;
+    width: 100%;
     height: 100%;
     border: 1px solid rgba(0, 0, 0, 0.2);
     border-radius: 4px;
