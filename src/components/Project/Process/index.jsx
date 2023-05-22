@@ -1,20 +1,6 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import Accordion from '@material-ui/core/Accordion';
-import AccordionDetails from '@material-ui/core/AccordionDetails';
-import AccordionSummary from '@material-ui/core/AccordionSummary';
 import Grid from '@material-ui/core/Grid';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
-import DynamicFeedOutlinedIcon from '@material-ui/icons/DynamicFeedOutlined';
-import ErrorIcon from '@material-ui/icons/Error';
-
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import GetAppIcon from '@material-ui/icons/GetApp';
-import WallpaperIcon from '@material-ui/icons/Wallpaper';
-import ImageList from '@mui/material/ImageList';
-import ImageListItem from '@mui/material/ImageListItem';
 import classNames from 'classnames';
 import dagre from 'dagre';
 import cloneDeep from 'lodash/cloneDeep';
@@ -30,23 +16,15 @@ import { actions as pipelineActions, selectors as pipelineSelectors } from '@/re
 import { selectors as projectsSelectors } from '@/redux/modules/projects';
 import { actions as tasksActions, selectors as tasksSelectors } from '@/redux/modules/tasks';
 
-import Button from '+components/Button';
 import ConfirmModal, { ConfirmActions } from '+components/ConfirmModal';
-import Form, { Field, Controls as ControlsForm } from '+components/Form';
-import { ScrollBarMixin } from '+components/ScrollBar';
-import { Box } from '+components/Tabs';
-import statusFormatter from '+utils/statusFormatter';
+import ImageViewer from '+components/ImageViewer';
+import ThumbnailsViewer from '+components/ThumbnailsViewer';
 
 import JobBlock from './blocks/JobBlock';
 import StartBlock from './blocks/StartBlock';
 import AddBlockForm from './components/AddBlockForm';
-// import BlockSettingsForm from './components/BlockSettingsForm';
-import BlockSettingsFormWrapper from './components/BlockSettingsFormWrapper';
 import Container from './components/Container';
 import FlowWrapper from './components/FlowWrapper';
-import OutputWrapper from './components/OutputWrapper';
-import ImageViewer from '+components/ImageViewer';
-import ThumbnailsViewer from '+components/ThumbnailsViewer';
 
 const jobRefreshInterval = 6e4; // 1 minute
 
@@ -59,20 +37,12 @@ const nodeTypes = {
   job: JobBlock,
 };
 
-const ResultValue = styled.div`
-  overflow-x: auto;
-  width: 500px;
-  margin-left: 1em;
-  
-  ${ScrollBarMixin}
-`;
 
 const ImageViewerContainer = styled.div`
   flex-grow: 1;
   flex-shrink: 1;
   height: 100%;
 `;
-
 
 const addNewVirtualJobToPipeline = (rootId, newJob, node) => {
   if (node.id === rootId) {
@@ -168,29 +138,26 @@ const sortTaskById = ({ id: a }, { id: b }) => {
 const Process = () => {
   const dispatch = useDispatch();
   const location = useLocation();
-
   const matchProjectPath = matchPath(location.pathname, { path: `/${PathNames.projects}/:id` });
   const projectId = matchProjectPath ? matchProjectPath.params.id : undefined;
   const project = useSelector(projectsSelectors.getProject(projectId));
-
   const [activeImageIds, setActiveImageIds] = useState(project?.omeroIds || []);
-  const [selectedChannelsByTask, setSelectedChannelsByTask] = useState({});
   const projectImagesDetails = useSelector(omeroSelectors.getImagesDetails(project?.omeroIds || []));
 
   const matchProcessPath = matchPath(location.pathname, {
     path: `/${PathNames.projects}/${projectId}/${PathNames.processes}/:id`,
   });
-  const processId = matchProcessPath ? matchProcessPath.params.id : undefined;
-  const pipeline = useSelector(pipelineSelectors.getPipeline(projectId, processId));
-  const jobs = useSelector(jobsSelectors.getJobsByPipelineId(processId));
-  const tasks = useSelector(tasksSelectors.getTasks);
-  const results = useSelector(tasksSelectors.getResults);
+  const pipelineId = matchProcessPath ? matchProcessPath.params.id : undefined;
+  const pipeline = useSelector(pipelineSelectors.getPipeline(projectId, pipelineId));
+  const jobs = useSelector(jobsSelectors.getJobsByPipelineId(pipelineId));
+  const projectImagesThumbnails = useSelector(omeroSelectors.getImagesThumbnails(project?.omeroIds || []));
   const jobTypes = useSelector(jobsSelectors.getJobTypes);
 
   const [refresher, setRefresher] = useState(null);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
   const [actionWithBlock, setActionWithBlock] = useState(null);
   const [selectedBlock, setSelectedBlock] = useState(null);
+  // eslint-disable-next-line no-unused-vars
   const [currImages, setCurrImages] = useState({});
   const images_visualization = useSelector(tasksSelectors.getTaskVisualizations || {});
 
@@ -236,66 +203,19 @@ const Process = () => {
     [pipeline, selectedBlock],
   );
 
-  const projectImagesChannelsOptions = useMemo(
-    () => {
-      let selectedImgChannels = [];
-      if (Object.keys(projectImagesDetails).length > 0 && activeImageIds.length > 0) {
-        activeImageIds.forEach((im_id) => {
-          selectedImgChannels = projectImagesDetails[im_id].channels;
+  const projectImagesOptions = useMemo(
+    () => Object.entries(projectImagesThumbnails || {})
+      .map(([id, img]) => {
+        const { meta, size } = projectImagesDetails[id] || {};
+
+        return ({
+          id,
+          img,
+          title: `[${id}] ${meta?.imageName}`,
+          description: `s: ${size?.width} x ${size?.height}, c: ${size?.c}`,
         });
-      }
-
-      return selectedImgChannels.map((el) => ({
-        value: el.label,
-        label: el.label,
-        color: el.color,
-        index: el.value,
-      }));
-    },
-    [projectImagesDetails, activeImageIds],
-  );
-
-
-  const onJobCancel = useCallback(
-    () => {
-      setActionWithBlock(null);
-      setSelectedBlock(null);
-    },
-    [],
-  );
-
-  const nameReturnKey = useMemo(
-    () => {
-      if (Object.keys(jobTypes).length === 0) {
-        return {};
-      }
-      let returnValues = {};
-      Object.keys(jobTypes).forEach((jobType) => {
-        jobTypes[jobType]['stages'].forEach((stage) => {
-          stage['scripts'].forEach((script) => {
-            returnValues[script['name']] = Object.keys(script['return'])[0];
-          });
-        });
-      });
-      return returnValues;
-    },
-    [jobTypes],
-  );
-
-  const onLoadVisualize = useCallback(
-    () => {
-      selectedBlock.tasks.forEach((item) => {
-        const channels = selectedChannelsByTask[item.id];
-        dispatch(tasksActions.fetchTaskVisualize({
-          id: item.id,
-          name: item.name,
-          key: nameReturnKey[item.name],
-          script: selectedBlock.script,
-          channels,
-        }));
-      });
-    },
-    [dispatch, selectedBlock, nameReturnKey, selectedChannelsByTask],
+      }),
+    [projectImagesThumbnails, projectImagesDetails],
   );
 
   useEffect(
@@ -333,62 +253,11 @@ const Process = () => {
     [images_visualization, selectedBlock, setCurrImages],
   );
 
-  const onJobSubmit = useCallback(
-    (values) => {
-      setActionWithBlock(null);
-      setSelectedBlock(null);
-
-      const validOmeroIds = values.params?.omeroIds
-        ? values.params.omeroIds.filter((id) => project.omeroIds.includes(id))
-        : jobs[values.rootId]?.omeroIds;
-
-      const { filename, ...params } = values.params;
-      const file_names = filename ? [filename] : [];
-
-      const normalizedValues = {
-        ...values,
-        params: { ...params },
-        omeroIds: validOmeroIds,
-        file_names: file_names,
-      };
-
-      if (normalizedValues.id === 'new') {
-        delete normalizedValues.id;
-      }
-
-      if (normalizedValues.id) {
-        const currentJob = jobs[normalizedValues.id];
-
-        const sortedCurrentOmeroIds = [...currentJob.omeroIds].sort();
-        const sortedValidOmeroIds = [...validOmeroIds].sort();
-
-        if (
-          JSON.stringify(sortedCurrentOmeroIds) !==
-          JSON.stringify(sortedValidOmeroIds)
-        ) {
-          normalizedValues.status = -2;
-        }
-
-        dispatch(pipelineActions.updateJob(normalizedValues));
-        return;
-      }
-
-      const [rootId] = normalizedValues.params?.job || [];
-      if (rootId != null) {
-        dispatch(pipelineActions.createConn(normalizedValues));
-        normalizedValues.rootId = rootId;
-      }
-
-      dispatch(pipelineActions.createJob(normalizedValues));
-    },
-    [dispatch, jobs, project],
-  );
-
   const onStartPipeline = useCallback(
     () => {
-      dispatch(jobsActions.startPipeline(processId));
+      dispatch(jobsActions.startPipeline(pipelineId));
     },
-    [dispatch, processId],
+    [dispatch, pipelineId],
   );
 
   const onJobRestart = useCallback(
@@ -428,13 +297,13 @@ const Process = () => {
       if (block.id === 'new') {
         return;
       }
-      await dispatch(jobsActions.fetchJobsByPipelineId(processId));
+      await dispatch(jobsActions.fetchJobsByPipelineId(pipelineId));
 
       const job = jobs[block.id];
       if (!job) {
         setSelectedBlock({
           projectId,
-          processId,
+          pipelineId: pipelineId,
           ...block,
         });
         return;
@@ -458,7 +327,7 @@ const Process = () => {
       setSelectedBlock({
         ...jobType,
         projectId,
-        processId,
+        pipelineId: pipelineId,
         errors,
         id: job.id,
         name: job.name,
@@ -472,53 +341,7 @@ const Process = () => {
         tasks: jobTasks,
       });
     },
-    [jobTypes, jobs, processId, projectId, dispatch],
-  );
-
-  const onJobReload = useCallback(
-    (_) => {
-      if (selectedBlock.id === 'new') {
-        return;
-      }
-
-      if (selectedBlock.id) {
-        dispatch(jobsActions.fetchJob(selectedBlock.id));
-        onBlockClick(_, selectedBlock);
-      }
-    },
-    [dispatch, selectedBlock, onBlockClick],
-  );
-
-  const onDownload = useCallback(
-    async (_, block) => {
-      if (block.id === 'new') {
-        return;
-      }
-
-      const job = jobs[block.id];
-      if (!job) {
-        return;
-      }
-
-      // Customize the file name based on your requirements
-      const fileName = `job_${job.id}.zip`;
-
-      dispatch(jobsActions.downloadJob({ jobId: job.id, fileName }));
-    },
-    [jobs, dispatch],
-  );
-
-  const onJobDownload = useCallback(
-    (_) => {
-      if (selectedBlock.id === 'new') {
-        return;
-      }
-
-      if (selectedBlock.id) {
-        onDownload(_, selectedBlock);
-      }
-    },
-    [selectedBlock, onDownload],
+    [jobTypes, jobs, pipelineId, projectId, dispatch],
   );
 
   const onBlockAdd = useCallback(
@@ -527,7 +350,7 @@ const Process = () => {
 
       setSelectedBlock((prevValue) => ({
         projectId,
-        processId,
+        pipelineId: pipelineId,
         rootId: prevValue?.id,
         id: 'new',
         status: 0,
@@ -535,21 +358,21 @@ const Process = () => {
         ...block,
       }));
     },
-    [jobs, processId, projectId],
+    [jobs, pipelineId, projectId],
   );
 
   const onBlockDelete = useCallback(
     () => {
       dispatch(pipelineActions.deleteJob({
         projectId,
-        processId,
+        pipelineId,
         jobId: selectedBlock.id,
       }));
 
       setActionWithBlock(null);
       setSelectedBlock(null);
     },
-    [dispatch, processId, projectId, selectedBlock],
+    [dispatch, pipelineId, projectId, selectedBlock],
   );
 
   const onLoad = useCallback(
@@ -559,169 +382,14 @@ const Process = () => {
     [setReactFlowInstance],
   );
 
-  const onLoadValue = useCallback(
-    (event) => {
-      const key = event.currentTarget.dataset.key;
-      const id = event.currentTarget.dataset.taskId;
-
-      if (id == null || !key) {
-        return;
-      }
-
-      dispatch(tasksActions.fetchTaskResult({ id, key: key }));
-    },
-    [dispatch],
-  );
-
-    const tasksRender = useMemo(
-    () => {
-      if (!selectedBlock?.tasks?.length) {
-        return null;
-      }
-
-      const returnKeys = Object.keys(selectedBlock.return || {});
-
-      const resultKeys = selectedBlock.tasks.reduce((acc, { id }) => {
-        const keys = tasks[id]?.keys || [];
-        if (!keys.length) {
-          return acc;
-        }
-
-        const result = returnKeys.filter((key) => keys.includes(key));
-
-        if (result.length) {
-          acc[id] = result.map((key) => ({ key, value: results?.[id]?.[key] }));
-        }
-
-        return acc;
-      }, {});
-      const onSubmit = (values) => {
-      };
-
-
-      return (
-        <Accordion>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <DynamicFeedOutlinedIcon /> Tasks
-          </AccordionSummary>
-          <AccordionDetails>
-            <List dense component="div">
-              <Grid container>
-                {selectedBlock.tasks.map((item) => (
-                  <Grid item xs={12} key={item.id}>
-                    <Accordion>
-                      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                        Task ID: {item.id}
-                      </AccordionSummary>
-                      <AccordionDetails>
-                        <Grid item xs={12}>
-                          <List dense component="div">
-                            <ListItemText
-                              secondary={`[${statusFormatter(item.status)}] ${item.name}`}
-                            />
-                            <ListItem component="div">
-                              Results for channels
-                            </ListItem>
-                            <ListItem component="div" key={`channels-${item.id}`}>
-                              <Form
-                                onSubmit={onSubmit}
-                                render={({ handleSubmit }) => (
-                                  <form onSubmit={handleSubmit}>
-                                    <div style={{ overflow: 'auto', maxHeight: '300px' }}>
-                                      <Field
-                                        name={`channels-${item.id}`}
-                                        component={ControlsForm.SelectNew}
-                                        type="channels"
-                                        options={projectImagesChannelsOptions}
-                                        onSelectedChannelsChange={(val) => {
-                                          setSelectedChannelsByTask((prevState) => ({ ...prevState, [item.id]: val }));
-                                        }}
-                                      />
-                                    </div>
-                                  </form>
-                                )}
-                              />
-                            </ListItem>
-                            {!resultKeys[item.id] ? (
-                              <ListItem component="div">
-                                No Data
-                              </ListItem>
-                            ) : resultKeys[item.id].map(({ key, value }) => (
-                              <ListItem component="div" key={key}>
-                                <ListItemText
-                                  primary={(
-                                    <Button
-                                      size="small"
-                                      variant="outlined"
-                                      onClick={onLoadVisualize}
-                                      data-key={key}
-                                      data-task-id={item.id}
-                                      startIcon={<WallpaperIcon />}
-                                    >
-                                      Render value
-                                    </Button>
-                                  )}
-                                  secondary={(
-                                    <Button
-                                      onClick={onLoadValue}
-                                      size="small"
-                                      variant="outlined"
-                                      startIcon={<GetAppIcon />}
-                                      data-key={key}
-                                      data-task-id={item.id}
-                                    >
-                                      Download value
-                                    </Button>
-                                  )}
-                                />
-                                {value != null && (
-                                  <ResultValue>
-                                    <pre>
-                                      {value || ''}
-                                    </pre>
-                                  </ResultValue>
-                                )}
-                              </ListItem>
-                            ))}
-                          </List>
-                        </Grid>
-                        <Grid item xs={12}>
-                          <ImageList cols={1}>
-                            {Object.keys(Object(currImages[item.id])).map((key) => (
-                              <ImageListItem key={`${item.id}-${key}-${item.id}`}>
-                                <p>
-                                  <Box
-                                    key={`${item.id}-${key}-${item.id}`}
-                                    component="img"
-                                    src={currImages[item.id][key]}
-                                    alt={key}
-                                  />
-                                </p>
-                              </ImageListItem>
-                            ))}
-                          </ImageList>
-                        </Grid>
-                      </AccordionDetails>
-                    </Accordion>
-                  </Grid>
-                ))}
-              </Grid>
-            </List>
-          </AccordionDetails>
-        </Accordion>
-      );
-    },
-    [onLoadValue, selectedBlock, tasks, results, onLoadVisualize, currImages, projectImagesChannelsOptions],
-  );
-
   useEffect(
     () => {
-      if (pipeline || !projectId || !processId) {
+      if (pipeline || !projectId || !pipelineId) {
         return;
       }
-      dispatch(pipelineActions.fetchPipeline({ projectId, processId }));
+      dispatch(pipelineActions.fetchPipeline({ projectId, pipelineId }));
     },
-    [dispatch, pipeline, projectId, processId],
+    [dispatch, pipeline, projectId, pipelineId],
   );
 
   useEffect(() => {
@@ -751,7 +419,7 @@ const Process = () => {
         const { description, params_meta } = jobTypeBlocks.find((el) => el.script_path === params.part) || {};
         setSelectedBlock({
           projectId,
-          processId,
+          pipelineId: pipelineId,
           id: job.id,
           name: job.name,
           status: job.status,
@@ -767,7 +435,7 @@ const Process = () => {
         });
       }
     },
-    [selectedBlock, jobs, projectId, processId, jobTypes],
+    [selectedBlock, jobs, projectId, pipelineId, jobTypes],
   );
 
   useEffect(
@@ -787,12 +455,12 @@ const Process = () => {
 
   useEffect(
     () => {
-      dispatch(jobsActions.fetchJobsByPipelineId(processId));
+      dispatch(jobsActions.fetchJobsByPipelineId(pipelineId));
       return () => {
         dispatch(jobsActions.clearJobs());
       };
     },
-    [dispatch, refresher, processId],
+    [dispatch, refresher, pipelineId],
   );
 
   useEffect(
@@ -852,13 +520,13 @@ const Process = () => {
           item
           container
           direction='row'
-          xs='4'
+          xs={4}
         >
           <Grid
             item
             container
             direction='column'
-            xs='12'
+            xs={12}
             style={{ height: '30%' }}
           >
             <FlowWrapper>
@@ -894,7 +562,7 @@ const Process = () => {
             item
             container
             direction='column'
-            xs='12'
+            xs={12}
             style={{ height: '10%' }}
           >
             <Typography variant="body2" gutterBottom>
@@ -905,7 +573,7 @@ const Process = () => {
             item
             container
             direction='column'
-            xs='12'
+            xs={12}
             style={{ height: '50%' }}
           >
             <Typography variant="body2" gutterBottom>
@@ -915,9 +583,18 @@ const Process = () => {
         </Grid>
         <Grid item xs={8}>
           <Container>
-            <ImageViewer
-              editable={false}
-            />
+            <ImageViewerContainer>
+              {projectImagesDetails[activeImageIds[0]] && (
+                <ImageViewer
+                  data={projectImagesDetails[activeImageIds[0]]}
+                />
+              )}
+              <ThumbnailsViewer
+                thumbnails={projectImagesOptions}
+                active={activeImageIds[0]}
+                onClick={setActiveImageIds}
+              />
+            </ImageViewerContainer>
           </Container>
         </Grid>
       </Grid>
