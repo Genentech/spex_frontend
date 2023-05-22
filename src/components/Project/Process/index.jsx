@@ -39,9 +39,15 @@ const nodeTypes = {
 
 
 const ImageViewerContainer = styled.div`
-  flex-grow: 1;
-  flex-shrink: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
   height: 100%;
+  background-color: #ccc;
+  border-radius: 4px;
+  //overflow: hidden;
 `;
 
 const addNewVirtualJobToPipeline = (rootId, newJob, node) => {
@@ -141,8 +147,8 @@ const Process = () => {
   const matchProjectPath = matchPath(location.pathname, { path: `/${PathNames.projects}/:id` });
   const projectId = matchProjectPath ? matchProjectPath.params.id : undefined;
   const project = useSelector(projectsSelectors.getProject(projectId));
-  const [activeImageIds, setActiveImageIds] = useState(project?.omeroIds || []);
   const projectImagesDetails = useSelector(omeroSelectors.getImagesDetails(project?.omeroIds || []));
+  const [activeImageIds, setActiveImageIds] = useState(project?.omeroIds || []);
 
   const matchProcessPath = matchPath(location.pathname, {
     path: `/${PathNames.projects}/${projectId}/${PathNames.processes}/:id`,
@@ -224,6 +230,18 @@ const Process = () => {
         return;
       }
 
+      dispatch(omeroActions.fetchImagesDetails(project?.omeroIds));
+    },
+    [dispatch, project?.omeroIds],
+  );
+
+  useEffect(
+    () => {
+      if (!project?.omeroIds.length) {
+        return;
+      }
+
+      dispatch(omeroActions.fetchImagesThumbnails(project?.omeroIds));
       dispatch(omeroActions.fetchImagesDetails(project?.omeroIds));
     },
     [dispatch, project?.omeroIds],
@@ -581,7 +599,10 @@ const Process = () => {
             </Typography>
           </Grid>
         </Grid>
-        <Grid item xs={8}>
+        <Grid
+          item
+          xs={8}
+        >
           <Container>
             <ImageViewerContainer>
               {projectImagesDetails[activeImageIds[0]] && (
