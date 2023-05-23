@@ -16,6 +16,7 @@ import { actions as pipelineActions, selectors as pipelineSelectors } from '@/re
 import { selectors as projectsSelectors } from '@/redux/modules/projects';
 import { actions as tasksActions, selectors as tasksSelectors } from '@/redux/modules/tasks';
 
+import BlocksScroll from '+components/BlocksScroll';
 import ConfirmModal, { ConfirmActions } from '+components/ConfirmModal';
 import ImageViewer from '+components/ImageViewer';
 import ThumbnailsViewer from '+components/ThumbnailsViewer';
@@ -149,6 +150,7 @@ const Process = () => {
   const project = useSelector(projectsSelectors.getProject(projectId));
   const projectImagesDetails = useSelector(omeroSelectors.getImagesDetails(project?.omeroIds || []));
   const [activeImageIds, setActiveImageIds] = useState(project?.omeroIds || []);
+  const [activeBlock, setActiveBlock] = useState([]);
 
   const matchProcessPath = matchPath(location.pathname, {
     path: `/${PathNames.projects}/${projectId}/${PathNames.processes}/:id`,
@@ -165,6 +167,7 @@ const Process = () => {
   const [selectedBlock, setSelectedBlock] = useState(null);
   // eslint-disable-next-line no-unused-vars
   const [currImages, setCurrImages] = useState({});
+  const [availableBlocks, setAvailableBlocks] = useState({});
   const images_visualization = useSelector(tasksSelectors.getTaskVisualizations || {});
 
   const elements = useMemo(
@@ -269,6 +272,33 @@ const Process = () => {
       setCurrImages(imgToShow);
     },
     [images_visualization, selectedBlock, setCurrImages],
+  );
+
+  useEffect(
+    () => {
+      if (!selectedBlock || Object.keys(jobTypes).length === 0) {
+        return;
+      }
+      if ( availableBlocks[selectedBlock.script_path] === undefined) {
+      // eslint-disable-next-line no-console
+        let blocks = [];
+        Object.keys(jobTypes).forEach((jobType) => {
+          jobTypes[jobType]['stages'].forEach((stage) => {
+              stage['scripts'].forEach((block) => {
+                const enabled = block.depends_and_script?.includes(selectedBlock.script_path)
+                  || block.depends_or_script?.includes(selectedBlock.script_path);
+                if (enabled) {
+                  blocks.push(block);
+                }
+              });
+          });
+        });
+        let val = {};
+        val[selectedBlock.name] = blocks;
+        setAvailableBlocks( { ...val } );
+      }
+    },
+    [selectedBlock, availableBlocks, jobTypes],
   );
 
   const onStartPipeline = useCallback(
@@ -584,7 +614,10 @@ const Process = () => {
             style={{ height: '10%' }}
           >
             <Typography variant="body2" gutterBottom>
-              Section 1
+              <BlocksScroll
+                items={availableBlocks[selectedBlock?.script_path]}
+                onClick={setActiveBlock}
+              />
             </Typography>
           </Grid>
           <Grid
