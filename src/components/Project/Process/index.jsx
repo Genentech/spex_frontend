@@ -611,14 +611,12 @@ const Process = () => {
             container
             direction='column'
             xs={12}
-            style={{ height: '10%' }}
           >
-            <Typography variant="body2" gutterBottom>
-              <BlocksScroll
-                items={availableBlocks[selectedBlock?.script_path]}
-                onClick={setActiveBlock}
-              />
-            </Typography>
+            <BlocksScroll
+              items={availableBlocks[selectedBlock?.script_path]}
+              onClick={setActiveBlock}
+              active={activeBlock?.script_path}
+            />
           </Grid>
           <Grid
             item
