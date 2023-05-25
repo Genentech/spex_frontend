@@ -1,6 +1,5 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import Grid from '@material-ui/core/Grid';
-import Typography from '@material-ui/core/Typography';
 import classNames from 'classnames';
 import dagre from 'dagre';
 import cloneDeep from 'lodash/cloneDeep';
@@ -19,13 +18,17 @@ import { actions as tasksActions, selectors as tasksSelectors } from '@/redux/mo
 import BlocksScroll from '+components/BlocksScroll';
 import ConfirmModal, { ConfirmActions } from '+components/ConfirmModal';
 import ImageViewer from '+components/ImageViewer';
+import NoData from '+components/NoData';
 import ThumbnailsViewer from '+components/ThumbnailsViewer';
 
 import JobBlock from './blocks/JobBlock';
 import StartBlock from './blocks/StartBlock';
 import AddBlockForm from './components/AddBlockForm';
+import BlockSettingsForm from './components/BlockSettingsForm';
+import BlockSettingsFormWrapper from './components/BlockSettingsFormWrapper';
 import Container from './components/Container';
 import FlowWrapper from './components/FlowWrapper';
+
 
 const jobRefreshInterval = 6e4; // 1 minute
 
@@ -430,6 +433,10 @@ const Process = () => {
     [setReactFlowInstance],
   );
 
+  const handleBlockClick = (newActive) => {
+    setActiveBlock(newActive);
+  };
+
   useEffect(
     () => {
       if (pipeline || !projectId || !pipelineId) {
@@ -614,8 +621,8 @@ const Process = () => {
           >
             <BlocksScroll
               items={availableBlocks[selectedBlock?.script_path]}
-              onClick={setActiveBlock}
-              active={activeBlock?.script_path}
+              onClick={handleBlockClick}
+              active={activeBlock}
             />
           </Grid>
           <Grid
@@ -625,9 +632,14 @@ const Process = () => {
             xs={12}
             style={{ height: '50%' }}
           >
-            <Typography variant="body2" gutterBottom>
-              Section 2
-            </Typography>
+            {selectedBlock?.id ? (
+              <BlockSettingsForm
+                block={selectedBlock}
+                onRestart={onJobRestart}
+              />
+            ) : (
+              <NoData>Select block</NoData>
+            )}
           </Grid>
         </Grid>
         <Grid

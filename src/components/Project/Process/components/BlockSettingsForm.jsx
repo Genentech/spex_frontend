@@ -122,8 +122,6 @@ const Select = styled(Controls.SelectNew)`
 
 const getFieldComponent = (type) => {
   switch (type) {
-    case 'omero':
-      return Controls.TransferList;
     case 'job_id':
       return Controls.SelectJobs;
     case 'pipeline_job_id':
@@ -144,12 +142,6 @@ const getFieldComponent = (type) => {
 
 const getFieldParser = (type) => {
   switch (type) {
-    case 'omero':
-      return Parsers.omeroIds;
-    case 'channels':
-      return Parsers.channels;
-    case 'channel':
-      return Parsers.channel;
     case 'int':
       return Parsers.number;
     case 'file':
@@ -363,24 +355,6 @@ const BlockSettingsForm = (props) => {
               <Header>{header}</Header>
 
               <Body>
-                {!block.params_meta?.omeroIds && activeImageIds[0] && (
-                  <LeftPanel>
-                    <ImageViewerContainer>
-                      {projectImagesDetails[activeImageIds[0]] && (
-                        <ImageViewer
-                          data={projectImagesDetails[activeImageIds[0]]}
-                          results={results}
-                        />
-                      )}
-                      <ThumbnailsViewer
-                        thumbnails={projectImagesOptions}
-                        active={activeImageIds[0]}
-                        onClick={setActiveImageIds}
-                      />
-                    </ImageViewerContainer>
-                  </LeftPanel>
-                )}
-
                 <RightPanel>
                   {Object.keys(fields).length === 0 && (
                     <NoData>No block params to display</NoData>

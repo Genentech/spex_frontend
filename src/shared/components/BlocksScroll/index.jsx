@@ -66,11 +66,14 @@ const BlocksScroll = styled((props) => {
       {items.map((item) => (
         <GridListTile
           key={item.script_path}
-          style={{ width: '70px', height: '70px', overflowY: 'auto' }}
-          className={`${fixedActive.includes(item.script_path) ? 'active' : ''}`}
+          onClick={emitClick(item)}
+          style={{
+            border: fixedActive.includes(item) ? '0.188em solid red ' : '0.188em solid transparent ',
+            width: '70px', height: '70px', overflowY: 'auto', padding: '2px',
+          }}
         >
           <Card>
-            <CardContent onClick={emitClick} style={cardContentStyle}>
+            <CardContent style={cardContentStyle}>
               <Typography style={smallerTextStyle}>
                 {item.script_path}
               </Typography>
@@ -85,22 +88,12 @@ const BlocksScroll = styled((props) => {
 
   justify-content: ${(props) => props.$center ? 'center' : null};
   align-items: ${(props) => props.$center ? 'center' : null};
-
-  .MuiGridListTile-root {
-    &.active .MuiGridListTile-tile {
-      border-color: red;
-    }
-  }
 `;
 
 BlocksScroll.propTypes = {
   className: PropTypes.string,
   items: PropTypes.arrayOf(PropTypes.shape({})),
-  active: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.number,
-    PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number])),
-  ]),
+  active: PropTypes.arrayOf(PropTypes.shape({})),
   allowSelection: PropTypes.bool,
   allowMultiSelect: PropTypes.bool,
   onClick: PropTypes.func,
