@@ -31,6 +31,7 @@
     "camelcase": "^6.1.0",
     "case-sensitive-paths-webpack-plugin": "2.3.0",
     "classnames": "^2.2.6",
+    "connected-react-router": "^6.9.3",
     "css-loader": "4.3.0",
     "d3-scale": "^4.0.2",
     "dagre": "^0.8.5",
