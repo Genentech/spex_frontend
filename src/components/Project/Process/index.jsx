@@ -32,7 +32,7 @@ import FlowWrapper from './components/FlowWrapper';
 
 const jobRefreshInterval = 6e4; // 1 minute
 
-const flowDirection = 'TB';
+const flowDirection = 'LR';
 const nodeWidth = 172;
 const nodeHeight = 36;
 
@@ -435,6 +435,24 @@ const Process = () => {
 
   const handleBlockClick = (newActive) => {
     setActiveBlock(newActive);
+    if (newActive.length === 1) {
+      setSelectedBlock((prevValue) => {
+        if (prevValue.id !== 'new') {
+          return {
+            projectId,
+            pipelineId: pipelineId,
+            rootId: prevValue?.id,
+            id: 'new',
+            status: 0,
+            omeroIds: jobs[prevValue?.id]?.omeroIds,
+            ...newActive[0],
+          };
+        } else {
+          setAvailableBlocks( { });
+        }
+        return prevValue;
+      });
+    }
   };
 
   useEffect(
@@ -618,6 +636,7 @@ const Process = () => {
             container
             direction='column'
             xs={12}
+            style={{ height: '20%' }}
           >
             <BlocksScroll
               items={availableBlocks[selectedBlock?.script_path]}
@@ -632,14 +651,16 @@ const Process = () => {
             xs={12}
             style={{ height: '50%' }}
           >
-            {selectedBlock?.id ? (
-              <BlockSettingsForm
-                block={selectedBlock}
-                onRestart={onJobRestart}
-              />
-            ) : (
-              <NoData>Select block</NoData>
-            )}
+            <BlockSettingsFormWrapper>
+              {selectedBlock?.id ? (
+                <BlockSettingsForm
+                  block={selectedBlock}
+                  onRestart={onJobRestart}
+                />
+              ) : (
+                <NoData>Select block</NoData>
+              )}
+            </BlockSettingsFormWrapper>
           </Grid>
         </Grid>
         <Grid

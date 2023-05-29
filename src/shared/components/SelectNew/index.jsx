@@ -1,6 +1,7 @@
 import React, { useMemo, useCallback, useState } from 'react';
 import IconButton from '@material-ui/core/IconButton';
 import TextField from '@material-ui/core/TextField';
+import ShowAllIcon from '@material-ui/icons/ExpandMore';
 import SelectAllIcon from '@material-ui/icons/SelectAll';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import PropTypes from 'prop-types';
@@ -35,9 +36,9 @@ const SelectNew = (props) => {
 
   const showError = ((meta.submitError && !meta.dirtySinceLastSubmit) || meta.error) && meta.touched;
   const onChange = input.onChange || props.onChange;
-  // eslint-disable-next-line no-unused-vars
-  const [selectedChannels, setSelectedChannels] = useState([]);
 
+  const [selectedChannels, setSelectedChannels] = useState([]);
+  const [showAll, setShowAll] = useState(false); // новое состояние
 
   const fixedValue = useMemo(
     () => {
@@ -68,6 +69,12 @@ const SelectNew = (props) => {
     }
   }, [onChange, onlyOneValue, options]);
 
+  const handleShowAllToggle = useCallback(() => {
+    setShowAll((prevShowAll) => !prevShowAll);
+  }, []);
+
+  const displayedOptions = showAll ? options : options.slice(0, 3); // управление отображением списка
+
   const renderInput = useCallback(
     (params) => (
       <TextField
@@ -81,6 +88,9 @@ const SelectNew = (props) => {
                   <SelectAllIcon />
                 </IconButton>
               )}
+              <IconButton onClick={handleShowAllToggle} size="small">
+                <ShowAllIcon />
+              </IconButton>
               {params.InputProps.endAdornment}
             </React.Fragment>
           ),
@@ -91,7 +101,7 @@ const SelectNew = (props) => {
         variant="outlined"
       />
     ),
-    [tail.label, showError, meta.error, meta.submitError, onlyOneValue, handleSelectAll],
+    [tail.label, showError, meta.error, meta.submitError, onlyOneValue, handleSelectAll, handleShowAllToggle],
   );
 
   return (
@@ -101,7 +111,7 @@ const SelectNew = (props) => {
       renderInput={renderInput}
       getOptionLabel={getOptionLabel}
       renderOption={renderOption}
-      options={options}
+      options={displayedOptions} // используйте displayedOptions здесь
       disableCloseOnSelect
       value={fixedValue}
       onChange={doChange}
@@ -110,6 +120,7 @@ const SelectNew = (props) => {
   );
 };
 
+// PropTypes и defaultProps остаются прежними
 SelectNew.propTypes = {
   options: PropTypes.arrayOf(PropTypes.shape({})),
   input: PropTypes.shape({

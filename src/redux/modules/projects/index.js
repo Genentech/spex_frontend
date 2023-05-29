@@ -76,6 +76,7 @@ const slice = createSlice({
           if (
             error.message === 'Signature has expired'
           ) {
+            // eslint-disable-next-line no-console
             console.error(error.message);
             yield put(authActions.logout());
             yield put(push('/login'));

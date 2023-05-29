@@ -1,11 +1,8 @@
 import styled from 'styled-components';
 
-export default styled.div`
-  display: flex;
+export default styled.div`  
   flex-direction: row;
-  width: 100%;
-  flex-grow: 0;
-  flex-shrink: 0;
+  width: 100%; 
   min-height: 100%;
   max-height: 100%;
   
