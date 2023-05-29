@@ -1,5 +1,6 @@
 /* eslint-disable react/jsx-sort-default-props */
 import React, { useState, useMemo, useEffect } from 'react';
+import GetAppIcon from '@material-ui/icons/GetApp';
 import Refresh from '@material-ui/icons/Refresh';
 import Repeat from '@material-ui/icons/Repeat';
 import createFocusOnFirstFieldDecorator from 'final-form-focus-on-first-field';
@@ -83,7 +84,9 @@ const RightPanel = styled.div`
 `;
 
 const Footer = styled.div`
-  align-self: flex-end;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 
   :empty {
     display: none;
@@ -125,6 +128,8 @@ const getFieldComponent = (type) => {
       return Controls.SelectJobs;
     case 'pipeline_job_id':
       return Controls.SelectJobsPipeline;
+    case 'file':
+      return Controls.SingleTransferList;
     case 'channel':
     case 'channels':
       return Select;
@@ -147,12 +152,14 @@ const getFieldParser = (type) => {
       return Parsers.channel;
     case 'int':
       return Parsers.number;
+    case 'file':
+      return Parsers.file;
     default:
       return undefined;
   }
 };
 
-const getFieldAdditionalProps = (type, block, { imagesOptions, imagesChannelsOptions }) => {
+const getFieldAdditionalProps = (type, block, { imagesOptions, imagesChannelsOptions, filesOptions }) => {
   switch (type) {
     case 'omero':
       return { options: imagesOptions };
@@ -161,8 +168,14 @@ const getFieldAdditionalProps = (type, block, { imagesOptions, imagesChannelsOpt
     case 'channel':
       return {
         onlyOneValue: true,
-        options: imagesChannelsOptions,
+        inputValue: imagesChannelsOptions,
       };
+    case 'file':
+      return {
+        options: filesOptions,
+        file_names:  block.file_names,
+      };
+
     default:
       return {};
   }
@@ -186,6 +199,7 @@ const BlockSettingsForm = (props) => {
     onRestart,
     onReload,
     onForm,
+    onDownload,
     onLoadKeys,
     ...tail
   } = props;
@@ -215,24 +229,33 @@ const BlockSettingsForm = (props) => {
     [projectImagesThumbnails, projectImagesDetails],
   );
 
-  const projectImagesChannelsOptions = useMemo(
-    () => {
-      let selectedImgChannels = [];
-      if (Object.keys(projectImagesDetails).length > 0 && activeImageIds.length > 0) {
-        activeImageIds.forEach((im_id) => {
-          selectedImgChannels = projectImagesDetails[im_id].channels;
-        });
-      }
-
-      return selectedImgChannels.map((el) => ({
-        value: el.label,
-        label: el.label,
-        color: el.color,
-        index: el.value,
-      }));
-    },
-    [projectImagesDetails, activeImageIds],
+  const projectFilesOptions = useMemo(
+    () => (project?.file_names || []).map((fileName, index) => ({
+      id: `file-${index}`,
+      title: fileName,
+      value: fileName,
+    })),
+    [project],
   );
+
+  const projectImagesChannelsOptions = useMemo(() => {
+    let selectedImgChannels = [];
+
+    if (Object.keys(projectImagesDetails).length > 0 && activeImageIds.length > 0) {
+      activeImageIds.forEach((im_id) => {
+        if (projectImagesDetails.hasOwnProperty(im_id)) {
+          selectedImgChannels = projectImagesDetails[im_id].channels;
+        }
+      });
+    }
+
+    return selectedImgChannels.map((el) => ({
+      value: el.label,
+      label: el.label,
+      color: el.color,
+      index: el.value,
+    }));
+  }, [projectImagesDetails, activeImageIds]);
 
   const status = block?.id === 'new' ? 'New' : statusFormatter(block.status);
   const header = `[${status}] ${block.description || block.name || ''}`;
@@ -271,6 +294,7 @@ const BlockSettingsForm = (props) => {
       projectId: block.projectId,
       pipelineId: block.pipelineId,
       rootId: block.rootId,
+      file_names: block.file_names,
       params: {
         ...block.params,
         folder: block.folder,
@@ -374,6 +398,7 @@ const BlockSettingsForm = (props) => {
                       {...getFieldAdditionalProps(field.type, block, {
                         imagesOptions: projectImagesOptions,
                         imagesChannelsOptions: projectImagesChannelsOptions,
+                        filesOptions: projectFilesOptions,
                       })}
                       disabled={disabled}
                     />
@@ -386,40 +411,52 @@ const BlockSettingsForm = (props) => {
                   color={ButtonColors.secondary}
                   onClick={(event) => {
                     form.restart();
-                    onRestart(event);
+                    onDownload(event);
                   }}
-                  title="Restart the block"
+                  title="Download"
                 >
-                  <Repeat />
-                  Restart
+                  <GetAppIcon />
                 </Button>
-                <Button
-                  color={ButtonColors.secondary}
-                  onClick={(event) => {
-                    onReload(event);
-                    form.restart();
-                  }}
-                  title="Refresh state of the block"
-                >
-                  <Refresh />
-                  refresh
-                </Button>
-                <Button
-                  color={ButtonColors.secondary}
-                  onClick={(event) => {
-                    form.restart();
-                    onClose(event);
-                  }}
-                >
-                  Close
-                </Button>
-                <Button
-                  type="submit"
-                  color={ButtonColors.primary}
-                  disabled={submitting || disabled}
-                >
-                  Submit
-                </Button>
+                <div>
+                  <Button
+                    color={ButtonColors.secondary}
+                    onClick={(event) => {
+                      form.restart();
+                      onRestart(event);
+                    }}
+                    title="Restart the block"
+                  >
+                    <Repeat />
+                    Restart
+                  </Button>
+                  <Button
+                    color={ButtonColors.secondary}
+                    onClick={(event) => {
+                      onReload(event);
+                      form.restart();
+                    }}
+                    title="Refresh state of the block"
+                  >
+                    <Refresh />
+                    refresh
+                  </Button>
+                  <Button
+                    color={ButtonColors.secondary}
+                    onClick={(event) => {
+                      form.restart();
+                      onClose(event);
+                    }}
+                  >
+                    Close
+                  </Button>
+                  <Button
+                    type="submit"
+                    color={ButtonColors.primary}
+                    disabled={submitting || disabled}
+                  >
+                    Submit
+                  </Button>
+                </div>
               </Footer>
             </FormRenderer>
           </Container>
@@ -456,6 +493,7 @@ const propTypes = {
     pipelineId: PropTypes.string,
     status: PropTypes.number,
     omeroIds: PropTypes.arrayOf(PropTypes.string),
+    file_names: PropTypes.arrayOf(PropTypes.string),
     rootId: PropTypes.string,
     script_path: PropTypes.string,
     folder: PropTypes.string,
@@ -494,6 +532,10 @@ const propTypes = {
   /**
    * A callback fired when load keys button clicked.
    */
+  onDownload: PropTypes.func,
+  /**
+   * A callback fired when load keys button clicked.
+   */
   onLoadKeys: PropTypes.func,
 };
 
@@ -508,6 +550,7 @@ const defaultProps = {
   onSubmit: () => {},
   onRestart: () => {},
   onReload: () => {},
+  onDownload: () => {},
   onLoadKeys: () => {},
 };
 

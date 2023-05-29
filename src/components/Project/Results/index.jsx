@@ -29,7 +29,7 @@ import SubComponent from './components/SubComponent';
 
 const refreshInterval = 6e4; // 1 minute
 
-const Visualization = () => {
+const Results = () => {
   const dispatch = useDispatch();
   const location = useLocation();
 
@@ -37,7 +37,7 @@ const Visualization = () => {
   const projectId = matchProjectPath ? matchProjectPath.params.id : undefined;
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const pipelines = useSelector(pipelineSelectors.getPipelinesWithTasksForVis(projectId)) || {};
-  const images_visualization = useSelector(tasksSelectors.getTaskVisualizations || {});
+  const images_results = useSelector(tasksSelectors.getTaskVisualizations || {});
   const [taskToPanels, setTasksToPanels] = useState([]);
   const [currImages, setCurrImages] = useState({});
   const [refresher, setRefresher] = useState(null);
@@ -147,14 +147,14 @@ const Visualization = () => {
     () => {
       let imgToShow = {};
       const taskIds = taskToPanels.map((item) => {return item.id;});
-      Object.keys(images_visualization).forEach((task_id) => {
+      Object.keys(images_results).forEach((task_id) => {
         if (taskIds.includes(task_id)) {
-          imgToShow[task_id] = images_visualization[task_id];
+          imgToShow[task_id] = images_results[task_id];
         }
       });
       setCurrImages(imgToShow);
     },
-    [images_visualization, taskToPanels, setCurrImages],
+    [images_results, taskToPanels, setCurrImages],
   );
 
   const getTasks = useCallback(
@@ -186,14 +186,14 @@ const Visualization = () => {
       setTasksToPanels(taskList);
       const taskIds = taskList.map((item) => {return item.id;});
       let imgToShow = {};
-      Object.keys(images_visualization).forEach((task_id) => {
+      Object.keys(images_results).forEach((task_id) => {
         if (taskIds.includes(task_id)) {
-          imgToShow[task_id] = images_visualization[task_id];
+          imgToShow[task_id] = images_results[task_id];
         }
       });
       setCurrImages(imgToShow);
     },
-    [taskToPanels, pipelineData, getTasks, images_visualization],
+    [taskToPanels, pipelineData, getTasks, images_results],
   );
 
 
@@ -296,4 +296,4 @@ const Visualization = () => {
   );
 };
 
-export default Visualization;
+export default Results;

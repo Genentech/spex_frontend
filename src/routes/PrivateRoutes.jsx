@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { Switch, Route } from 'react-router-dom';
-
+import Files from '@/components/Files';
 import Layout from '@/components/Layout';
 import NotFound404 from '@/components/NotFound404';
 import Project from '@/components/Project';
-import Projects from '@/components/Projects';
+import ProjectFiles from '@/components/ProjectFiles';
 
 import PathNames from '@/models/PathNames';
 import { actions as authActions } from '@/redux/modules/users/auth';
@@ -31,13 +31,14 @@ const PrivateRoutes = () => {
         <Route
           exact
           path={[ '/' ]}
-          component={Projects}
+          component={ProjectFiles}
         />
         <Route
           exact
           path={[ `/${PathNames.projects}` ]}
-          component={Projects}
+          component={ProjectFiles}
         />
+        <Route exact path={`/${PathNames.files}`} component={Files} />
         <Route
           exact
           path={[
@@ -45,7 +46,8 @@ const PrivateRoutes = () => {
             `/${PathNames.projects}/:id/${PathNames.resources}`,
             `/${PathNames.projects}/:id/${PathNames.pipelines}`,
             `/${PathNames.projects}/:id/${PathNames.pipelines}/:id`,
-            `/${PathNames.projects}/:id/${PathNames.visualization}`,
+            `/${PathNames.projects}/:id/${PathNames.results}`,
+
           ]}
           component={Project}
         />

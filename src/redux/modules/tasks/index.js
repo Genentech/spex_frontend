@@ -89,6 +89,20 @@ const loadDataFrame = (str, delimiter = ',') => {
   return [headers, ...res_arr];
 };
 
+const transformChannels = (array) => {
+  return array.map((item) => {
+    const label = item.label;
+    let transformedLabel = label;
+
+    if (label.startsWith('Target:')) {
+      transformedLabel = label.substring('Target:'.length);
+    }
+
+    transformedLabel = transformedLabel.replace(/[^a-zA-Z0-9]+/g, '').toLowerCase();
+
+    return transformedLabel;
+  });
+};
 
 const slice = createSlice({
   name: 'tasks',
@@ -125,8 +139,7 @@ const slice = createSlice({
       stopFetching(state);
       state.results[id] = state.results[id] || {};
       state.results[id][key] = arr;
-      state.results.currentTask = id;
-    },
+      },
 
     fetchTaskVisSuccess: (state, { payload: { id, visName, data } }) => {
       stopFetching(state);
@@ -249,7 +262,10 @@ const slice = createSlice({
         initApi();
 
         try {
-          const url_keys = `${baseUrl}/file/${id}?key=${key}`;
+          let url_keys = `${baseUrl}/file/${id}?key=${key}`;
+          if (key === 'dataframe') {
+            url_keys = `${baseUrl}/anndata/${id}`;
+          };
 
           const res = yield call(api.get, url_keys, { responseType: 'blob' });
 
@@ -267,6 +283,8 @@ const slice = createSlice({
             let ext = type.split('/')[1];
             if (ext === 'vnd.ms-excel') {
               ext = 'csv';
+            } else if (ext === 'octet-stream') {
+              ext = 'h5ad';
             }
             yield saveFile(res.data, `${id}_result_${key}.${ext}`);
           }
@@ -313,7 +331,7 @@ const slice = createSlice({
     },
 
     [actions.fetchTaskVisualize]: {
-      * saga({ payload: { id, name, key, script } }) {
+      * saga({ payload: { id, name, key, script, channels = [] } }) {
         let visList = [];
         if (script === 'segmentation' || script === 'cell_seg') {
           const labels_list = ['load_tiff, background_subtract'];
@@ -329,7 +347,7 @@ const slice = createSlice({
           if (['transformation', 'zscore'].includes(name) && name) {
             visList = [];
           } else if (name === 'cluster') {
-            visList = ['heatmap', 'scatter'];
+            visList = ['heatmap', 'violin', 'scatter'];
           } else if (name === 'dml') {
             visList = ['scatter'];
           } else if (name === 'qfmatch') {
@@ -347,11 +365,17 @@ const slice = createSlice({
           }
         }
 
+        const channels_map = transformChannels(channels);
+
         try {
           initApi();
           for (let i = 0; i < visList.length; i++) {
             let visName = visList[i];
-            let url_keys = `${baseUrl}/vis/${id}?key=${key}&vis_name=${visName}`;
+            let channel_str = '';
+            if ((channels_map.length) > 0) {
+              channel_str = `&marker_list=${channels_map.join(',')}`;
+            }
+            let url_keys = `${baseUrl}/vis/${id}?key=${key}&vis_name=${visName}${channel_str}`;
             let res = yield call(api.get, url_keys, { responseType: 'blob' });
             let data = yield res.data.text();
             yield put(actions.fetchTaskVisSuccess({ id, visName, data }));

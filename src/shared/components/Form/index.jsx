@@ -5,9 +5,11 @@ import styled from 'styled-components';
 
 import ImagePicker from '+components/ImagePicker';
 import { Option as SelectOption } from '+components/Select';
+import SelectFile from '+components/SelectFile';
 import SelectJobs from '+components/SelectJobs';
 import SelectJobsPipeline from '+components/SelectJobsInPipeline';
 import SelectNew from '+components/SelectNew';
+import SingleTransferList from '+components/SingleTransferList';
 import Slider from '+components/Slider';
 import TransferList from '+components/TransferList';
 
@@ -38,7 +40,9 @@ const Controls = {
   SelectJobs,
   SelectJobsPipeline,
   SelectNew,
+  SelectFile,
   Slider,
+  SingleTransferList,
   TransferList,
   ImagePicker,
 };

@@ -1,5 +1,7 @@
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback, useState } from 'react';
+import IconButton from '@material-ui/core/IconButton';
 import TextField from '@material-ui/core/TextField';
+import SelectAllIcon from '@material-ui/icons/SelectAll';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
@@ -27,11 +29,15 @@ const SelectNew = (props) => {
     onlyOneValue,
     input,
     meta,
+    onSelectedChannelsChange,
     ...tail
   } = props;
 
   const showError = ((meta.submitError && !meta.dirtySinceLastSubmit) || meta.error) && meta.touched;
   const onChange = input.onChange || props.onChange;
+  // eslint-disable-next-line no-unused-vars
+  const [selectedChannels, setSelectedChannels] = useState([]);
+
 
   const fixedValue = useMemo(
     () => {
@@ -46,21 +52,46 @@ const SelectNew = (props) => {
   const doChange = useCallback(
     (_, val) => {
       onChange?.(onlyOneValue ? val?.value : val?.map((el) => el.value));
+      setSelectedChannels(val);
+      if (typeof onSelectedChannelsChange === 'function') {
+        onSelectedChannelsChange(val);
+      }
     },
-    [onChange, onlyOneValue],
+    [onChange, onlyOneValue, onSelectedChannelsChange],
   );
+
+  const handleSelectAll = useCallback(() => {
+    if (!onlyOneValue) {
+      const allValues = options.map((option) => option.value);
+      onChange(allValues);
+      setSelectedChannels(allValues);
+    }
+  }, [onChange, onlyOneValue, options]);
 
   const renderInput = useCallback(
     (params) => (
       <TextField
         {...params}
+        InputProps={{
+          ...params.InputProps,
+          endAdornment: (
+            <React.Fragment>
+              {!onlyOneValue && (
+                <IconButton onClick={handleSelectAll} size="small">
+                  <SelectAllIcon />
+                </IconButton>
+              )}
+              {params.InputProps.endAdornment}
+            </React.Fragment>
+          ),
+        }}
         helperText={showError ? meta.error || meta.submitError : undefined}
         error={showError}
         label={tail.label || ''}
         variant="outlined"
       />
     ),
-    [tail.label, showError, meta.error, meta.submitError],
+    [tail.label, showError, meta.error, meta.submitError, onlyOneValue, handleSelectAll],
   );
 
   return (
@@ -74,6 +105,7 @@ const SelectNew = (props) => {
       disableCloseOnSelect
       value={fixedValue}
       onChange={doChange}
+      clearOnEscape={false}
     />
   );
 };
@@ -103,6 +135,7 @@ SelectNew.propTypes = {
   ]),
   onChange: PropTypes.func,
   onlyOneValue: PropTypes.bool,
+  onSelectedChannelsChange: PropTypes.func,
 };
 
 SelectNew.defaultProps = {
@@ -112,6 +145,7 @@ SelectNew.defaultProps = {
   value: [],
   onChange: null,
   onlyOneValue: false,
+  onSelectedChannelsChange: null,
 };
 
 export default SelectNew;

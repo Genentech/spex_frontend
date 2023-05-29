@@ -23,11 +23,14 @@ import styled from 'styled-components';
 
 import PathNames from '@/models/PathNames';
 import { actions as jobsActions, selectors as jobsSelectors } from '@/redux/modules/jobs';
+import { actions as omeroActions, selectors as omeroSelectors } from '@/redux/modules/omero';
 import { actions as pipelineActions, selectors as pipelineSelectors } from '@/redux/modules/pipelines';
+import { selectors as projectsSelectors } from '@/redux/modules/projects';
 import { actions as tasksActions, selectors as tasksSelectors } from '@/redux/modules/tasks';
 
 import Button from '+components/Button';
 import ConfirmModal, { ConfirmActions } from '+components/ConfirmModal';
+import Form, { Field, Controls as ControlsForm } from '+components/Form';
 import NoData from '+components/NoData';
 import { ScrollBarMixin } from '+components/ScrollBar';
 import { Box } from '+components/Tabs';
@@ -147,6 +150,7 @@ const createGraphLayout = (elements, direction = 'LR') => {
   });
 };
 
+
 const sortTaskById = ({ id: a }, { id: b }) => {
   return +a - +b;
 };
@@ -157,6 +161,12 @@ const Pipeline = () => {
 
   const matchProjectPath = matchPath(location.pathname, { path: `/${PathNames.projects}/:id` });
   const projectId = matchProjectPath ? matchProjectPath.params.id : undefined;
+  const project = useSelector(projectsSelectors.getProject(projectId));
+
+  const [activeImageIds, setActiveImageIds] = useState(project?.omeroIds || []);
+  const [selectedChannelsByTask, setSelectedChannelsByTask] = useState({});
+
+  const projectImagesDetails = useSelector(omeroSelectors.getImagesDetails(project?.omeroIds || []));
 
   const matchPipelinePath = matchPath(location.pathname, {
     path: `/${PathNames.projects}/${projectId}/${PathNames.pipelines}/:id`,
@@ -217,6 +227,26 @@ const Pipeline = () => {
     [pipeline, selectedBlock],
   );
 
+  const projectImagesChannelsOptions = useMemo(
+    () => {
+      let selectedImgChannels = [];
+      if (Object.keys(projectImagesDetails).length > 0 && activeImageIds.length > 0) {
+        activeImageIds.forEach((im_id) => {
+          selectedImgChannels = projectImagesDetails[im_id].channels;
+        });
+      }
+
+      return selectedImgChannels.map((el) => ({
+        value: el.label,
+        label: el.label,
+        color: el.color,
+        index: el.value,
+      }));
+    },
+    [projectImagesDetails, activeImageIds],
+  );
+
+
   const onJobCancel = useCallback(
     () => {
       setActionWithBlock(null);
@@ -246,15 +276,35 @@ const Pipeline = () => {
   const onLoadVisualize = useCallback(
     () => {
       selectedBlock.tasks.forEach((item) => {
+        const channels = selectedChannelsByTask[item.id];
         dispatch(tasksActions.fetchTaskVisualize({
           id: item.id,
           name: item.name,
           key: nameReturnKey[item.name],
           script: selectedBlock.script,
+          channels,
         }));
       });
     },
-    [dispatch, selectedBlock, nameReturnKey],
+    [dispatch, selectedBlock, nameReturnKey, selectedChannelsByTask],
+  );
+
+  useEffect(
+    () => {
+      if (!project?.omeroIds.length) {
+        return;
+      }
+
+      dispatch(omeroActions.fetchImagesDetails(project?.omeroIds));
+    },
+    [dispatch, project?.omeroIds],
+  );
+
+  useEffect(
+    () => {
+      setActiveImageIds(project?.omeroIds || []);
+    },
+    [project?.omeroIds],
   );
 
   useEffect(
@@ -279,9 +329,18 @@ const Pipeline = () => {
       setActionWithBlock(null);
       setSelectedBlock(null);
 
+      const validOmeroIds = values.params?.omeroIds
+        ? values.params.omeroIds.filter((id) => project.omeroIds.includes(id))
+        : jobs[values.rootId]?.omeroIds;
+
+      const { filename, ...params } = values.params;
+      const file_names = filename ? [filename] : [];
+
       const normalizedValues = {
         ...values,
-        omeroIds: values.params?.omeroIds || jobs[values.rootId]?.omeroIds,
+        params: { ...params },
+        omeroIds: validOmeroIds,
+        file_names: file_names,
       };
 
       if (normalizedValues.id === 'new') {
@@ -289,6 +348,18 @@ const Pipeline = () => {
       }
 
       if (normalizedValues.id) {
+        const currentJob = jobs[normalizedValues.id];
+
+        const sortedCurrentOmeroIds = [...currentJob.omeroIds].sort();
+        const sortedValidOmeroIds = [...validOmeroIds].sort();
+
+        if (
+          JSON.stringify(sortedCurrentOmeroIds) !==
+          JSON.stringify(sortedValidOmeroIds)
+        ) {
+          normalizedValues.status = -2;
+        }
+
         dispatch(pipelineActions.updateJob(normalizedValues));
         return;
       }
@@ -301,7 +372,7 @@ const Pipeline = () => {
 
       dispatch(pipelineActions.createJob(normalizedValues));
     },
-    [dispatch, jobs],
+    [dispatch, jobs, project],
   );
 
   const onStartPipeline = useCallback(
@@ -344,11 +415,11 @@ const Pipeline = () => {
   );
 
   const onBlockClick = useCallback(
-    (_, block) => {
+    async (_, block) => {
       if (block.id === 'new') {
         return;
       }
-      dispatch(jobsActions.fetchJobsByPipelineId(pipelineId));
+      await dispatch(jobsActions.fetchJobsByPipelineId(pipelineId));
 
       const job = jobs[block.id];
       if (!job) {
@@ -383,6 +454,7 @@ const Pipeline = () => {
         id: job.id,
         name: job.name,
         status: job.status,
+        file_names: job.file_names,
         omeroIds: job.omeroIds,
         folder: params.folder,
         script: params.script,
@@ -406,6 +478,38 @@ const Pipeline = () => {
       }
     },
     [dispatch, selectedBlock, onBlockClick],
+  );
+
+  const onDownload = useCallback(
+    async (_, block) => {
+      if (block.id === 'new') {
+        return;
+      }
+
+      const job = jobs[block.id];
+      if (!job) {
+        return;
+      }
+
+      // Customize the file name based on your requirements
+      const fileName = `job_${job.id}.zip`;
+
+      dispatch(jobsActions.downloadJob({ jobId: job.id, fileName }));
+    },
+    [jobs, dispatch],
+  );
+
+  const onJobDownload = useCallback(
+    (_) => {
+      if (selectedBlock.id === 'new') {
+        return;
+      }
+
+      if (selectedBlock.id) {
+        onDownload(_, selectedBlock);
+      }
+    },
+    [selectedBlock, onDownload],
   );
 
   const onBlockAdd = useCallback(
@@ -460,7 +564,7 @@ const Pipeline = () => {
     [dispatch],
   );
 
-  const tasksRender = useMemo(
+    const tasksRender = useMemo(
     () => {
       if (!selectedBlock?.tasks?.length) {
         return null;
@@ -482,6 +586,9 @@ const Pipeline = () => {
 
         return acc;
       }, {});
+      const onSubmit = (values) => {
+      };
+
 
       return (
         <Accordion>
@@ -493,74 +600,100 @@ const Pipeline = () => {
               <Grid container>
                 {selectedBlock.tasks.map((item) => (
                   <Grid item xs={12} key={item.id}>
-                    <Grid item xs={12}>
-                      <List dense component="div">
-                        <ListItemText
-                          primary={`task id: ${item.id}`}
-                          secondary={`[${statusFormatter(item.status)}] ${item.name}`}
-                        />
-                        <ListItem component="div">
-                          Results
-                        </ListItem>
-                        {!resultKeys[item.id] ? (
-                          <ListItem component="div">
-                            No Data
-                          </ListItem>
-                        ) : resultKeys[item.id].map(({ key, value }) => (
-                          <ListItem component="div" key={key}>
+                    <Accordion>
+                      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                        Task ID: {item.id}
+                      </AccordionSummary>
+                      <AccordionDetails>
+                        <Grid item xs={12}>
+                          <List dense component="div">
                             <ListItemText
-                              primary={(
-                                <Button
-                                  size="small"
-                                  variant="outlined"
-                                  onClick={onLoadVisualize}
-                                  data-key={key}
-                                  data-task-id={item.id}
-                                  startIcon={<WallpaperIcon />}
-                                >
-                                  Render value
-                                </Button>
-                              )}
-                              secondary={(
-                                <Button
-                                  onClick={onLoadValue}
-                                  size="small"
-                                  variant="outlined"
-                                  startIcon={<GetAppIcon />}
-                                  data-key={key}
-                                  data-task-id={item.id}
-                                >
-                                  Download value
-                                </Button>
-                              )}
+                              secondary={`[${statusFormatter(item.status)}] ${item.name}`}
                             />
-                            {value != null && (
-                              <ResultValue>
-                                <pre>
-                                  {value || ''}
-                                </pre>
-                              </ResultValue>
-                            )}
-                          </ListItem>
-                        ))}
-                      </List>
-                    </Grid>
-                    <Grid item xs={12}>
-                      <ImageList cols={1}>
-                        {Object.keys(Object(currImages[item.id])).map((key) => (
-                          <ImageListItem key={`${item.id}-${key}-${item.id}`}>
-                            <p>
-                              <Box
-                                key={`${item.id}-${key}-${item.id}`}
-                                component="img"
-                                src={currImages[item.id][key]}
-                                alt={key}
+                            <ListItem component="div">
+                              Results for channels
+                            </ListItem>
+                            <ListItem component="div" key={`channels-${item.id}`}>
+                              <Form
+                                onSubmit={onSubmit}
+                                render={({ handleSubmit }) => (
+                                  <form onSubmit={handleSubmit}>
+                                    <div style={{ overflow: 'auto', maxHeight: '300px' }}>
+                                      <Field
+                                        name={`channels-${item.id}`}
+                                        component={ControlsForm.SelectNew}
+                                        type="channels"
+                                        options={projectImagesChannelsOptions}
+                                        onSelectedChannelsChange={(val) => {
+                                          setSelectedChannelsByTask((prevState) => ({ ...prevState, [item.id]: val }));
+                                        }}
+                                      />
+                                    </div>
+                                  </form>
+                                )}
                               />
-                            </p>
-                          </ImageListItem>
-                        ))}
-                      </ImageList>
-                    </Grid>
+                            </ListItem>
+                            {!resultKeys[item.id] ? (
+                              <ListItem component="div">
+                                No Data
+                              </ListItem>
+                            ) : resultKeys[item.id].map(({ key, value }) => (
+                              <ListItem component="div" key={key}>
+                                <ListItemText
+                                  primary={(
+                                    <Button
+                                      size="small"
+                                      variant="outlined"
+                                      onClick={onLoadVisualize}
+                                      data-key={key}
+                                      data-task-id={item.id}
+                                      startIcon={<WallpaperIcon />}
+                                    >
+                                      Render value
+                                    </Button>
+                                  )}
+                                  secondary={(
+                                    <Button
+                                      onClick={onLoadValue}
+                                      size="small"
+                                      variant="outlined"
+                                      startIcon={<GetAppIcon />}
+                                      data-key={key}
+                                      data-task-id={item.id}
+                                    >
+                                      Download value
+                                    </Button>
+                                  )}
+                                />
+                                {value != null && (
+                                  <ResultValue>
+                                    <pre>
+                                      {value || ''}
+                                    </pre>
+                                  </ResultValue>
+                                )}
+                              </ListItem>
+                            ))}
+                          </List>
+                        </Grid>
+                        <Grid item xs={12}>
+                          <ImageList cols={1}>
+                            {Object.keys(Object(currImages[item.id])).map((key) => (
+                              <ImageListItem key={`${item.id}-${key}-${item.id}`}>
+                                <p>
+                                  <Box
+                                    key={`${item.id}-${key}-${item.id}`}
+                                    component="img"
+                                    src={currImages[item.id][key]}
+                                    alt={key}
+                                  />
+                                </p>
+                              </ImageListItem>
+                            ))}
+                          </ImageList>
+                        </Grid>
+                      </AccordionDetails>
+                    </Accordion>
                   </Grid>
                 ))}
               </Grid>
@@ -569,7 +702,7 @@ const Pipeline = () => {
         </Accordion>
       );
     },
-    [onLoadValue, selectedBlock, tasks, results, onLoadVisualize, currImages],
+    [onLoadValue, selectedBlock, tasks, results, onLoadVisualize, currImages, projectImagesChannelsOptions],
   );
 
   useEffect(
@@ -607,6 +740,7 @@ const Pipeline = () => {
           name: job.name,
           status: job.status,
           omeroIds: job.omeroIds,
+          file_names: job.file_names,
           description,
           folder: params.folder,
           script: params.script,
@@ -713,7 +847,7 @@ const Pipeline = () => {
                 backgroundColor: 'green',
                 color: 'white',
                 whiteSpace: 'nowrap',
-                zIndex: 99, width: '80%',
+                zIndex: 99, width: '80% ',
                 }}
                 onClick={onStartPipeline}
               > Start ▶
@@ -731,6 +865,7 @@ const Pipeline = () => {
                 onSubmit={onJobSubmit}
                 onRestart={onJobRestart}
                 onReload={onJobReload}
+                onDownload={onJobDownload}
               />
             ) : (
               <NoData>Select block</NoData>

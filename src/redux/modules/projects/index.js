@@ -1,5 +1,7 @@
+import { push } from 'connected-react-router';
 import { call, put } from 'redux-saga/effects';
 import backendClient from '@/middleware/backendClient';
+import { actions as authActions } from '@/redux/modules/users/auth';
 import { createSlice, createSelector, startFetching, stopFetching } from '@/redux/utils';
 
 import hash from '+utils/hash';
@@ -71,9 +73,18 @@ const slice = createSlice({
           const { data } = yield call(api.get, url);
           yield put(actions.fetchProjectsSuccess(data.data));
         } catch (error) {
-          yield put(actions.requestFail(error));
-          // eslint-disable-next-line no-console
-          console.error(error.message);
+          if (
+            error.message === 'Signature has expired'
+          ) {
+            // eslint-disable-next-line no-console
+            console.error(error.message);
+            yield put(authActions.logout());
+            yield put(push('/login'));
+          } else {
+            yield put(actions.requestFail(error));
+            // eslint-disable-next-line no-console
+            console.error(error.message);
+          }
         }
       },
     },
