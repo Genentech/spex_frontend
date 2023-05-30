@@ -23,7 +23,7 @@ import ThumbnailsViewer from '+components/ThumbnailsViewer';
 
 import JobBlock from './blocks/JobBlock';
 import StartBlock from './blocks/StartBlock';
-import AddBlockForm from './components/AddBlockForm';
+import BlockScrollWrapper from './components/BlockScrollWrapper';
 import BlockSettingsForm from './components/BlockSettingsForm';
 import BlockSettingsFormWrapper from './components/BlockSettingsFormWrapper';
 import Container from './components/Container';
@@ -395,23 +395,6 @@ const Process = () => {
     [jobTypes, jobs, pipelineId, projectId, dispatch],
   );
 
-  const onBlockAdd = useCallback(
-    (block) => {
-      setActionWithBlock(null);
-
-      setSelectedBlock((prevValue) => ({
-        projectId,
-        pipelineId: pipelineId,
-        rootId: prevValue?.id,
-        id: 'new',
-        status: 0,
-        omeroIds: jobs[prevValue?.id]?.omeroIds,
-        ...block,
-      }));
-    },
-    [jobs, pipelineId, projectId],
-  );
-
   const onBlockDelete = useCallback(
     () => {
       dispatch(pipelineActions.deleteJob({
@@ -434,10 +417,10 @@ const Process = () => {
   );
 
   const handleBlockClick = (newActive) => {
-    setActiveBlock(newActive);
     if (newActive.length === 1) {
       setSelectedBlock((prevValue) => {
         if (prevValue.id !== 'new') {
+          setActiveBlock(newActive);
           return {
             projectId,
             pipelineId: pipelineId,
@@ -594,13 +577,14 @@ const Process = () => {
           container
           direction='row'
           xs={4}
+          spacing={1}
         >
           <Grid
             item
             container
             direction='column'
             xs={12}
-            style={{ height: '30%' }}
+            style={{ height: '20%' }}
           >
             <FlowWrapper>
               <ReactFlow
@@ -614,7 +598,7 @@ const Process = () => {
                 elementsSelectable={false}
                 snapToGrid
               >
-                <Controls showInteractive={false}>
+                <Controls showInteractive={false} style={{ position: 'absolute', left: 0, display: 'flex' }}>
                   <ControlButton
                     style={{
                     backgroundColor: 'green',
@@ -636,20 +620,22 @@ const Process = () => {
             container
             direction='column'
             xs={12}
-            style={{ height: '20%' }}
+            style={{ height: '17%' }}
           >
-            <BlocksScroll
-              items={availableBlocks[selectedBlock?.script_path]}
-              onClick={handleBlockClick}
-              active={activeBlock}
-            />
+            <BlockScrollWrapper>
+              <BlocksScroll
+                items={availableBlocks[selectedBlock?.script_path]}
+                onClick={handleBlockClick}
+                active={activeBlock}
+              />
+            </BlockScrollWrapper>
           </Grid>
           <Grid
             item
             container
             direction='column'
             xs={12}
-            style={{ height: '50%' }}
+            style={{ height: '63%' }}
           >
             <BlockSettingsFormWrapper>
               {selectedBlock?.id ? (
@@ -684,16 +670,16 @@ const Process = () => {
         </Grid>
       </Grid>
 
-      {actionWithBlock === 'add' && selectedBlock?.id && (
-        <AddBlockForm
-          header="Add Block"
-          jobTypes={jobTypes}
-          selectedBlock={selectedBlock}
-          onClose={() => setActionWithBlock(null)}
-          onSubmit={onBlockAdd}
-          open
-        />
-      )}
+      {/*{actionWithBlock === 'add' && selectedBlock?.id && (*/}
+      {/*  <AddBlockForm*/}
+      {/*    header="Add Block"*/}
+      {/*    jobTypes={jobTypes}*/}
+      {/*    selectedBlock={selectedBlock}*/}
+      {/*    onClose={() => setActionWithBlock(null)}*/}
+      {/*    onSubmit={onBlockAdd}*/}
+      {/*    open*/}
+      {/*  />*/}
+      {/*)}*/}
 
       {actionWithBlock === 'delete' && selectedBlock?.id && (
         <ConfirmModal

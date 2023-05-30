@@ -85,8 +85,9 @@ const RightPanel = styled.div`
 
 const Footer = styled.div`
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start; // or flex-end depending on your needs
   align-items: center;
+  flex-wrap: nowrap;
 
   :empty {
     display: none;
@@ -94,6 +95,7 @@ const Footer = styled.div`
 
   .MuiButton-root + .MuiButton-root {
     margin-left: 15px;
+    flex-shrink: 1; // Add this line
   }
 `;
 
@@ -160,10 +162,7 @@ const getFieldAdditionalProps = (type, block, { imagesOptions, imagesChannelsOpt
     case 'channels':
       return { options: imagesChannelsOptions };
     case 'channel':
-      return {
-        onlyOneValue: true,
-        inputValue: imagesChannelsOptions,
-      };
+      return { options: imagesChannelsOptions };
     case 'file':
       return {
         options: filesOptions,
@@ -393,46 +392,44 @@ const BlockSettingsForm = (props) => {
                 >
                   <GetAppIcon />
                 </Button>
-                <div>
-                  <Button
-                    color={ButtonColors.secondary}
-                    onClick={(event) => {
-                      form.restart();
-                      onRestart(event);
-                    }}
-                    title="Restart the block"
-                  >
-                    <Repeat />
-                    Restart
-                  </Button>
-                  <Button
-                    color={ButtonColors.secondary}
-                    onClick={(event) => {
-                      onReload(event);
-                      form.restart();
-                    }}
-                    title="Refresh state of the block"
-                  >
-                    <Refresh />
-                    refresh
-                  </Button>
-                  <Button
-                    color={ButtonColors.secondary}
-                    onClick={(event) => {
-                      form.restart();
-                      onClose(event);
-                    }}
-                  >
-                    Close
-                  </Button>
-                  <Button
-                    type="submit"
-                    color={ButtonColors.primary}
-                    disabled={submitting || disabled}
-                  >
-                    Submit
-                  </Button>
-                </div>
+                <Button
+                  color={ButtonColors.secondary}
+                  onClick={(event) => {
+                    form.restart();
+                    onRestart(event);
+                  }}
+                  title="Restart the block"
+                >
+                  <Repeat />
+                  Restart
+                </Button>
+                <Button
+                  color={ButtonColors.secondary}
+                  onClick={(event) => {
+                    onReload(event);
+                    form.restart();
+                  }}
+                  title="Refresh state of the block"
+                >
+                  <Refresh />
+                  refresh
+                </Button>
+                <Button
+                  color={ButtonColors.secondary}
+                  onClick={(event) => {
+                    form.restart();
+                    onClose(event);
+                  }}
+                >
+                  Close
+                </Button>
+                <Button
+                  type="submit"
+                  color={ButtonColors.primary}
+                  disabled={submitting || disabled}
+                >
+                  Submit
+                </Button>
               </Footer>
             </FormRenderer>
           </Container>

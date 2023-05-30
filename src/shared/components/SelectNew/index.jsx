@@ -38,7 +38,7 @@ const SelectNew = (props) => {
   const onChange = input.onChange || props.onChange;
 
   const [selectedChannels, setSelectedChannels] = useState([]);
-  const [showAll, setShowAll] = useState(false); // новое состояние
+  const [showAll, setShowAll] = useState(false);
 
   const fixedValue = useMemo(
     () => {
@@ -73,7 +73,7 @@ const SelectNew = (props) => {
     setShowAll((prevShowAll) => !prevShowAll);
   }, []);
 
-  const displayedOptions = showAll ? options : options.slice(0, 3); // управление отображением списка
+  const displayedOptions = showAll ? options : options.slice(0, 3);
 
   const renderInput = useCallback(
     (params) => (
@@ -111,7 +111,7 @@ const SelectNew = (props) => {
       renderInput={renderInput}
       getOptionLabel={getOptionLabel}
       renderOption={renderOption}
-      options={displayedOptions} // используйте displayedOptions здесь
+      options={displayedOptions}
       disableCloseOnSelect
       value={fixedValue}
       onChange={doChange}
@@ -120,7 +120,6 @@ const SelectNew = (props) => {
   );
 };
 
-// PropTypes и defaultProps остаются прежними
 SelectNew.propTypes = {
   options: PropTypes.arrayOf(PropTypes.shape({})),
   input: PropTypes.shape({

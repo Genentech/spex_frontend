@@ -43,16 +43,6 @@ const JobBlock = (props) => {
             </IconButton>
           )}
 
-          {data.onAdd && (
-            <IconButton
-              style={iconButtonStyle}
-              disabled={data.id === 'new'}
-              onClick={() => data.onAdd(data)}
-            >
-              <AddIcon fontSize="small" />
-            </IconButton>
-          )}
-
           {data.onRestart && (
             <IconButton
               style={iconButtonStyle}

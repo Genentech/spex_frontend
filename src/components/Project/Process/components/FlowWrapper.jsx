@@ -7,7 +7,7 @@ export default styled.div`
   max-height: 100%;
   
   .react-flow {
-    width: 100%;
+    width: 99%;
     height: 100%;
     border: 1px solid rgba(0, 0, 0, 0.2);
     border-radius: 4px;
@@ -15,9 +15,9 @@ export default styled.div`
     .react-flow__node {
       cursor: pointer;
       background-color: white;
-      border: 1px solid rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(0, 0, 0, 0.2) !important;
       border-radius: 4px;
-      padding: 4px 6px;
+      padding: 9px;
 
       &:hover {
         box-shadow: 2px 2px 2px rgba(0,0,0,0.2);

@@ -69,7 +69,7 @@ const BlocksScroll = styled((props) => {
           onClick={emitClick(item)}
           style={{
             border: fixedActive.includes(item) ? '0.188em solid red ' : '0.188em solid transparent ',
-            width: '70px', height: '70px', overflowY: 'auto', padding: '2px',
+            width: '70px', height: '70px', overflowY: 'auto', padding: '1px',
           }}
         >
           <Card>

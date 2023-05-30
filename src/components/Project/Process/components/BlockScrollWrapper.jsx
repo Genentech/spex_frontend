@@ -6,9 +6,9 @@ export default styled.div`
   width: 99%;
   height: 100%;  
   border: 1px solid rgba(0, 0, 0, 0.2) !important;
-  border-radius: 4px;
+  border-radius: 2px;
   overflow: auto;
-  padding: 14px;
+  padding: 9px;  
   
   ${ScrollBarMixin};
 `;
