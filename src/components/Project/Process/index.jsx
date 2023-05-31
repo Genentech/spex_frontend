@@ -153,6 +153,7 @@ const Process = () => {
   const project = useSelector(projectsSelectors.getProject(projectId));
   const projectImagesDetails = useSelector(omeroSelectors.getImagesDetails(project?.omeroIds || []));
   const [activeImageIds, setActiveImageIds] = useState(project?.omeroIds || []);
+  // eslint-disable-next-line no-unused-vars
   const [activeBlock, setActiveBlock] = useState([]);
 
   const matchProcessPath = matchPath(location.pathname, {
@@ -206,7 +207,7 @@ const Process = () => {
       const pipelineClone = cloneDeep(pipeline);
 
       if (selectedBlock && selectedBlock.rootId && selectedBlock.id === 'new') {
-        addNewVirtualJobToPipeline(selectedBlock.rootId, selectedBlock, pipelineClone);
+        // addNewVirtualJobToPipeline(selectedBlock.rootId, selectedBlock, pipelineClone);
       }
 
       _elements = createElements(pipelineClone, _elements, options, selectedBlock);
@@ -291,14 +292,16 @@ const Process = () => {
                 const enabled = block.depends_and_script?.includes(selectedBlock.script_path)
                   || block.depends_or_script?.includes(selectedBlock.script_path);
                 if (enabled) {
-                  blocks.push(block);
+                  blocks.push({ ...block, folder: jobType, script: jobType });
                 }
               });
           });
         });
-        let val = {};
-        val[selectedBlock.name] = blocks;
-        setAvailableBlocks( { ...val } );
+        if (selectedBlock.id !== 'new') {
+          setAvailableBlocks({ [selectedBlock.name]: blocks });
+        } else {
+          setAvailableBlocks({ [selectedBlock.script_path]: [selectedBlock] });
+        }
       }
     },
     [selectedBlock, availableBlocks, jobTypes],
@@ -333,6 +336,57 @@ const Process = () => {
       }
     },
     [dispatch, jobs, selectedBlock],
+  );
+
+  const onJobSubmit = useCallback(
+    (values) => {
+      setActionWithBlock(null);
+      setSelectedBlock(null);
+
+      const validOmeroIds = values.params?.omeroIds
+        ? values.params.omeroIds.filter((id) => project.omeroIds.includes(id))
+        : jobs[values.rootId]?.omeroIds;
+
+      const { filename, ...params } = values.params;
+      const file_names = filename ? [filename] : [];
+
+      const normalizedValues = {
+        ...values,
+        params: { ...params },
+        omeroIds: validOmeroIds,
+        file_names: file_names,
+      };
+
+      if (normalizedValues.id === 'new') {
+        delete normalizedValues.id;
+      }
+
+      if (normalizedValues.id) {
+        const currentJob = jobs[normalizedValues.id];
+
+        const sortedCurrentOmeroIds = [...currentJob.omeroIds].sort();
+        const sortedValidOmeroIds = [...validOmeroIds].sort();
+
+        if (
+          JSON.stringify(sortedCurrentOmeroIds) !==
+          JSON.stringify(sortedValidOmeroIds)
+        ) {
+          normalizedValues.status = -2;
+        }
+
+        dispatch(pipelineActions.updateJob(normalizedValues));
+        return;
+      }
+
+      const [rootId] = normalizedValues.params?.job || [];
+      if (rootId != null) {
+        dispatch(pipelineActions.createConn(normalizedValues));
+        normalizedValues.rootId = rootId;
+      }
+
+      dispatch(pipelineActions.createJob(normalizedValues));
+    },
+    [dispatch, jobs, project, jobTypes],
   );
 
   const onPaneClick = useCallback(
@@ -414,6 +468,14 @@ const Process = () => {
       setReactFlowInstance(instance);
     },
     [setReactFlowInstance],
+  );
+
+  const onJobCancel = useCallback(
+    () => {
+      setActionWithBlock(null);
+      setSelectedBlock(null);
+    },
+    [],
   );
 
   const handleBlockClick = (newActive) => {
@@ -626,7 +688,6 @@ const Process = () => {
               <BlocksScroll
                 items={availableBlocks[selectedBlock?.script_path]}
                 onClick={handleBlockClick}
-                active={activeBlock}
               />
             </BlockScrollWrapper>
           </Grid>
@@ -642,6 +703,8 @@ const Process = () => {
                 <BlockSettingsForm
                   block={selectedBlock}
                   onRestart={onJobRestart}
+                  onSubmit={onJobSubmit}
+                  onClose={onJobCancel}
                 />
               ) : (
                 <NoData>Select block</NoData>

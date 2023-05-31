@@ -7,18 +7,13 @@ import createFocusOnFirstFieldDecorator from 'final-form-focus-on-first-field';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
-
-
 import { actions as omeroActions, selectors as omeroSelectors } from '@/redux/modules/omero';
-
 import { selectors as projectsSelectors } from '@/redux/modules/projects';
 import { selectors as tasksSelectors } from '@/redux/modules/tasks';
 import Button, { ButtonColors } from '+components/Button';
 import Form, { Controls, Field, FormRenderer, Validators, Parsers } from '+components/Form';
-import ImageViewer from '+components/ImageViewer';
 import NoData from '+components/NoData';
 import { ScrollBarMixin } from '+components/ScrollBar';
-import ThumbnailsViewer from '+components/ThumbnailsViewer';
 import statusFormatter from '+utils/statusFormatter';
 
 const Container = styled.div`
@@ -51,16 +46,6 @@ const Body = styled.div`
   ${ScrollBarMixin};
 
   gap: 20px;
-`;
-
-const LeftPanel = styled.div`
-  padding: 20px 0;
-
-  display: flex;
-  flex-direction: column;
-  width: 60%;
-  height: 100%;
-  overflow: hidden;
 `;
 
 const RightPanel = styled.div`
@@ -99,17 +84,6 @@ const Footer = styled.div`
   }
 `;
 
-const ImageViewerContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 100%;
-  background-color: #ccc;
-  border-radius: 4px;
-  //overflow: hidden;
-`;
-
 const TextField = styled(Controls.TextField)`
   max-width: 300px;
 `;
@@ -119,7 +93,7 @@ const NumberField = styled(Controls.NumberField)`
 `;
 
 const Select = styled(Controls.SelectNew)`
-  max-width: 320px;
+  max-width: 300px;
   max-height: 200px;
   overflow-y: auto;
 `;
@@ -162,7 +136,10 @@ const getFieldAdditionalProps = (type, block, { imagesOptions, imagesChannelsOpt
     case 'channels':
       return { options: imagesChannelsOptions };
     case 'channel':
-      return { options: imagesChannelsOptions };
+      return {
+        onlyOneValue: true,
+        options: imagesChannelsOptions,
+      };
     case 'file':
       return {
         options: filesOptions,

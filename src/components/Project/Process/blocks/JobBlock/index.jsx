@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-handler-names */
 import React, { Fragment, memo } from 'react';
 import IconButton from '@material-ui/core/IconButton';
-import AddIcon from '@material-ui/icons/Add';
+// import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
 import ReplayIcon from '@material-ui/icons/Replay';
 import PropTypes from 'prop-types';
@@ -13,7 +13,7 @@ import Name from './components/Name';
 import Status from './components/Status';
 
 const iconButtonStyle = {
-  padding: '6px',
+  padding: '3px',
 };
 
 const JobBlock = (props) => {
