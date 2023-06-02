@@ -102,6 +102,7 @@ const Project = () => {
   const showResults = !!matchPath(location.pathname, { path: resultsUrl });
 
   const [sidebarOpened, setSidebarOpened] = useState(getFromStorage('sidebarOpened') === 'true');
+  const [sidebarWidth, setSidebarWidth] = useState(drawerWidthClosed);
 
   const onSidebarItemClick = useCallback(
     (url) => () => {
@@ -114,6 +115,8 @@ const Project = () => {
     () => {
       setSidebarOpened((prevValue) => {
         saveToStorage('sidebarOpened', !prevValue);
+        const newSidebarWidth = prevValue ? drawerWidthClosed : drawerWidth;
+        setSidebarWidth(newSidebarWidth);
         return !prevValue;
       });
     },
@@ -125,6 +128,7 @@ const Project = () => {
       className={classNames(classes.body, {
         [classes.bodyShift]: sidebarOpened,
       })}
+      sidebarWidth={sidebarWidth}
     >
       <Drawer
         variant="permanent"
@@ -176,7 +180,7 @@ const Project = () => {
 
       {showResources && <Resources />}
       {ShowProcesses && <Processes />}
-      {ShowProcess && <Process />}
+      {ShowProcess && <Process sidebarWidth={sidebarWidth} />}
       {ShowPipelines && <Pipelines />}
       {ShowPipeline && <Pipeline />}
       {showResults && <Results />}

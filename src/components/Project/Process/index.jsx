@@ -3,9 +3,11 @@ import Grid from '@material-ui/core/Grid';
 import classNames from 'classnames';
 import dagre from 'dagre';
 import cloneDeep from 'lodash/cloneDeep';
+import PropTypes from 'prop-types';
 import ReactFlow, { ReactFlowProvider, Controls, Background, isNode, ControlButton } from 'react-flow-renderer';
 import { useDispatch, useSelector } from 'react-redux';
 import { matchPath, useLocation } from 'react-router-dom';
+import SplitPane from 'react-split-pane';
 import styled from 'styled-components';
 
 import PathNames from '@/models/PathNames';
@@ -145,7 +147,7 @@ const sortTaskById = ({ id: a }, { id: b }) => {
   return +a - +b;
 };
 
-const Process = () => {
+const Process = ( { sidebarWidth } ) => {
   const dispatch = useDispatch();
   const location = useLocation();
   const matchProjectPath = matchPath(location.pathname, { path: `/${PathNames.projects}/:id` });
@@ -155,6 +157,11 @@ const Process = () => {
   const [activeImageIds, setActiveImageIds] = useState(project?.omeroIds || []);
   // eslint-disable-next-line no-unused-vars
   const [activeBlock, setActiveBlock] = useState([]);
+  const [sizes, setSizes] = useState([
+    300,
+    400,
+    'auto',
+  ]);
 
   const matchProcessPath = matchPath(location.pathname, {
     path: `/${PathNames.projects}/${projectId}/${PathNames.processes}/:id`,
@@ -386,7 +393,7 @@ const Process = () => {
 
       dispatch(pipelineActions.createJob(normalizedValues));
     },
-    [dispatch, jobs, project, jobTypes],
+    [dispatch, jobs, project],
   );
 
   const onPaneClick = useCallback(
@@ -593,7 +600,7 @@ const Process = () => {
         }
       };
     },
-    [],
+    [sidebarWidth],
   );
 
   useEffect(
@@ -627,6 +634,13 @@ const Process = () => {
     [dispatch],
   );
 
+  const resizerStyles = {
+    width: '5px',
+    cursor: 'col-resize',
+    zIndex: 1,
+    boxSizing: 'border-box',
+  };
+
   return (
     <ReactFlowProvider>
       <Grid
@@ -634,115 +648,110 @@ const Process = () => {
         spacing={2}
         direction='row'
       >
-        <Grid
-          item
-          container
-          direction='row'
-          xs={4}
-          spacing={1}
+        <SplitPane
+          sizes={sizes}
+          split="vertical"
+          minSize={200 + sidebarWidth}
+          size={500}
+          resizerStyle={resizerStyles}
+          onChange={(size) => setSizes([size, 1000 - size])}
+          style={{ marginLeft: sidebarWidth }}
         >
-          <Grid
-            item
-            container
-            direction='column'
-            xs={12}
-            style={{ height: '20%' }}
-          >
-            <FlowWrapper>
-              <ReactFlow
-                nodeTypes={nodeTypes}
-                elements={elements}
-                onElementClick={onBlockClick}
-                onPaneClick={onPaneClick}
-                onLoad={onLoad}
-                nodesDraggable={false}
-                nodesConnectable={false}
-                elementsSelectable={false}
-                snapToGrid
-              >
-                <Controls showInteractive={false} style={{ position: 'absolute', left: 0, display: 'flex' }}>
-                  <ControlButton
-                    style={{
-                    backgroundColor: 'green',
-                    color: 'white',
-                    whiteSpace: 'nowrap',
-                    zIndex: 99, width: '80% ',
-                    }}
-                    onClick={onStartPipeline}
-                  > Start ▶
-                  </ControlButton>
-                </Controls>
+          <div style={{ height: '100%', maxHeight: '100%', flexDirection: 'column' }}>
+            <Grid
+              item
+              container
+              direction='column'
+              xs={12}
+              style={{ height: '20%' }}
+            >
+              <FlowWrapper>
+                <ReactFlow
+                  nodeTypes={nodeTypes}
+                  elements={elements}
+                  onElementClick={onBlockClick}
+                  onPaneClick={onPaneClick}
+                  onLoad={onLoad}
+                  nodesDraggable={false}
+                  nodesConnectable={false}
+                  elementsSelectable={false}
+                  snapToGrid
+                >
+                  <Controls showInteractive={false} style={{ position: 'absolute', left: 0, display: 'flex' }}>
+                    <ControlButton
+                      style={{
+                        backgroundColor: 'green',
+                        color: 'white',
+                        whiteSpace: 'nowrap',
+                        zIndex: 99, width: '80% ',
+                      }}
+                      onClick={onStartPipeline}
+                    > Start ▶
+                    </ControlButton>
+                  </Controls>
 
-                <Background />
-              </ReactFlow>
-            </FlowWrapper>
-          </Grid>
-          <Grid
-            item
-            container
-            direction='column'
-            xs={12}
-            style={{ height: '17%' }}
-          >
-            <BlockScrollWrapper>
-              <BlocksScroll
-                items={availableBlocks[selectedBlock?.script_path]}
-                onClick={handleBlockClick}
-              />
-            </BlockScrollWrapper>
-          </Grid>
-          <Grid
-            item
-            container
-            direction='column'
-            xs={12}
-            style={{ height: '63%' }}
-          >
-            <BlockSettingsFormWrapper>
-              {selectedBlock?.id ? (
-                <BlockSettingsForm
-                  block={selectedBlock}
-                  onRestart={onJobRestart}
-                  onSubmit={onJobSubmit}
-                  onClose={onJobCancel}
+                  <Background />
+                </ReactFlow>
+              </FlowWrapper>
+            </Grid>
+            <Grid
+              item
+              container
+              direction='column'
+              xs={12}
+              style={{ height: '17%' }}
+            >
+              <BlockScrollWrapper>
+                <BlocksScroll
+                  items={availableBlocks[selectedBlock?.script_path]}
+                  onClick={handleBlockClick}
                 />
-              ) : (
-                <NoData>Select block</NoData>
-              )}
-            </BlockSettingsFormWrapper>
-          </Grid>
-        </Grid>
-        <Grid
-          item
-          xs={8}
-        >
-          <Container>
-            <ImageViewerContainer>
-              {projectImagesDetails[activeImageIds[0]] && (
-                <ImageViewer
-                  data={projectImagesDetails[activeImageIds[0]]}
-                />
-              )}
-              <ThumbnailsViewer
-                thumbnails={projectImagesOptions}
-                active={activeImageIds[0]}
-                onClick={setActiveImageIds}
-              />
-            </ImageViewerContainer>
-          </Container>
-        </Grid>
+              </BlockScrollWrapper>
+            </Grid>
+            <Grid
+              item
+              container
+              direction='column'
+              xs={12}
+              style={{ height: '52%' }}
+            >
+              <BlockSettingsFormWrapper>
+                {selectedBlock?.id ? (
+                  <BlockSettingsForm
+                    block={selectedBlock}
+                    onRestart={onJobRestart}
+                    onSubmit={onJobSubmit}
+                    onClose={onJobCancel}
+                  />
+                ) : (
+                  <NoData>Select block</NoData>
+                )}
+              </BlockSettingsFormWrapper>
+            </Grid>
+          </div>
+          <div>
+            <Grid
+              item
+              xs={12}
+            >
+              <Container>
+                <ImageViewerContainer>
+                  {projectImagesDetails[activeImageIds[0]] && (
+                    <ImageViewer
+                      data={projectImagesDetails[activeImageIds[0]]}
+                    />
+                  )}
+                  <ThumbnailsViewer
+                    thumbnails={projectImagesOptions}
+                    active={activeImageIds[0]}
+                    onClick={setActiveImageIds}
+                  />
+                </ImageViewerContainer>
+              </Container>
+            </Grid>
+          </div>
+        </SplitPane>
       </Grid>
-
-      {/*{actionWithBlock === 'add' && selectedBlock?.id && (*/}
-      {/*  <AddBlockForm*/}
-      {/*    header="Add Block"*/}
-      {/*    jobTypes={jobTypes}*/}
-      {/*    selectedBlock={selectedBlock}*/}
-      {/*    onClose={() => setActionWithBlock(null)}*/}
-      {/*    onSubmit={onBlockAdd}*/}
-      {/*    open*/}
-      {/*  />*/}
-      {/*)}*/}
 
       {actionWithBlock === 'delete' && selectedBlock?.id && (
         <ConfirmModal
@@ -755,6 +764,11 @@ const Process = () => {
       )}
     </ReactFlowProvider>
   );
+};
+
+Process.propTypes = {
+  // eslint-disable-next-line react/require-default-props
+  sidebarWidth: PropTypes.number,
 };
 
 export default Process;
