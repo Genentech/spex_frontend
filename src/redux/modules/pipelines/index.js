@@ -43,7 +43,7 @@ const slice = createSlice({
 
       if (Object.keys(hashedPipelines).length > 0) {
         state.pipelines = hashedPipelines;
-      };
+      }
     },
 
     fetchPipelinesForVisSuccess: (state, { payload: { projectId, data } }) => {
@@ -223,8 +223,6 @@ const slice = createSlice({
           const jobUrl = '/jobs';
           const createParams = {
             name: job.name,
-            // folder: job.folder,
-            // script: job.script,
             file_names: job.file_names,
             params: job.params,
             omeroIds: job.omeroIds,

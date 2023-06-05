@@ -24,7 +24,6 @@ import NoData from '+components/NoData';
 import ThumbnailsViewer from '+components/ThumbnailsViewer';
 
 import JobBlock from './blocks/JobBlock';
-import StartBlock from './blocks/StartBlock';
 import BlockScrollWrapper from './components/BlockScrollWrapper';
 import BlockSettingsForm from './components/BlockSettingsForm';
 import BlockSettingsFormWrapper from './components/BlockSettingsFormWrapper';
@@ -39,7 +38,6 @@ const nodeWidth = 172;
 const nodeHeight = 36;
 
 const nodeTypes = {
-  start: StartBlock,
   job: JobBlock,
 };
 
@@ -198,19 +196,6 @@ const Process = ( { sidebarWidth } ) => {
         },
       };
 
-      _elements.push({
-        id: pipeline.id,
-        type: 'start',
-        position: options.position,
-        className: classNames({ selected: pipeline.id === selectedBlock?.id }),
-        data: {
-          ...options.data,
-          id: pipeline.id,
-          value: 'pipeline',
-          status: '0',
-        },
-      });
-
       const pipelineClone = cloneDeep(pipeline);
 
       if (selectedBlock && selectedBlock.rootId && selectedBlock.id === 'new') {
@@ -222,6 +207,21 @@ const Process = ( { sidebarWidth } ) => {
     },
     [pipeline, selectedBlock],
   );
+
+  const initialBlocks = useMemo(() => {
+    let blocks = [];
+    Object.keys(jobTypes).forEach((jobType) => {
+      jobTypes[jobType]['stages'].forEach((stage) => {
+        stage['scripts'].forEach((block) => {
+          if ((block.depends_and_script === undefined || block.depends_and_script.length === 0) &&
+            (block.depends_or_script === undefined || block.depends_or_script.length === 0)) {
+            blocks.push({ ...block, folder: jobType, script: jobType });
+          }
+        });
+      });
+    });
+    return blocks;
+  }, [jobTypes]);
 
   const projectImagesOptions = useMemo(
     () => Object.entries(projectImagesThumbnails || {})
@@ -305,13 +305,22 @@ const Process = ( { sidebarWidth } ) => {
           });
         });
         if (selectedBlock.id !== 'new') {
-          setAvailableBlocks({ [selectedBlock.name]: blocks });
+          setAvailableBlocks({ ...availableBlocks, [selectedBlock.name]: blocks });
         } else {
-          setAvailableBlocks({ [selectedBlock.script_path]: [selectedBlock] });
+          setAvailableBlocks({ ...availableBlocks, [selectedBlock.script_path]: [selectedBlock] });
         }
       }
     },
-    [selectedBlock, availableBlocks, jobTypes],
+    [selectedBlock, availableBlocks, jobTypes, initialBlocks],
+  );
+
+  useEffect(
+    () => {
+      if (availableBlocks['initial'] === undefined && initialBlocks.length > 0) {
+        setAvailableBlocks({ ...availableBlocks, 'initial': initialBlocks });
+      }
+    },
+    [availableBlocks, initialBlocks],
   );
 
   const onStartPipeline = useCallback(
@@ -350,9 +359,17 @@ const Process = ( { sidebarWidth } ) => {
       setActionWithBlock(null);
       setSelectedBlock(null);
 
-      const validOmeroIds = values.params?.omeroIds
-        ? values.params.omeroIds.filter((id) => project.omeroIds.includes(id))
-        : jobs[values.rootId]?.omeroIds;
+      let ids = values.params?.omeroIds.split(',');
+      let validOmeroIds = [];
+      if (ids.length > 0 ) {
+        validOmeroIds = ids
+          ? ids.filter((id) => project.omeroIds.includes(id))
+          : jobs[values.rootId]?.omeroIds;
+      } else {
+        validOmeroIds = values.params?.omeroIds
+          ? values.params.omeroIds.filter((id) => project.omeroIds.includes(id))
+          : jobs[values.rootId]?.omeroIds;
+      }
 
       const { filename, ...params } = values.params;
       const file_names = filename ? [filename] : [];
@@ -370,7 +387,6 @@ const Process = ( { sidebarWidth } ) => {
 
       if (normalizedValues.id) {
         const currentJob = jobs[normalizedValues.id];
-
         const sortedCurrentOmeroIds = [...currentJob.omeroIds].sort();
         const sortedValidOmeroIds = [...validOmeroIds].sort();
 
@@ -488,6 +504,18 @@ const Process = ( { sidebarWidth } ) => {
   const handleBlockClick = (newActive) => {
     if (newActive.length === 1) {
       setSelectedBlock((prevValue) => {
+        if (prevValue === null) {
+          setAvailableBlocks( { });
+          return {
+            projectId,
+            pipelineId: pipelineId,
+            rootId: undefined,
+            id: 'new',
+            status: 0,
+            omeroIds: jobs[prevValue?.id]?.omeroIds,
+            ...newActive[0],
+          };
+        }
         if (prevValue.id !== 'new') {
           setActiveBlock(newActive);
           return {
@@ -524,7 +552,7 @@ const Process = ( { sidebarWidth } ) => {
     }
   }, [actionWithBlock, selectedBlock, onJobRestart]);
 
-    useEffect(
+  useEffect(
     () => {
       if (!selectedBlock || !jobs?.[selectedBlock.id]) {
         return;
@@ -703,7 +731,7 @@ const Process = ( { sidebarWidth } ) => {
             >
               <BlockScrollWrapper>
                 <BlocksScroll
-                  items={availableBlocks[selectedBlock?.script_path]}
+                  items={selectedBlock ? availableBlocks[selectedBlock?.script_path] : availableBlocks['initial']}
                   onClick={handleBlockClick}
                 />
               </BlockScrollWrapper>

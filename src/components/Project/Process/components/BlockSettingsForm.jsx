@@ -2,7 +2,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import GetAppIcon from '@material-ui/icons/GetApp';
 import Refresh from '@material-ui/icons/Refresh';
-import Repeat from '@material-ui/icons/Repeat';
 import createFocusOnFirstFieldDecorator from 'final-form-focus-on-first-field';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
@@ -70,7 +69,7 @@ const RightPanel = styled.div`
 
 const Footer = styled.div`
   display: flex;
-  justify-content: flex-start; // or flex-end depending on your needs
+  justify-content: flex-end;
   align-items: center;
   flex-wrap: nowrap;
 
@@ -80,7 +79,7 @@ const Footer = styled.div`
 
   .MuiButton-root + .MuiButton-root {
     margin-left: 15px;
-    flex-shrink: 1; // Add this line
+    flex-shrink: 1; 
   }
 `;
 
@@ -372,17 +371,6 @@ const BlockSettingsForm = (props) => {
                 <Button
                   color={ButtonColors.secondary}
                   onClick={(event) => {
-                    form.restart();
-                    onRestart(event);
-                  }}
-                  title="Restart the block"
-                >
-                  <Repeat />
-                  Restart
-                </Button>
-                <Button
-                  color={ButtonColors.secondary}
-                  onClick={(event) => {
                     onReload(event);
                     form.restart();
                   }}
@@ -392,20 +380,11 @@ const BlockSettingsForm = (props) => {
                   refresh
                 </Button>
                 <Button
-                  color={ButtonColors.secondary}
-                  onClick={(event) => {
-                    form.restart();
-                    onClose(event);
-                  }}
-                >
-                  Close
-                </Button>
-                <Button
                   type="submit"
                   color={ButtonColors.primary}
                   disabled={submitting || disabled}
                 >
-                  Submit
+                  Save
                 </Button>
               </Footer>
             </FormRenderer>
