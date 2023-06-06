@@ -26,7 +26,7 @@ const baseUrl = '/jobs';
 
 const isObject = (value) => value != null && typeof value === 'object' && !Array.isArray(value);
 
-const normalizeJob = (job) => {
+export const normalizeJob = (job) => {
   let content;
   try {
     content = JSON.parse(job.content);
@@ -287,6 +287,7 @@ const slice = createSlice({
           const url = `${baseUrl}`;
           const { data } = yield call(api.post, url, job);
           yield put(actions.createJobSuccess(data.data));
+          return data.data;
         } catch (error) {
           yield put(actions.requestFail(error));
           // eslint-disable-next-line no-console
@@ -303,6 +304,7 @@ const slice = createSlice({
           const url = `${baseUrl}/${job.id}`;
           const { data } = yield call(api.put, url, job);
           yield put(actions.updateJobSuccess(data.data));
+          return data.data;
         } catch (error) {
           yield put(actions.requestFail(error));
           // eslint-disable-next-line no-console

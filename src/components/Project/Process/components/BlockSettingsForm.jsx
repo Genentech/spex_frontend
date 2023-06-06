@@ -208,23 +208,28 @@ const BlockSettingsForm = (props) => {
   );
 
   const projectImagesChannelsOptions = useMemo(() => {
-    let selectedImgChannels = [];
+    let allImgChannels = [];
 
-    if (Object.keys(projectImagesDetails).length > 0 && activeImageIds.length > 0) {
-      activeImageIds.forEach((im_id) => {
+    if (Object.keys(projectImagesDetails).length > 0) {
+      Object.keys(projectImagesDetails).forEach((im_id) => {
         if (projectImagesDetails.hasOwnProperty(im_id)) {
-          selectedImgChannels = projectImagesDetails[im_id].channels;
+          allImgChannels = [...allImgChannels, ...projectImagesDetails[im_id].channels];
         }
       });
     }
 
-    return selectedImgChannels.map((el) => ({
+    const uniqueImgChannels = Array.from(new Set(allImgChannels.map(a => a.label)))
+      .map((label) => {
+        return allImgChannels.find(a => a.label === label);
+      });
+
+    return uniqueImgChannels.map((el) => ({
       value: el.label,
       label: el.label,
       color: el.color,
       index: el.value,
     }));
-  }, [projectImagesDetails, activeImageIds]);
+  }, [projectImagesDetails]);
 
   const status = block?.id === 'new' ? 'New' : statusFormatter(block.status);
   const header = `[${status}] ${block.description || block.name || ''}`;

@@ -297,18 +297,18 @@ const Process = ( { sidebarWidth } ) => {
           jobTypes[jobType]['stages'].forEach((stage) => {
               stage['scripts'].forEach((block) => {
                 const enabled = block.depends_and_script?.includes(selectedBlock.script_path)
-                  || block.depends_or_script?.includes(selectedBlock.script_path);
+                   || block.depends_or_script?.includes(selectedBlock.script_path);
                 if (enabled) {
                   blocks.push({ ...block, folder: jobType, script: jobType });
                 }
               });
           });
         });
-        if (selectedBlock.id !== 'new') {
-          setAvailableBlocks({ ...availableBlocks, [selectedBlock.name]: blocks });
-        } else {
-          setAvailableBlocks({ ...availableBlocks, [selectedBlock.script_path]: [selectedBlock] });
-        }
+        // if (selectedBlock.id !== 'new') {
+        setAvailableBlocks({ ...availableBlocks, [selectedBlock.name]: blocks });
+        // } else {
+        //   setAvailableBlocks({ ...availableBlocks, [selectedBlock.script_path]: [selectedBlock] });
+        // }
       }
     },
     [selectedBlock, availableBlocks, jobTypes, initialBlocks],
@@ -359,16 +359,18 @@ const Process = ( { sidebarWidth } ) => {
       setActionWithBlock(null);
       setSelectedBlock(null);
 
-      let ids = values.params?.omeroIds.split(',');
       let validOmeroIds = [];
-      if (ids.length > 0 ) {
-        validOmeroIds = ids
-          ? ids.filter((id) => project.omeroIds.includes(id))
-          : jobs[values.rootId]?.omeroIds;
-      } else {
-        validOmeroIds = values.params?.omeroIds
-          ? values.params.omeroIds.filter((id) => project.omeroIds.includes(id))
-          : jobs[values.rootId]?.omeroIds;
+      if (values.params?.omeroIds !== undefined) {
+        let ids = values.params?.omeroIds.replace(' ','').split(',');
+        if (ids.length > 0 ) {
+          validOmeroIds = ids
+            ? ids.filter((id) => project.omeroIds.includes(id))
+            : jobs[values.rootId]?.omeroIds;
+        } else {
+          validOmeroIds = values.params?.omeroIds
+            ? values.params.omeroIds.filter((id) => project.omeroIds.includes(id))
+            : jobs[values.rootId]?.omeroIds;
+        }
       }
 
       const { filename, ...params } = values.params;
@@ -408,8 +410,9 @@ const Process = ( { sidebarWidth } ) => {
       }
 
       dispatch(pipelineActions.createJob(normalizedValues));
+      dispatch(jobsActions.fetchJobsByPipelineId(pipelineId));
     },
-    [dispatch, jobs, project],
+    [dispatch, jobs, project, pipelineId],
   );
 
   const onPaneClick = useCallback(
@@ -429,10 +432,15 @@ const Process = ( { sidebarWidth } ) => {
 
       const job = jobs[block.id];
       if (!job) {
+        const par = block.data.params;
         setSelectedBlock({
           projectId,
           pipelineId: pipelineId,
-          ...block,
+          omeroIds: block.omeroIds,
+          ...block.data,
+          folder: par.folder,
+          script: par.script,
+          script_path: par.part,
         });
         return;
       }

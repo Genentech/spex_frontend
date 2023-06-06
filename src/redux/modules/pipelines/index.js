@@ -71,7 +71,7 @@ const slice = createSlice({
       delete state.pipelines[pipelineId];
     },
 
-    createJobSuccess: (state) => {
+    createJobSuccess: (state, { payload: { jobs, pipelineId } }) => {
       stopFetching(state);
     },
 
@@ -240,7 +240,13 @@ const slice = createSlice({
             pipelineId: job.pipelineId,
           }));
 
-          yield put(actions.createJobSuccess());
+          yield put(actions.createJobSuccess( { jobs: [job], pipelineId: job.pipelineId } ));
+          yield put(actions.fetchPipeline({
+            projectId: job.projectId,
+            pipelineId: job.pipelineId,
+          }));
+
+          yield put(jobsActions.fetchJobsByPipelineId(job.pipelineId));
         } catch (error) {
           yield put(actions.requestFail(error));
           // eslint-disable-next-line no-console
