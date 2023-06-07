@@ -145,7 +145,7 @@ const sortTaskById = ({ id: a }, { id: b }) => {
   return +a - +b;
 };
 
-const Process = ( { sidebarWidth } ) => {
+const Manager = ( { sidebarWidth } ) => {
   const dispatch = useDispatch();
   const location = useLocation();
   const matchProjectPath = matchPath(location.pathname, { path: `/${PathNames.projects}/:id` });
@@ -713,7 +713,19 @@ const Process = ( { sidebarWidth } ) => {
                   elementsSelectable={false}
                   snapToGrid
                 >
-                  <Controls showInteractive={false} style={{ position: 'absolute', left: 0, display: 'flex' }} />
+                  <Controls showInteractive={false} style={{ position: 'absolute', left: 0, display: 'flex' }}>
+                    <ControlButton
+                      style={{
+                        backgroundColor: 'green',
+                        color: 'white',
+                        whiteSpace: 'nowrap',
+                        zIndex: 99, width: '80% ',
+                      }}
+                      onClick={onStartPipeline}
+                    > Start ▶
+                    </ControlButton>
+                  </Controls>
+
                   <Background />
                 </ReactFlow>
               </FlowWrapper>
@@ -737,20 +749,20 @@ const Process = ( { sidebarWidth } ) => {
               container
               direction='column'
               xs={12}
-              style={{ height: '50%' }}
+              style={{ height: '45%' }}
             >
-              <BlockSettingsFormWrapper>
-                {selectedBlock?.id ? (
-                  <BlockSettingsForm
-                    block={selectedBlock}
-                    onRestart={onJobRestart}
-                    onSubmit={onJobSubmit}
-                    onClose={onJobCancel}
-                  />
-                ) : (
-                  <NoData>Select block</NoData>
-                )}
-              </BlockSettingsFormWrapper>
+              {/*<BlockSettingsFormWrapper>*/}
+              {/*  {selectedBlock?.id ? (*/}
+              {/*    <BlockSettingsForm*/}
+              {/*      block={selectedBlock}*/}
+              {/*      onRestart={onJobRestart}*/}
+              {/*      onSubmit={onJobSubmit}*/}
+              {/*      onClose={onJobCancel}*/}
+              {/*    />*/}
+              {/*  ) : (*/}
+              {/*    <NoData>Select block</NoData>*/}
+              {/*  )}*/}
+              {/*</BlockSettingsFormWrapper>*/}
             </Grid>
           </div>
           <div>
@@ -790,9 +802,9 @@ const Process = ( { sidebarWidth } ) => {
   );
 };
 
-Process.propTypes = {
+Manager.propTypes = {
   // eslint-disable-next-line react/require-default-props
   sidebarWidth: PropTypes.number,
 };
 
-export default Process;
+export default Manager;

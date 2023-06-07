@@ -17,10 +17,10 @@ import { getFromStorage, saveToStorage } from '+utils/localStorage';
 import Container from './components/Container';
 import Pipeline from './Pipeline';
 import Pipelines from './Pipelines';
-import Process from './Process';
 import Processes from './Processes';
 import Resources from './Resources';
 import Results from './Results';
+import TabContainer from './TabComponent';
 
 const drawerWidth = 240;
 const drawerWidthClosed = 72;
@@ -180,7 +180,7 @@ const Project = () => {
 
       {showResources && <Resources />}
       {ShowProcesses && <Processes />}
-      {ShowProcess && <Process sidebarWidth={sidebarWidth} />}
+      {ShowProcess && <TabContainer sidebarWidth={sidebarWidth} />}
       {ShowPipelines && <Pipelines />}
       {ShowPipeline && <Pipeline />}
       {showResults && <Results />}
