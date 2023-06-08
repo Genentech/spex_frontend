@@ -17,18 +17,13 @@ import { actions as pipelineActions, selectors as pipelineSelectors } from '@/re
 import { selectors as projectsSelectors } from '@/redux/modules/projects';
 import { actions as tasksActions, selectors as tasksSelectors } from '@/redux/modules/tasks';
 
-import BlocksScroll from '+components/BlocksScroll';
 import ConfirmModal, { ConfirmActions } from '+components/ConfirmModal';
-import ImageViewer from '+components/ImageViewer';
-import NoData from '+components/NoData';
 import ThumbnailsViewer from '+components/ThumbnailsViewer';
 
 import JobBlock from './blocks/JobBlock';
-import BlockScrollWrapper from './components/BlockScrollWrapper';
-import BlockSettingsForm from './components/BlockSettingsForm';
-import BlockSettingsFormWrapper from './components/BlockSettingsFormWrapper';
 import Container from './components/Container';
 import FlowWrapper from './components/FlowWrapper';
+import TasksDisplay from './components/TasksDisplay';
 
 
 const jobRefreshInterval = 6e4; // 1 minute
@@ -154,7 +149,6 @@ const Manager = ( { sidebarWidth } ) => {
   const projectImagesDetails = useSelector(omeroSelectors.getImagesDetails(project?.omeroIds || []));
   const [activeImageIds, setActiveImageIds] = useState(project?.omeroIds || []);
   // eslint-disable-next-line no-unused-vars
-  const [activeBlock, setActiveBlock] = useState([]);
   const [sizes, setSizes] = useState([
     300,
     400,
@@ -207,21 +201,6 @@ const Manager = ( { sidebarWidth } ) => {
     },
     [pipeline, selectedBlock],
   );
-
-  const initialBlocks = useMemo(() => {
-    let blocks = [];
-    Object.keys(jobTypes).forEach((jobType) => {
-      jobTypes[jobType]['stages'].forEach((stage) => {
-        stage['scripts'].forEach((block) => {
-          if ((block.depends_and_script === undefined || block.depends_and_script.length === 0) &&
-            (block.depends_or_script === undefined || block.depends_or_script.length === 0)) {
-            blocks.push({ ...block, folder: jobType, script: jobType });
-          }
-        });
-      });
-    });
-    return blocks;
-  }, [jobTypes]);
 
   const projectImagesOptions = useMemo(
     () => Object.entries(projectImagesThumbnails || {})
@@ -285,44 +264,6 @@ const Manager = ( { sidebarWidth } ) => {
     [images_visualization, selectedBlock, setCurrImages],
   );
 
-  useEffect(
-    () => {
-      if (!selectedBlock || Object.keys(jobTypes).length === 0) {
-        return;
-      }
-      if ( availableBlocks[selectedBlock.script_path] === undefined) {
-      // eslint-disable-next-line no-console
-        let blocks = [];
-        Object.keys(jobTypes).forEach((jobType) => {
-          jobTypes[jobType]['stages'].forEach((stage) => {
-              stage['scripts'].forEach((block) => {
-                const enabled = block.depends_and_script?.includes(selectedBlock.script_path)
-                   || block.depends_or_script?.includes(selectedBlock.script_path);
-                if (enabled) {
-                  blocks.push({ ...block, folder: jobType, script: jobType });
-                }
-              });
-          });
-        });
-        // if (selectedBlock.id !== 'new') {
-        setAvailableBlocks({ ...availableBlocks, [selectedBlock.name]: blocks });
-        // } else {
-        //   setAvailableBlocks({ ...availableBlocks, [selectedBlock.script_path]: [selectedBlock] });
-        // }
-      }
-    },
-    [selectedBlock, availableBlocks, jobTypes, initialBlocks],
-  );
-
-  useEffect(
-    () => {
-      if (availableBlocks['initial'] === undefined && initialBlocks.length > 0) {
-        setAvailableBlocks({ ...availableBlocks, 'initial': initialBlocks });
-      }
-    },
-    [availableBlocks, initialBlocks],
-  );
-
   const onStartPipeline = useCallback(
     () => {
       dispatch(jobsActions.startPipeline(pipelineId));
@@ -352,67 +293,6 @@ const Manager = ( { sidebarWidth } ) => {
       }
     },
     [dispatch, jobs, selectedBlock],
-  );
-
-  const onJobSubmit = useCallback(
-    (values) => {
-      setActionWithBlock(null);
-      setSelectedBlock(null);
-
-      let validOmeroIds = [];
-      if (values.params?.omeroIds !== undefined) {
-        let ids = values.params?.omeroIds.replace(' ','').split(',');
-        if (ids.length > 0 ) {
-          validOmeroIds = ids
-            ? ids.filter((id) => project.omeroIds.includes(id))
-            : jobs[values.rootId]?.omeroIds;
-        } else {
-          validOmeroIds = values.params?.omeroIds
-            ? values.params.omeroIds.filter((id) => project.omeroIds.includes(id))
-            : jobs[values.rootId]?.omeroIds;
-        }
-      }
-
-      const { filename, ...params } = values.params;
-      const file_names = filename ? [filename] : [];
-
-      const normalizedValues = {
-        ...values,
-        params: { ...params },
-        omeroIds: validOmeroIds,
-        file_names: file_names,
-      };
-
-      if (normalizedValues.id === 'new') {
-        delete normalizedValues.id;
-      }
-
-      if (normalizedValues.id) {
-        const currentJob = jobs[normalizedValues.id];
-        const sortedCurrentOmeroIds = [...currentJob.omeroIds].sort();
-        const sortedValidOmeroIds = [...validOmeroIds].sort();
-
-        if (
-          JSON.stringify(sortedCurrentOmeroIds) !==
-          JSON.stringify(sortedValidOmeroIds)
-        ) {
-          normalizedValues.status = -2;
-        }
-
-        dispatch(pipelineActions.updateJob(normalizedValues));
-        return;
-      }
-
-      const [rootId] = normalizedValues.params?.job || [];
-      if (rootId != null) {
-        dispatch(pipelineActions.createConn(normalizedValues));
-        normalizedValues.rootId = rootId;
-      }
-
-      dispatch(pipelineActions.createJob(normalizedValues));
-      dispatch(jobsActions.fetchJobsByPipelineId(pipelineId));
-    },
-    [dispatch, jobs, project, pipelineId],
   );
 
   const onPaneClick = useCallback(
@@ -500,48 +380,6 @@ const Manager = ( { sidebarWidth } ) => {
     },
     [setReactFlowInstance],
   );
-
-  const onJobCancel = useCallback(
-    () => {
-      setActionWithBlock(null);
-      setSelectedBlock(null);
-    },
-    [],
-  );
-
-  const handleBlockClick = (newActive) => {
-    if (newActive.length === 1) {
-      setSelectedBlock((prevValue) => {
-        if (prevValue === null) {
-          setAvailableBlocks( { });
-          return {
-            projectId,
-            pipelineId: pipelineId,
-            rootId: undefined,
-            id: 'new',
-            status: 0,
-            omeroIds: jobs[prevValue?.id]?.omeroIds,
-            ...newActive[0],
-          };
-        }
-        if (prevValue.id !== 'new') {
-          setActiveBlock(newActive);
-          return {
-            projectId,
-            pipelineId: pipelineId,
-            rootId: prevValue?.id,
-            id: 'new',
-            status: 0,
-            omeroIds: jobs[prevValue?.id]?.omeroIds,
-            ...newActive[0],
-          };
-        } else {
-          setAvailableBlocks( { });
-        }
-        return prevValue;
-      });
-    }
-  };
 
   useEffect(
     () => {
@@ -688,7 +526,7 @@ const Manager = ( { sidebarWidth } ) => {
           sizes={sizes}
           split="vertical"
           minSize={200 + sidebarWidth}
-          size={500}
+          size={700}
           resizerStyle={resizerStyles}
           onChange={(size) => setSizes([size, 1000 - size])}
           style={{ marginLeft: sidebarWidth }}
@@ -699,7 +537,7 @@ const Manager = ( { sidebarWidth } ) => {
               container
               direction='column'
               xs={12}
-              style={{ height: '20%' }}
+              style={{ height: '40%' }}
             >
               <FlowWrapper>
                 <ReactFlow
@@ -730,53 +568,20 @@ const Manager = ( { sidebarWidth } ) => {
                 </ReactFlow>
               </FlowWrapper>
             </Grid>
-            <Grid
-              item
-              container
-              direction='column'
-              xs={12}
-              style={{ height: '17%' }}
-            >
-              <BlockScrollWrapper>
-                <BlocksScroll
-                  items={selectedBlock ? availableBlocks[selectedBlock?.script_path] : availableBlocks['initial']}
-                  onClick={handleBlockClick}
-                />
-              </BlockScrollWrapper>
-            </Grid>
-            <Grid
-              item
-              container
-              direction='column'
-              xs={12}
-              style={{ height: '45%' }}
-            >
-              {/*<BlockSettingsFormWrapper>*/}
-              {/*  {selectedBlock?.id ? (*/}
-              {/*    <BlockSettingsForm*/}
-              {/*      block={selectedBlock}*/}
-              {/*      onRestart={onJobRestart}*/}
-              {/*      onSubmit={onJobSubmit}*/}
-              {/*      onClose={onJobCancel}*/}
-              {/*    />*/}
-              {/*  ) : (*/}
-              {/*    <NoData>Select block</NoData>*/}
-              {/*  )}*/}
-              {/*</BlockSettingsFormWrapper>*/}
+            <Grid>
+              <TasksDisplay selectedBlock={selectedBlock} />
             </Grid>
           </div>
-          <div>
+          <div style={{ height: '100%', maxHeight: '100%', flexDirection: 'column' }}>
             <Grid
               item
+              container
+              direction='column'
               xs={12}
+              style={{ height: '40%' }}
             >
               <Container>
                 <ImageViewerContainer>
-                  {projectImagesDetails[activeImageIds[0]] && (
-                    <ImageViewer
-                      data={projectImagesDetails[activeImageIds[0]]}
-                    />
-                  )}
                   <ThumbnailsViewer
                     thumbnails={projectImagesOptions}
                     active={activeImageIds[0]}

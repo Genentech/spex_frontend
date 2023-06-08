@@ -688,7 +688,7 @@ const Process = ( { sidebarWidth } ) => {
           sizes={sizes}
           split="vertical"
           minSize={200 + sidebarWidth}
-          size={500}
+          size={700}
           resizerStyle={resizerStyles}
           onChange={(size) => setSizes([size, 1000 - size])}
           style={{ marginLeft: sidebarWidth }}
@@ -723,7 +723,7 @@ const Process = ( { sidebarWidth } ) => {
               container
               direction='column'
               xs={12}
-              style={{ height: '17%' }}
+              style={{ height: '10%' }}
             >
               <BlockScrollWrapper>
                 <BlocksScroll
@@ -737,7 +737,7 @@ const Process = ( { sidebarWidth } ) => {
               container
               direction='column'
               xs={12}
-              style={{ height: '50%' }}
+              style={{ height: '57%' }}
             >
               <BlockSettingsFormWrapper>
                 {selectedBlock?.id ? (

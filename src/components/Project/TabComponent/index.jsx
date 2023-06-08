@@ -1,19 +1,21 @@
-import React from 'react';
+import React, { useState, useMemo, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import Container from 'components/Project/components/Container';
-import Process from 'components/Project/Process';
 import Manager from 'components/Project/Pipeline_manager';
+import Process from 'components/Project/Process';
 import Tabs, { Tab, TabPanel } from '+components/Tabs';
 
-const TabContainer = ( { sidebarWidth } ) => {
-  const [value, setValue] = React.useState(0);
+const TabContainer = ({ sidebarWidth }) => {
+  const [value, setValue] = useState(0);
 
-  const handleChange = (event: React.ChangeEvent<{}>, newValue: number) => {
+  const processComponent = useMemo(() => <Process sidebarWidth={sidebarWidth} />, [sidebarWidth]);
+  const managerComponent = useMemo(() => <Manager sidebarWidth={sidebarWidth} />, [sidebarWidth]);
+
+  const handleChange = (event, newValue) => {
     setValue(newValue);
   };
 
   return (
-    <Container>
+    <Fragment>
       <Tabs
         value={value}
         onChange={handleChange}
@@ -21,13 +23,17 @@ const TabContainer = ( { sidebarWidth } ) => {
         <Tab label="Builder" />
         <Tab label="Pipeline" />
       </Tabs>
-      <TabPanel value={value} index={0}>
-        <Process sidebarWidth={sidebarWidth} />
-      </TabPanel>
-      <TabPanel value={value} index={1}>
-        <Manager sidebarWidth={sidebarWidth} />
-      </TabPanel>
-    </Container>
+      {value === 0 && (
+        <TabPanel value={value} index={0}>
+          {processComponent}
+        </TabPanel>
+      )}
+      {value === 1 && (
+        <TabPanel value={value} index={1}>
+          {managerComponent}
+        </TabPanel>
+      )}
+    </Fragment>
   );
 };
 
