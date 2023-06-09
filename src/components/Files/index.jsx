@@ -1,19 +1,27 @@
 import React, { useMemo, useCallback, useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
-
+import { matchPath, useLocation } from 'react-router-dom';
+import PathNames from '@/models/PathNames';
 import { actions as filesActions, selectors as filesSelectors } from '@/redux/modules/files';
+import { selectors as projectsSelectors } from '@/redux/modules/projects';
 import Button, { ButtonSizes, ButtonColors } from '+components/Button';
 import ConfirmModal, { ConfirmActions } from '+components/ConfirmModal';
 import ErrorMessage from '+components/ErrorMessage';
 import FilePicker from '+components/SelectFile';
 import Table, { ButtonsCell } from '+components/Table';
 
-const Files = () => {
+const Files = ({ hideUploadButton = false }) => {
   const dispatch = useDispatch();
+  const location = useLocation();
+
+  const matchProjectPath = matchPath(location.pathname, { path: `/${PathNames.projects}/:id` });
+  const projectId = matchProjectPath ? matchProjectPath.params.id : undefined;
 
   const filesData = useSelector(filesSelectors.getFiles);
   const fileKeys = useSelector(filesSelectors.getFileKeys);
   const error = useSelector(filesSelectors.getError);
+  const project = useSelector(projectsSelectors.getProject(projectId));
 
   const [fileToDelete, setFileToDelete] = useState(null);
   // eslint-disable-next-line no-unused-vars
@@ -61,18 +69,24 @@ const Files = () => {
   );
 
   const files = useMemo(() => {
-    const filesArray = [];
+    let filesArray = [];
 
     if (filesData && Array.isArray(filesData)) {
-      filesData.forEach((file) => {
-        if (file.type === 'file') {
-          filesArray.push({ name: file.filename, type: file.type });
+      for (const file of filesData) {
+        if (project) {
+          if (file.type === 'file' && project?.file_names.includes(file.filename)) {
+            filesArray.push({ name: file.filename, type: file.type });
+          }
+        } else {
+          if (file.type === 'file') {
+            filesArray.push({ name: file.filename, type: file.type });
+          }
         }
-      });
+      }
     }
 
     return filesArray;
-  }, [filesData]);
+  }, [filesData, project?.file_names]);
 
   const onCheckFile = useCallback(
     (file) => {
@@ -141,7 +155,7 @@ const Files = () => {
   return (
     <React.Fragment>
       {error && <ErrorMessage message={error} />}
-      <FilePicker onFileChange={onFileChange} />
+      {!hideUploadButton && <FilePicker onFileChange={onFileChange} />}
       <Table
         columns={columns}
         data={files}
@@ -157,6 +171,14 @@ const Files = () => {
       )}
     </React.Fragment>
   );
+};
+
+Files.propTypes = {
+  hideUploadButton: PropTypes.bool,
+};
+
+Files.defaultProps = {
+  hideUploadButton: false,
 };
 
 export default Files;

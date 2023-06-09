@@ -24,7 +24,7 @@ import JobBlock from './blocks/JobBlock';
 import Container from './components/Container';
 import FlowWrapper from './components/FlowWrapper';
 import TasksDisplay from './components/TasksDisplay';
-
+import FilesDisplay from './components/FilesDisplay';
 
 const jobRefreshInterval = 6e4; // 1 minute
 
@@ -170,7 +170,6 @@ const Manager = ( { sidebarWidth } ) => {
   const [selectedBlock, setSelectedBlock] = useState(null);
   // eslint-disable-next-line no-unused-vars
   const [currImages, setCurrImages] = useState({});
-  const [availableBlocks, setAvailableBlocks] = useState({});
   const images_visualization = useSelector(tasksSelectors.getTaskVisualizations || {});
 
   const elements = useMemo(
@@ -216,6 +215,27 @@ const Manager = ( { sidebarWidth } ) => {
       }),
     [projectImagesThumbnails, projectImagesDetails],
   );
+
+  const pipeline_tasks = useMemo(() => {
+    if (!jobs) {
+      return [];
+    }
+
+    return Object.values(jobs).reduce((acc, job) => {
+      if (!job.tasks) {
+        return acc;
+      }
+
+      return [
+        ...acc,
+        ...job.tasks.map((task) => ({
+          ...task,
+          jobId: job.id,
+          jobType: jobTypes[job.type],
+        })),
+      ];
+    }, []);
+  }, [jobs]);
 
   useEffect(
     () => {
@@ -569,7 +589,7 @@ const Manager = ( { sidebarWidth } ) => {
               </FlowWrapper>
             </Grid>
             <Grid>
-              <TasksDisplay selectedBlock={selectedBlock} />
+              <TasksDisplay allTasks={pipeline_tasks} />
             </Grid>
           </div>
           <div style={{ height: '100%', maxHeight: '100%', flexDirection: 'column' }}>
@@ -589,6 +609,9 @@ const Manager = ( { sidebarWidth } ) => {
                   />
                 </ImageViewerContainer>
               </Container>
+            </Grid>
+            <Grid>
+              <FilesDisplay />
             </Grid>
           </div>
         </SplitPane>

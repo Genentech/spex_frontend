@@ -7,88 +7,64 @@ import {
   ListItemText,
   Button,
   CircularProgress,
+  AccordionSummary,
 } from '@material-ui/core';
-import AccordionSummary from '@material-ui/core/AccordionSummary';
 import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
 import ErrorIcon from '@material-ui/icons/Error';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import PropTypes from 'prop-types';
 
-const TasksDisplay = ({ selectedBlock }) => {
+const TasksDisplay = ({ allTasks }) => {
   const [tasks, setTasks] = useState([]);
-  const [errors, setErrors] = useState([]);
 
   useEffect(() => {
-    if (selectedBlock) {
-      setTasks(selectedBlock.tasks);
-      setErrors(selectedBlock.errors);
+    if (allTasks) {
+      setTasks(allTasks);
     }
-  }, [selectedBlock]);
+  }, [allTasks]);
 
   return (
     <div>
       {tasks.map((task, i) => (
-        <div key={task.id}>
-          <ListItem>
-            <ListItemText primary={`task ${i + 1}: ${task.name}`} />
-            <Button variant="contained" color="primary" onClick={() => { console.log(task); }}>
-              Action
-            </Button>
-          </ListItem>
-          <div>
-            {task.status === 'pending' && <CircularProgress />}
-            {task.status === 'error' && <ErrorIcon color="secondary" />}
-            {task.status === 'success' && <CheckCircleOutlineIcon color="primary" />}
-          </div>
-        </div>
-      ))}
-
-      {!!selectedBlock?.errors?.length && (
-        <Accordion>
+        <Accordion key={task.id}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <ErrorIcon /> Errors
+            <ListItemText primary={`Task ${i + 1}: ${task.name}`} />
           </AccordionSummary>
           <AccordionDetails>
-            <List dense component="div">
-              {selectedBlock.errors.map((item) => (
-                <ListItem key={item.id}>
-                  <ListItemText primary={`task id: ${item.id}`} />
-                  <pre>
-                    {item.error}
-                  </pre>
-                </ListItem>
-              ))}
+            <List component="div">
+              <ListItem>
+                <ListItemText primary={`Task ID: ${task.id}`} secondary={`Status: ${task.status}`} />
+              </ListItem>
+              <ListItem>
+                <Button variant="contained" color="primary" onClick={() => { console.log(task); }}>
+                  Action
+                </Button>
+              </ListItem>
+              <ListItem>
+                {task.status === 'pending' && <CircularProgress />}
+                {task.status === 'error' && <ErrorIcon color="secondary" />}
+                {task.status === 'success' && <CheckCircleOutlineIcon color="primary" />}
+              </ListItem>
             </List>
           </AccordionDetails>
         </Accordion>
-      )}
+      ))}
     </div>
   );
 };
 
 TasksDisplay.defaultProps = {
-  selectedBlock: {
-    tasks: [],
-    errors: [],
-  },
+  allTasks: [],
 };
 
 TasksDisplay.propTypes = {
-  selectedBlock: PropTypes.shape({
-    tasks: PropTypes.arrayOf(
-      PropTypes.shape({
-        id: PropTypes.string.isRequired,
-        name: PropTypes.string.isRequired,
-        status: PropTypes.number.isRequired,
-      }),
-    ),
-    errors: PropTypes.arrayOf(
-      PropTypes.shape({
-        id: PropTypes.string.isRequired,
-        error: PropTypes.string.isRequired,
-      }),
-    ),
-  }),
+  allTasks: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      name: PropTypes.string.isRequired,
+      status: PropTypes.string.isRequired,
+    }),
+  ),
 };
 
 export default TasksDisplay;
