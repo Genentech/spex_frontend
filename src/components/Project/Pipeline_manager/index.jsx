@@ -17,14 +17,15 @@ import { actions as pipelineActions, selectors as pipelineSelectors } from '@/re
 import { selectors as projectsSelectors } from '@/redux/modules/projects';
 import { actions as tasksActions, selectors as tasksSelectors } from '@/redux/modules/tasks';
 
+import statusFormatter from '@/shared/utils/statusFormatter';
 import ConfirmModal, { ConfirmActions } from '+components/ConfirmModal';
 import ThumbnailsViewer from '+components/ThumbnailsViewer';
 
 import JobBlock from './blocks/JobBlock';
 import Container from './components/Container';
+import FilesDisplay from './components/FilesDisplay';
 import FlowWrapper from './components/FlowWrapper';
 import TasksDisplay from './components/TasksDisplay';
-import FilesDisplay from './components/FilesDisplay';
 
 const jobRefreshInterval = 6e4; // 1 minute
 
@@ -231,11 +232,12 @@ const Manager = ( { sidebarWidth } ) => {
         ...job.tasks.map((task) => ({
           ...task,
           jobId: job.id,
+          status: statusFormatter(job.status),
           jobType: jobTypes[job.type],
         })),
       ];
     }, []);
-  }, [jobs]);
+  }, [jobTypes, jobs]);
 
   useEffect(
     () => {
@@ -528,12 +530,20 @@ const Manager = ( { sidebarWidth } ) => {
     [dispatch],
   );
 
-  const resizerStyles = {
+  const verticalResizerStyles = {
     width: '5px',
     cursor: 'col-resize',
     zIndex: 1,
     boxSizing: 'border-box',
   };
+
+  const horizontalResizerStyles = {
+    height: '5px',
+    cursor: 'row-resize',
+    zIndex: 1,
+    boxSizing: 'border-box',
+  };
+
 
   return (
     <ReactFlowProvider>
@@ -547,72 +557,86 @@ const Manager = ( { sidebarWidth } ) => {
           split="vertical"
           minSize={200 + sidebarWidth}
           size={700}
-          resizerStyle={resizerStyles}
+          resizerStyle={verticalResizerStyles}
           onChange={(size) => setSizes([size, 1000 - size])}
           style={{ marginLeft: sidebarWidth }}
         >
           <div style={{ height: '100%', maxHeight: '100%', flexDirection: 'column' }}>
-            <Grid
-              item
-              container
-              direction='column'
-              xs={12}
-              style={{ height: '40%' }}
+            <SplitPane
+              split="horizontal"
+              resizerStyle={horizontalResizerStyles}
+              minSize={200}
+              size={300}
             >
-              <FlowWrapper>
-                <ReactFlow
-                  nodeTypes={nodeTypes}
-                  elements={elements}
-                  onElementClick={onBlockClick}
-                  onPaneClick={onPaneClick}
-                  onLoad={onLoad}
-                  nodesDraggable={false}
-                  nodesConnectable={false}
-                  elementsSelectable={false}
-                  snapToGrid
-                >
-                  <Controls showInteractive={false} style={{ position: 'absolute', left: 0, display: 'flex' }}>
-                    <ControlButton
-                      style={{
-                        backgroundColor: 'green',
-                        color: 'white',
-                        whiteSpace: 'nowrap',
-                        zIndex: 99, width: '80% ',
-                      }}
-                      onClick={onStartPipeline}
-                    > Start ▶
-                    </ControlButton>
-                  </Controls>
+              <Grid
+                item
+                container
+                direction='column'
+                xs={12}
+              >
+                <FlowWrapper>
+                  <ReactFlow
+                    nodeTypes={nodeTypes}
+                    elements={elements}
+                    onElementClick={onBlockClick}
+                    onPaneClick={onPaneClick}
+                    onLoad={onLoad}
+                    nodesDraggable={false}
+                    nodesConnectable={false}
+                    elementsSelectable={false}
+                    snapToGrid
+                  >
+                    <Controls showInteractive={false} style={{ position: 'absolute', left: 0, display: 'flex' }}>
+                      <ControlButton
+                        style={{
+                          backgroundColor: 'green',
+                          color: 'white',
+                          whiteSpace: 'nowrap',
+                          zIndex: 99, width: '80% ',
+                        }}
+                        onClick={onStartPipeline}
+                      > Start ▶
+                      </ControlButton>
+                    </Controls>
 
-                  <Background />
-                </ReactFlow>
-              </FlowWrapper>
-            </Grid>
-            <Grid>
-              <TasksDisplay allTasks={pipeline_tasks} />
-            </Grid>
+                    <Background />
+                  </ReactFlow>
+                </FlowWrapper>
+              </Grid>
+              <Grid
+                style={{ paddingLeft: '6px' }}
+              >
+                <TasksDisplay allTasks={pipeline_tasks} />
+              </Grid>
+            </SplitPane>
           </div>
           <div style={{ height: '100%', maxHeight: '100%', flexDirection: 'column' }}>
-            <Grid
-              item
-              container
-              direction='column'
-              xs={12}
-              style={{ height: '40%' }}
+            <SplitPane
+              split="horizontal"
+              resizerStyle={horizontalResizerStyles}
+              minSize={200}
+              size={300}
             >
-              <Container>
-                <ImageViewerContainer>
-                  <ThumbnailsViewer
-                    thumbnails={projectImagesOptions}
-                    active={activeImageIds[0]}
-                    onClick={setActiveImageIds}
-                  />
-                </ImageViewerContainer>
-              </Container>
-            </Grid>
-            <Grid>
-              <FilesDisplay />
-            </Grid>
+              <Grid
+                item
+                container
+                direction='column'
+                xs={12}
+              >
+                <Container>
+                  <ImageViewerContainer>
+                    <ThumbnailsViewer
+                      thumbnails={projectImagesOptions}
+                      active={activeImageIds[0]}
+                      onClick={setActiveImageIds}
+                    />
+                  </ImageViewerContainer>
+                </Container>
+              </Grid>
+              <Grid>
+                <FilesDisplay />
+              </Grid>
+            </SplitPane>
           </div>
         </SplitPane>
       </Grid>

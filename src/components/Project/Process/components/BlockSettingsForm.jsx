@@ -219,9 +219,9 @@ const BlockSettingsForm = (props) => {
       });
     }
 
-    const uniqueImgChannels = Array.from(new Set(allImgChannels.map(a => a.label)))
+    const uniqueImgChannels = Array.from(new Set(allImgChannels.map((a) => a.label)))
       .map((label) => {
-        return allImgChannels.find(a => a.label === label);
+        return allImgChannels.find((a) => a.label === label);
       });
 
     return uniqueImgChannels.map((el) => ({

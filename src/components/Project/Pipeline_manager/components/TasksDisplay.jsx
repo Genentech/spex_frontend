@@ -36,6 +36,7 @@ const TasksDisplay = ({ allTasks }) => {
                 <ListItemText primary={`Task ID: ${task.id}`} secondary={`Status: ${task.status}`} />
               </ListItem>
               <ListItem>
+                {/* eslint-disable-next-line no-console */}
                 <Button variant="contained" color="primary" onClick={() => { console.log(task); }}>
                   Action
                 </Button>
@@ -62,7 +63,7 @@ TasksDisplay.propTypes = {
     PropTypes.shape({
       id: PropTypes.string.isRequired,
       name: PropTypes.string.isRequired,
-      status: PropTypes.string.isRequired,
+      status: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     }),
   ),
 };

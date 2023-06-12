@@ -5,6 +5,8 @@ export default styled.div`
   width: 100%; 
   min-height: 100%;
   max-height: 100%;
+  display: flex;
+  justify-content: flex-end;
   
   .react-flow {
     width: 99%;

@@ -86,7 +86,7 @@ const Files = ({ hideUploadButton = false }) => {
     }
 
     return filesArray;
-  }, [filesData, project?.file_names]);
+  }, [filesData, project]);
 
   const onCheckFile = useCallback(
     (file) => {

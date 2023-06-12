@@ -9,7 +9,6 @@ import {
   AccordionSummary,
 } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { matchPath, useLocation } from 'react-router-dom';
 import PathNames from '@/models/PathNames';
@@ -79,7 +78,9 @@ const FilesDisplay = () => {
 
   const projectFiles = useMemo(() => {
     if (Array.isArray(filesData) && project) {
-      return filesData.filter((file) => project.file_names.includes(file.filename));
+      return filesData
+        .filter((file) => project.file_names.includes(file.filename))
+        .map((file) => ({ name: file.filename, type: file.type }));
     }
     return [];
   }, [filesData, project]);
@@ -88,14 +89,14 @@ const FilesDisplay = () => {
     <React.Fragment>
       {error && <ErrorMessage message={error} />}
       {projectFiles.map((file, i) => (
-        <Accordion key={file.filename}>
+        <Accordion key={file.name}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <ListItemText primary={`File ${i + 1}: ${file.filename}`} />
+            <ListItemText primary={`File ${i + 1}: ${file.name}`} />
           </AccordionSummary>
           <AccordionDetails>
             <List component="div">
               <ListItem>
-                <ListItemText primary={`File name: ${file.filename}`} secondary={`Type: ${file.type}`} />
+                <ListItemText primary={`File name: ${file.name}`} secondary={`Type: ${file.type}`} />
               </ListItem>
               <ListItem>
                 <Button variant="contained" color="primary" onClick={() => onCheckFile(file)}>
@@ -106,7 +107,7 @@ const FilesDisplay = () => {
                 </Button>
               </ListItem>
               <ListItem>
-                {fileKeys[file.filename] && fileKeys[file.filename].join(', ')}
+                {fileKeys[file.name] && fileKeys[file.name].join(', ')}
               </ListItem>
             </List>
           </AccordionDetails>
@@ -115,7 +116,7 @@ const FilesDisplay = () => {
       {fileToDelete && (
         <ConfirmModal
           action={ConfirmActions.delete}
-          item={fileToDelete.filename}
+          item={fileToDelete.name}
           onClose={onDeleteFileModalClose}
           onSubmit={onDeleteFileModalSubmit}
           open
