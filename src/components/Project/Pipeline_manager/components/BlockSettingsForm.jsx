@@ -13,7 +13,7 @@ import Button, { ButtonColors } from '+components/Button';
 import Form, { Controls, Field, FormRenderer, Validators, Parsers } from '+components/Form';
 import NoData from '+components/NoData';
 import { ScrollBarMixin } from '+components/ScrollBar';
-import statusFormatter from '+utils/statusFormatter';
+import { statusFormatter } from '+utils/statusFormatter';
 
 const Container = styled.div`
   width: 100%;

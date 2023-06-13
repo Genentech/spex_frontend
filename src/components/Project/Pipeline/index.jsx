@@ -34,7 +34,7 @@ import Form, { Field, Controls as ControlsForm } from '+components/Form';
 import NoData from '+components/NoData';
 import { ScrollBarMixin } from '+components/ScrollBar';
 import { Box } from '+components/Tabs';
-import statusFormatter from '+utils/statusFormatter';
+import { statusFormatter } from '+utils/statusFormatter';
 
 import JobBlock from './blocks/JobBlock';
 import StartBlock from './blocks/StartBlock';

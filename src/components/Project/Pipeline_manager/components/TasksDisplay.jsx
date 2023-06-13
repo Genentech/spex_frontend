@@ -1,53 +1,65 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import {
   Accordion,
-  AccordionDetails,
-  List,
   ListItem,
   ListItemText,
+  List,
   Button,
   CircularProgress,
   AccordionSummary,
+  AccordionDetails,
 } from '@material-ui/core';
 import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
 import ErrorIcon from '@material-ui/icons/Error';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import PropTypes from 'prop-types';
+import styled from 'styled-components';
 
-const TasksDisplay = ({ allTasks }) => {
-  const [tasks, setTasks] = useState([]);
+const StyledAccordionDetails = styled(AccordionDetails)`
+  width: 100%;
+`;
 
-  useEffect(() => {
-    if (allTasks) {
-      setTasks(allTasks);
-    }
-  }, [allTasks]);
+const FullWidthList = styled(List)`
+  width: 100%;
+`;
 
+const TasksDisplay = ({ jobs }) => {
   return (
     <div>
-      {tasks.map((task, i) => (
-        <Accordion key={task.id}>
+      {Object.values(jobs).map((job, i) => (
+        <Accordion key={job.id}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <ListItemText primary={`Task ${i + 1}: ${task.name}`} />
+            <ListItemText primary={`Job ${i + 1}: ${job.name}`} />
           </AccordionSummary>
-          <AccordionDetails>
-            <List component="div">
-              <ListItem>
-                <ListItemText primary={`Task ID: ${task.id}`} secondary={`Status: ${task.status}`} />
-              </ListItem>
-              <ListItem>
-                {/* eslint-disable-next-line no-console */}
-                <Button variant="contained" color="primary" onClick={() => { console.log(task); }}>
-                  Action
-                </Button>
-              </ListItem>
-              <ListItem>
-                {task.status === 'pending' && <CircularProgress />}
-                {task.status === 'error' && <ErrorIcon color="secondary" />}
-                {task.status === 'success' && <CheckCircleOutlineIcon color="primary" />}
-              </ListItem>
-            </List>
-          </AccordionDetails>
+          <StyledAccordionDetails>
+            <FullWidthList component="div">
+              {job.tasks.map((task, j) => (
+                <Accordion key={task.id}>
+                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                    <ListItemText primary={`Task ${j + 1}: ${task.name}`} />
+                  </AccordionSummary>
+                  <StyledAccordionDetails>
+                    <FullWidthList>
+                      <ListItem>
+                        <ListItemText primary={`Task ID: ${task.id}`} secondary={`Status: ${task.status}`} />
+                      </ListItem>
+                      <ListItem>
+                        {/* eslint-disable-next-line no-console */}
+                        <Button variant="contained" color="primary" onClick={() => { console.log(task); }}>
+                          Action
+                        </Button>
+                      </ListItem>
+                      <ListItem>
+                        {task.status === 'pending' && <CircularProgress />}
+                        {task.status === 'error' && <ErrorIcon color="secondary" />}
+                        {task.status === 'success' && <CheckCircleOutlineIcon color="primary" />}
+                      </ListItem>
+                    </FullWidthList>
+                  </StyledAccordionDetails>
+                </Accordion>
+              ))}
+            </FullWidthList>
+          </StyledAccordionDetails>
         </Accordion>
       ))}
     </div>
@@ -55,15 +67,22 @@ const TasksDisplay = ({ allTasks }) => {
 };
 
 TasksDisplay.defaultProps = {
-  allTasks: [],
+  jobs: [],
 };
 
 TasksDisplay.propTypes = {
-  allTasks: PropTypes.arrayOf(
+  jobs: PropTypes.objectOf(
     PropTypes.shape({
       id: PropTypes.string.isRequired,
+      tasks: PropTypes.arrayOf(
+        PropTypes.shape({
+          id: PropTypes.string.isRequired,
+          name: PropTypes.string.isRequired,
+          status: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+        }),
+      ),
       name: PropTypes.string.isRequired,
-      status: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      status: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     }),
   ),
 };

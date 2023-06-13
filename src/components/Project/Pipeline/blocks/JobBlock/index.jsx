@@ -6,7 +6,7 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import ReplayIcon from '@material-ui/icons/Replay';
 import PropTypes from 'prop-types';
 import { Handle } from 'react-flow-renderer';
-import statusFormatter from '+utils/statusFormatter';
+import { statusFormatter } from '+utils/statusFormatter';
 import Buttons from './components/Buttons';
 import Container from './components/Container';
 import Name from './components/Name';

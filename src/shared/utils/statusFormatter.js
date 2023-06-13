@@ -1,4 +1,4 @@
-const statusFormatter = (status) => {
+export const statusFormatter = (status) => {
   if (status == null) {
     return 'N/A';
   }
@@ -21,4 +21,25 @@ const statusFormatter = (status) => {
   }
 };
 
-export default statusFormatter;
+export const statusColor = (status) => {
+  if (status == null) {
+    return 'green';
+  }
+
+  switch (Math.round(status)) {
+    case -4:
+      return 'orange';
+    case -3:
+      return 'red';
+    case -2:
+      return 'yellow';
+    case -1:
+      return 'red';
+    case 0:
+      return 'rgba(144, 238, 144, 0.6)';
+    case 100:
+      return 'blue';
+    default:
+      return 'green';
+  }
+};

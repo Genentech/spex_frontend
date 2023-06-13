@@ -19,7 +19,7 @@ import ImageViewer from '+components/ImageViewer';
 import NoData from '+components/NoData';
 import { ScrollBarMixin } from '+components/ScrollBar';
 import ThumbnailsViewer from '+components/ThumbnailsViewer';
-import statusFormatter from '+utils/statusFormatter';
+import { statusFormatter } from '+utils/statusFormatter';
 
 const Container = styled.div`
   width: 100%;

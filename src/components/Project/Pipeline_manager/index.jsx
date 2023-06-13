@@ -17,7 +17,7 @@ import { actions as pipelineActions, selectors as pipelineSelectors } from '@/re
 import { selectors as projectsSelectors } from '@/redux/modules/projects';
 import { actions as tasksActions, selectors as tasksSelectors } from '@/redux/modules/tasks';
 
-import statusFormatter from '@/shared/utils/statusFormatter';
+import { statusFormatter } from '+utils/statusFormatter';
 import ConfirmModal, { ConfirmActions } from '+components/ConfirmModal';
 import ThumbnailsViewer from '+components/ThumbnailsViewer';
 
@@ -192,10 +192,6 @@ const Manager = ( { sidebarWidth } ) => {
 
       const pipelineClone = cloneDeep(pipeline);
 
-      if (selectedBlock && selectedBlock.rootId && selectedBlock.id === 'new') {
-        // addNewVirtualJobToPipeline(selectedBlock.rootId, selectedBlock, pipelineClone);
-      }
-
       _elements = createElements(pipelineClone, _elements, options, selectedBlock);
       return createGraphLayout(_elements, flowDirection);
     },
@@ -216,28 +212,6 @@ const Manager = ( { sidebarWidth } ) => {
       }),
     [projectImagesThumbnails, projectImagesDetails],
   );
-
-  const pipeline_tasks = useMemo(() => {
-    if (!jobs) {
-      return [];
-    }
-
-    return Object.values(jobs).reduce((acc, job) => {
-      if (!job.tasks) {
-        return acc;
-      }
-
-      return [
-        ...acc,
-        ...job.tasks.map((task) => ({
-          ...task,
-          jobId: job.id,
-          status: statusFormatter(job.status),
-          jobType: jobTypes[job.type],
-        })),
-      ];
-    }, []);
-  }, [jobTypes, jobs]);
 
   useEffect(
     () => {
@@ -535,6 +509,7 @@ const Manager = ( { sidebarWidth } ) => {
     cursor: 'col-resize',
     zIndex: 1,
     boxSizing: 'border-box',
+    background: 'linear-gradient(to right, transparent 1px, #ccc 1px, #ccc 4px, transparent 1px)',
   };
 
   const horizontalResizerStyles = {
@@ -542,6 +517,7 @@ const Manager = ( { sidebarWidth } ) => {
     cursor: 'row-resize',
     zIndex: 1,
     boxSizing: 'border-box',
+    background: 'linear-gradient(to bottom, transparent 1px, #ccc 1px, #ccc 2px, transparent 1px)',
   };
 
 
@@ -606,7 +582,7 @@ const Manager = ( { sidebarWidth } ) => {
               <Grid
                 style={{ paddingLeft: '6px' }}
               >
-                <TasksDisplay allTasks={pipeline_tasks} />
+                <TasksDisplay jobs={jobs} />
               </Grid>
             </SplitPane>
           </div>

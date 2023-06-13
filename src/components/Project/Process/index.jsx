@@ -668,6 +668,7 @@ const Process = ( { sidebarWidth } ) => {
     cursor: 'col-resize',
     zIndex: 1,
     boxSizing: 'border-box',
+    background: 'linear-gradient(to right, transparent 1px, #ccc 1px, #ccc 4px, transparent 1px)',
   };
 
   const horizontalResizerStyles = {
@@ -675,6 +676,7 @@ const Process = ( { sidebarWidth } ) => {
     cursor: 'row-resize',
     zIndex: 1,
     boxSizing: 'border-box',
+    background: 'linear-gradient(to bottom, transparent 1px, #ccc 1px, #ccc 2px, transparent 1px)',
   };
 
   return (
