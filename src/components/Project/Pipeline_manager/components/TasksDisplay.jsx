@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Accordion,
   ListItem,
@@ -14,6 +14,7 @@ import ErrorIcon from '@material-ui/icons/Error';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
+import { statusFormatter } from '+utils/statusFormatter';
 
 const StyledAccordionDetails = styled(AccordionDetails)`
   width: 100%;
@@ -24,12 +25,22 @@ const FullWidthList = styled(List)`
 `;
 
 const TasksDisplay = ({ jobs }) => {
+  const [selectedTask, setSelectedTask] = useState(null);
+
+  const handleTaskClick = (task) => {
+    setSelectedTask(task);
+    console.log(task);
+  };
+
   return (
     <div>
       {Object.values(jobs).map((job, i) => (
         <Accordion key={job.id}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <ListItemText primary={`Job ${i + 1}: ${job.name}`} />
+            <ListItemText
+              primary={`Job ${i + 1}: ${job.name}`}
+              secondary={`Status: ${statusFormatter(job.status)}`}
+            />
           </AccordionSummary>
           <StyledAccordionDetails>
             <FullWidthList component="div">
@@ -40,8 +51,15 @@ const TasksDisplay = ({ jobs }) => {
                   </AccordionSummary>
                   <StyledAccordionDetails>
                     <FullWidthList>
-                      <ListItem>
-                        <ListItemText primary={`Task ID: ${task.id}`} secondary={`Status: ${task.status}`} />
+                      <ListItem
+                        button
+                        selected={selectedTask === task}
+                        onClick={() => handleTaskClick(task)}
+                      >
+                        <ListItemText
+                          primary={`Task ID: ${task.id}, image id: ${task.omeroId}`}
+                          secondary={`Status: ${statusFormatter(task.status)}`}
+                        />
                       </ListItem>
                       <ListItem>
                         {/* eslint-disable-next-line no-console */}
@@ -67,7 +85,7 @@ const TasksDisplay = ({ jobs }) => {
 };
 
 TasksDisplay.defaultProps = {
-  jobs: [],
+  jobs: {},
 };
 
 TasksDisplay.propTypes = {

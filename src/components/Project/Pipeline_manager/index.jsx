@@ -17,7 +17,6 @@ import { actions as pipelineActions, selectors as pipelineSelectors } from '@/re
 import { selectors as projectsSelectors } from '@/redux/modules/projects';
 import { actions as tasksActions, selectors as tasksSelectors } from '@/redux/modules/tasks';
 
-import { statusFormatter } from '+utils/statusFormatter';
 import ConfirmModal, { ConfirmActions } from '+components/ConfirmModal';
 import ThumbnailsViewer from '+components/ThumbnailsViewer';
 
@@ -187,6 +186,7 @@ const Manager = ( { sidebarWidth } ) => {
           direction: flowDirection,
           onAdd: () => setActionWithBlock('add'),
           onDelete: () => setActionWithBlock('delete'),
+          onRestart: () => setActionWithBlock('restart'),
         },
       };
 

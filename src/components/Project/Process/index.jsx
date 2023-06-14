@@ -352,7 +352,7 @@ const Process = ( { sidebarWidth } ) => {
       setActionWithBlock(null);
       setSelectedBlock(null);
 
-      let validOmeroIds = [];
+      let validOmeroIds = jobs[values.rootId]?.omeroIds || [];
       if (values.params?.omeroIds !== undefined) {
         let ids = values.params?.omeroIds.replace(' ','').split(',');
         if (ids.length > 0 ) {

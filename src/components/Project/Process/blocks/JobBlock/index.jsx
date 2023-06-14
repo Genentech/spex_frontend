@@ -3,10 +3,9 @@ import React, { Fragment, memo } from 'react';
 import IconButton from '@material-ui/core/IconButton';
 // import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
-import ReplayIcon from '@material-ui/icons/Replay';
+import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import PropTypes from 'prop-types';
 import { Handle } from 'react-flow-renderer';
-import { statusFormatter } from '+utils/statusFormatter';
 import Buttons from './components/Buttons';
 import Container from './components/Container';
 import Name from './components/Name';
@@ -26,10 +25,10 @@ const JobBlock = (props) => {
   return (
     <Fragment>
       <Container>
-        <Name>
-          {data.name && <span>{data.name}</span>}
-        </Name>
         <Buttons>
+          <Name>
+            {data.name && <span>{data.name}</span>}
+          </Name>
           {data.onDelete && (
             <IconButton
               style={iconButtonStyle}
@@ -46,7 +45,7 @@ const JobBlock = (props) => {
               disabled={data.id === 'new'}
               onClick={() => data.onRestart(data)}
             >
-              <ReplayIcon fontSize="small" />
+              <PlayArrowIcon fontSize="small" />
             </IconButton>
           )}
 

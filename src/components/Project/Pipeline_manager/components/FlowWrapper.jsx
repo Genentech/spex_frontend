@@ -19,7 +19,7 @@ export default styled.div`
       background-color: white;
       border: 1px solid rgba(0, 0, 0, 0.2) !important;
       border-radius: 4px;
-      padding: 9px;
+      padding: 5px;
 
       &:hover {
         box-shadow: 2px 2px 2px rgba(0,0,0,0.2);

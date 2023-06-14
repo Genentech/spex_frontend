@@ -1,30 +1,28 @@
 /* eslint-disable react/jsx-handler-names */
 import React, { Fragment, memo } from 'react';
-import styled from 'styled-components';
 import IconButton from '@material-ui/core/IconButton';
-// import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
 import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
-import ReplayIcon from '@material-ui/icons/Replay';
+import PlayArrowIcon from '@material-ui/icons/PlayCircleOutline';
 import PropTypes from 'prop-types';
 import { Handle } from 'react-flow-renderer';
-import { statusFormatter, statusColor } from '+utils/statusFormatter';
-import Buttons from './components/Buttons';
+import styled from 'styled-components';
+import { statusColor } from '+utils/statusFormatter';
 import Name from './components/Name';
 
 const iconButtonStyle = {
-  padding: '3px',
+  padding: '1px',
 };
 
 const StatusIcon = styled(FiberManualRecordIcon)`
   position: absolute;
-  top: -20px;
-  right: -20px;
-  border: 1px solid rgba(0, 0, 0, 0.2);
+  top: -15px;
+  right: -15px;
+  border: 1px solid rgba(0, 0, 0, 0.2) !important;;
   z-index: 1;
   border-radius: 50%;
   color: ${({ statuscolor }) => statuscolor};
-  background-color: ${({ statusColor }) => statusColor};
+  background:  ${({ statuscolor }) => statuscolor};
   font-size: 130%;
 `;
 
@@ -36,6 +34,12 @@ const Container = styled.div`
   justify-content: space-between;
 `;
 
+const ButtonGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+
 const JobBlock = (props) => {
   const {
     data,
@@ -43,7 +47,6 @@ const JobBlock = (props) => {
   } = props;
 
   const isHorizontal = data.direction === 'LR';
-  const status = data?.id === 'new' ? 'New' : statusFormatter(data.status);
 
   return (
     <Fragment>
@@ -52,7 +55,7 @@ const JobBlock = (props) => {
           {data.name && <span>{data.name}</span>}
           <StatusIcon statuscolor={statusColor(data.status)} />
         </Name>
-        <Buttons>
+        <ButtonGroup>
           {data.onDelete && (
             <IconButton
               style={iconButtonStyle}
@@ -69,11 +72,11 @@ const JobBlock = (props) => {
               disabled={data.id === 'new'}
               onClick={() => data.onRestart(data)}
             >
-              <ReplayIcon fontSize="small" />
+              <PlayArrowIcon fontSize="small" />
             </IconButton>
           )}
 
-        </Buttons>
+        </ButtonGroup>
       </Container>
 
       <Handle

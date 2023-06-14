@@ -23,23 +23,23 @@ export const statusFormatter = (status) => {
 
 export const statusColor = (status) => {
   if (status == null) {
-    return 'green';
+    return 'rgba(0, 128, 0, 0.6)'; // green
   }
 
   switch (Math.round(status)) {
     case -4:
-      return 'orange';
+      return 'rgba(255, 165, 0, 0.6)'; // orange
     case -3:
-      return 'red';
+      return 'rgba(255, 0, 0, 0.6)'; // red
     case -2:
-      return 'yellow';
+      return 'rgba(255, 255, 0, 0.6)'; // yellow
     case -1:
-      return 'red';
+      return 'rgba(255, 0, 0, 0.6)'; // red
     case 0:
-      return 'rgba(144, 238, 144, 0.6)';
+      return 'rgba(144, 238, 144, 0.6)'; // light green
     case 100:
-      return 'blue';
+      return 'rgba(0, 0, 255, 0.6)'; // blue
     default:
-      return 'green';
+      return 'rgba(0, 128, 0, 0.6)'; // green
   }
 };
