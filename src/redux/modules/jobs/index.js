@@ -12,6 +12,7 @@ const initialState = {
   jobsFeatureExtraction: {},
   jobs_zscore: {},
   pipeline_jobs: {},
+  jobData: {},
 };
 
 let api;
@@ -41,6 +42,16 @@ const slice = createSlice({
   name: 'jobs',
   initialState,
   reducers: {
+
+    fetchJobData: startFetching,
+    fetchJobDataSuccess: (state, { payload: { jobData, jobId } }) => {
+      stopFetching(state);
+      if (jobData) {
+        state.jobData[jobId] = jobData;
+      }
+    },
+
+
     fetchJobTypes: startFetching,
     fetchJobTypesSuccess: (state, { payload: jobTypes }) => {
       stopFetching(state);
@@ -131,6 +142,23 @@ const slice = createSlice({
   },
 
   sagas: (actions) => ({
+    [actions.fetchJobData]: {
+      * saga({ payload: id }) {
+        initApi();
+
+        try {
+          const url = `${baseUrl}/merged_result/${id}?show_structure=True`;
+          const { data } = yield call(api.get, url) || {};
+
+          yield put(actions.fetchJobDataSuccess({ jobData: data, jobId: id }));
+        } catch (error) {
+          yield put(actions.requestFail(error));
+          // eslint-disable-next-line no-console
+          console.error(error.message);
+        }
+      },
+    },
+
     [actions.fetchJobTypes]: {
       * saga() {
         initApi();
@@ -364,6 +392,11 @@ const slice = createSlice({
     getJobTypes: createSelector(
       [getState],
       (state) => state.jobTypes,
+    ),
+
+    getJobData: createSelector(
+      [getState],
+      (state) => state.jobData,
     ),
 
     getJobs: createSelector(

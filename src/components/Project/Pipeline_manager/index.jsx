@@ -22,8 +22,8 @@ import ThumbnailsViewer from '+components/ThumbnailsViewer';
 
 import JobBlock from './blocks/JobBlock';
 import Container from './components/Container';
-import FilesDisplay from './components/FilesDisplay';
 import FlowWrapper from './components/FlowWrapper';
+import JobData from './components/JobData';
 import TasksDisplay from './components/TasksDisplay';
 
 const jobRefreshInterval = 6e4; // 1 minute
@@ -610,7 +610,7 @@ const Manager = ( { sidebarWidth } ) => {
                 </Container>
               </Grid>
               <Grid>
-                <FilesDisplay />
+                <JobData jobs={jobs} />
               </Grid>
             </SplitPane>
           </div>
