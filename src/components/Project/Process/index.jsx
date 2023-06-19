@@ -160,6 +160,7 @@ const Process = ( { sidebarWidth } ) => {
     400,
     'auto',
   ]);
+  const [currentImages, setCurrentImages] = useState({});
 
   const matchProcessPath = matchPath(location.pathname, {
     path: `/${PathNames.projects}/${projectId}/${PathNames.processes}/:id`,
@@ -347,23 +348,25 @@ const Process = ( { sidebarWidth } ) => {
     [dispatch, jobs, selectedBlock],
   );
 
+  function isArrayOfObjects(value) {
+    if (!Array.isArray(value)) {
+      return false;
+    }
+
+    return value.every(item => typeof item === 'object' && item !== null);
+  }
+
   const onJobSubmit = useCallback(
     (values) => {
       setActionWithBlock(null);
       setSelectedBlock(null);
 
       let validOmeroIds = jobs[values.rootId]?.omeroIds || [];
-      if (values.params?.omeroIds !== undefined) {
-        let ids = values.params?.omeroIds.replace(' ','').split(',');
-        if (ids.length > 0 ) {
-          validOmeroIds = ids
-            ? ids.filter((id) => project.omeroIds.includes(id))
-            : jobs[values.rootId]?.omeroIds;
-        } else {
-          validOmeroIds = values.params?.omeroIds
-            ? values.params.omeroIds.filter((id) => project.omeroIds.includes(id))
-            : jobs[values.rootId]?.omeroIds;
-        }
+
+      if (isArrayOfObjects(values.params?.omeroIds)) {
+        validOmeroIds = values.params?.omeroIds.map((item) => item.id);
+      } else if (values.params?.omeroIds && typeof values.params?.omeroIds === 'string') {
+        validOmeroIds = values.params?.omeroIds.replace(' ','').split(',');
       }
 
       const { filename, ...params } = values.params;
@@ -405,7 +408,7 @@ const Process = ( { sidebarWidth } ) => {
       dispatch(pipelineActions.createJob(normalizedValues));
       dispatch(jobsActions.fetchJobsByPipelineId(pipelineId));
     },
-    [dispatch, jobs, project, pipelineId],
+    [dispatch, jobs, pipelineId],
   );
 
   const onPaneClick = useCallback(

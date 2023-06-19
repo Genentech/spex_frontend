@@ -99,6 +99,8 @@ const Select = styled(Controls.SelectNew)`
 
 const getFieldComponent = (type) => {
   switch (type) {
+    case 'omero':
+      return Controls.TransferList;
     case 'job_id':
       return Controls.SelectJobs;
     case 'pipeline_job_id':
