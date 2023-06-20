@@ -200,6 +200,7 @@ const Manager = ( { sidebarWidth } ) => {
 
   const projectImagesOptions = useMemo(
     () => Object.entries(projectImagesThumbnails || {})
+      .filter(([id]) => !selectedBlock || (selectedBlock && selectedBlock.omeroIds.includes(id)))
       .map(([id, img]) => {
         const { meta, size } = projectImagesDetails[id] || {};
 
@@ -210,7 +211,7 @@ const Manager = ( { sidebarWidth } ) => {
           description: `s: ${size?.width} x ${size?.height}, c: ${size?.c}`,
         });
       }),
-    [projectImagesThumbnails, projectImagesDetails],
+    [projectImagesThumbnails, projectImagesDetails, selectedBlock],
   );
 
   useEffect(
@@ -238,9 +239,13 @@ const Manager = ( { sidebarWidth } ) => {
 
   useEffect(
     () => {
-      setActiveImageIds(project?.omeroIds || []);
+      if (selectedBlock?.omeroIds) {
+        setActiveImageIds(selectedBlock?.omeroIds);
+      } else {
+        setActiveImageIds(project?.omeroIds || []);
+      }
     },
-    [project?.omeroIds],
+    [project?.omeroIds, selectedBlock],
   );
 
   useEffect(
@@ -259,6 +264,18 @@ const Manager = ( { sidebarWidth } ) => {
     },
     [images_visualization, selectedBlock, setCurrImages],
   );
+
+  const selectedImagesDetails = useMemo(() => {
+    if (selectedBlock?.omeroIds) {
+      return selectedBlock.omeroIds.reduce((details, id) => {
+        if (projectImagesDetails[id]) {
+          details[id] = projectImagesDetails[id];
+        }
+        return details;
+      }, {});
+    }
+    return projectImagesDetails;
+  }, [selectedBlock, projectImagesDetails]);
 
   const onStartPipeline = useCallback(
     () => {

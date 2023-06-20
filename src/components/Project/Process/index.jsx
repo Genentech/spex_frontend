@@ -226,6 +226,7 @@ const Process = ( { sidebarWidth } ) => {
 
   const projectImagesOptions = useMemo(
     () => Object.entries(projectImagesThumbnails || {})
+      .filter(([id]) => !selectedBlock || (selectedBlock && selectedBlock.omeroIds.includes(id)))
       .map(([id, img]) => {
         const { meta, size } = projectImagesDetails[id] || {};
 
@@ -236,7 +237,7 @@ const Process = ( { sidebarWidth } ) => {
           description: `s: ${size?.width} x ${size?.height}, c: ${size?.c}`,
         });
       }),
-    [projectImagesThumbnails, projectImagesDetails],
+    [projectImagesThumbnails, projectImagesDetails, selectedBlock],
   );
 
   useEffect(
@@ -264,9 +265,13 @@ const Process = ( { sidebarWidth } ) => {
 
   useEffect(
     () => {
-      setActiveImageIds(project?.omeroIds || []);
+      if (selectedBlock?.omeroIds) {
+        setActiveImageIds(selectedBlock?.omeroIds);
+      } else {
+        setActiveImageIds(project?.omeroIds || []);
+      }
     },
-    [project?.omeroIds],
+    [project?.omeroIds, selectedBlock],
   );
 
   useEffect(
@@ -292,7 +297,6 @@ const Process = ( { sidebarWidth } ) => {
         return;
       }
       if ( availableBlocks[selectedBlock.script_path] === undefined) {
-      // eslint-disable-next-line no-console
         let blocks = [];
         Object.keys(jobTypes).forEach((jobType) => {
           jobTypes[jobType]['stages'].forEach((stage) => {
@@ -305,15 +309,24 @@ const Process = ( { sidebarWidth } ) => {
               });
           });
         });
-        // if (selectedBlock.id !== 'new') {
         setAvailableBlocks({ ...availableBlocks, [selectedBlock.name]: blocks });
-        // } else {
-        //   setAvailableBlocks({ ...availableBlocks, [selectedBlock.script_path]: [selectedBlock] });
-        // }
       }
     },
     [selectedBlock, availableBlocks, jobTypes, initialBlocks],
   );
+
+  const selectedImagesDetails = useMemo(() => {
+    if (selectedBlock?.omeroIds) {
+      return selectedBlock.omeroIds.reduce((details, id) => {
+        if (projectImagesDetails[id]) {
+          details[id] = projectImagesDetails[id];
+        }
+        return details;
+      }, {});
+    }
+    return projectImagesDetails;
+  }, [selectedBlock, projectImagesDetails]);
+
 
   useEffect(
     () => {
@@ -779,7 +792,7 @@ const Process = ( { sidebarWidth } ) => {
             >
               <Container>
                 <ImageViewerContainer>
-                  {projectImagesDetails[activeImageIds[0]] && (
+                  {selectedImagesDetails[activeImageIds[0]] && (
                     <ImageViewer
                       data={projectImagesDetails[activeImageIds[0]]}
                     />
