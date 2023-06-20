@@ -160,7 +160,6 @@ const Process = ( { sidebarWidth } ) => {
     400,
     'auto',
   ]);
-  const [currentImages, setCurrentImages] = useState({});
 
   const matchProcessPath = matchPath(location.pathname, {
     path: `/${PathNames.projects}/${projectId}/${PathNames.processes}/:id`,
@@ -226,7 +225,7 @@ const Process = ( { sidebarWidth } ) => {
 
   const projectImagesOptions = useMemo(
     () => Object.entries(projectImagesThumbnails || {})
-      .filter(([id]) => !selectedBlock || (selectedBlock && selectedBlock.omeroIds.includes(id)))
+      .filter(([id]) => !selectedBlock?.omeroIds || selectedBlock.omeroIds.includes(id))
       .map(([id, img]) => {
         const { meta, size } = projectImagesDetails[id] || {};
 
@@ -366,7 +365,7 @@ const Process = ( { sidebarWidth } ) => {
       return false;
     }
 
-    return value.every(item => typeof item === 'object' && item !== null);
+    return value.every((item) => typeof item === 'object' && item !== null);
   }
 
   const onJobSubmit = useCallback(

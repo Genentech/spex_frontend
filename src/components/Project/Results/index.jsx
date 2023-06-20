@@ -12,6 +12,7 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import WallpaperIcon from '@material-ui/icons/Wallpaper';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
+import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { matchPath, useLocation } from 'react-router-dom';
 
@@ -26,10 +27,9 @@ import Table from '+components/Table';
 import Tabs, { Tab, Box } from '+components/Tabs';
 import SubComponent from './components/SubComponent';
 
-
 const refreshInterval = 6e4; // 1 minute
 
-const Results = () => {
+const Results = ( { sidebarWidth } ) => {
   const dispatch = useDispatch();
   const location = useLocation();
 
@@ -294,6 +294,11 @@ const Results = () => {
       </Button>
     </Fragment>
   );
+};
+
+Results.propTypes = {
+  // eslint-disable-next-line react/require-default-props
+  sidebarWidth: PropTypes.number,
 };
 
 export default Results;

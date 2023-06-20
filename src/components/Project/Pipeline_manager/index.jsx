@@ -265,18 +265,6 @@ const Manager = ( { sidebarWidth } ) => {
     [images_visualization, selectedBlock, setCurrImages],
   );
 
-  const selectedImagesDetails = useMemo(() => {
-    if (selectedBlock?.omeroIds) {
-      return selectedBlock.omeroIds.reduce((details, id) => {
-        if (projectImagesDetails[id]) {
-          details[id] = projectImagesDetails[id];
-        }
-        return details;
-      }, {});
-    }
-    return projectImagesDetails;
-  }, [selectedBlock, projectImagesDetails]);
-
   const onStartPipeline = useCallback(
     () => {
       dispatch(jobsActions.startPipeline(pipelineId));

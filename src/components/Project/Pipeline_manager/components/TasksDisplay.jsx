@@ -48,7 +48,6 @@ const TasksDisplay = ({ jobs }) => {
     []);
   const handleTaskClick = (task) => {
     setSelectedTask(task);
-    console.log(task);
   };
 
   const jobsByStatus = {};

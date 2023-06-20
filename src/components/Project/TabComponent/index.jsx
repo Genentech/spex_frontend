@@ -2,6 +2,7 @@ import React, { useState, useMemo, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import Manager from 'components/Project/Pipeline_manager';
 import Process from 'components/Project/Process';
+import Results from 'components/Project/Results';
 import Tabs, { Tab, TabPanel } from '+components/Tabs';
 
 const TabContainer = ({ sidebarWidth }) => {
@@ -9,6 +10,7 @@ const TabContainer = ({ sidebarWidth }) => {
 
   const processComponent = useMemo(() => <Process sidebarWidth={sidebarWidth} />, [sidebarWidth]);
   const managerComponent = useMemo(() => <Manager sidebarWidth={sidebarWidth} />, [sidebarWidth]);
+  const resultsComponent = useMemo(() => <Results sidebarWidth={sidebarWidth} />, [sidebarWidth]);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -22,6 +24,7 @@ const TabContainer = ({ sidebarWidth }) => {
       >
         <Tab label="Builder" />
         <Tab label="Pipeline" />
+        <Tab label="Results" />
       </Tabs>
       {value === 0 && (
         <TabPanel value={value} index={0}>
@@ -31,6 +34,11 @@ const TabContainer = ({ sidebarWidth }) => {
       {value === 1 && (
         <TabPanel value={value} index={1}>
           {managerComponent}
+        </TabPanel>
+      )}
+      {value === 2 && (
+        <TabPanel value={value} index={2}>
+          {resultsComponent}
         </TabPanel>
       )}
     </Fragment>
