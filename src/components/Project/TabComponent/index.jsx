@@ -22,9 +22,9 @@ const TabContainer = ({ sidebarWidth }) => {
         value={value}
         onChange={handleChange}
       >
-        <Tab label="Builder" />
-        <Tab label="Pipeline" />
-        <Tab label="Results" />
+        <Tab label="Build" />
+        <Tab label="Execute" />
+        <Tab label="Review" />
       </Tabs>
       {value === 0 && (
         <TabPanel value={value} index={0}>

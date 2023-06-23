@@ -280,20 +280,24 @@ const Manager = ( { sidebarWidth } ) => {
         tasks: jobs[selectedBlock?.id].tasks,
       };
 
-
       if (job.id) {
-        job.tasks.forEach((el) => {
+        for (const el of job.tasks) {
           const task = {
             id: el.id, status: 0, result: '',
           };
 
           dispatch(tasksActions.updateTask(task));
-        });
+        }
         delete job.tasks;
         dispatch(jobsActions.updateJob(job));
+        elements.forEach((el) => {
+          if (el.id === selectedBlock?.id) {
+            el.data.status = 0;
+          }
+        });
       }
     },
-    [dispatch, jobs, selectedBlock],
+    [dispatch, elements, jobs, selectedBlock?.id],
   );
 
   const onPaneClick = useCallback(
@@ -395,7 +399,6 @@ const Manager = ( { sidebarWidth } ) => {
   useEffect(() => {
     if (actionWithBlock === 'restart' && selectedBlock?.id) {
       onJobRestart('');
-      setActionWithBlock(null);
     }
   }, [actionWithBlock, selectedBlock, onJobRestart]);
 

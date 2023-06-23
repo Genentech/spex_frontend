@@ -172,7 +172,7 @@ const Project = () => {
             button
           >
             <ListItemIcon><WorkFlowIcon fontSize="large" /></ListItemIcon>
-            <ListItemText primary="Batch processing" />
+            <ListItemText primary="Analysis" />
           </ListItem>
 
         </List>
