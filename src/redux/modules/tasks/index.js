@@ -345,7 +345,7 @@ const slice = createSlice({
           }
         } else if (script === 'clustering') {
           if (['transformation', 'zscore'].includes(name) && name) {
-            visList = [];
+            visList = ['image'];
           } else if (name === 'cluster') {
             visList = ['heatmap', 'violin', 'scatter'];
           } else if (name === 'dml') {

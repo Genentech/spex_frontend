@@ -18,9 +18,11 @@ import { matchPath, useLocation } from 'react-router-dom';
 
 
 import PathNames from '@/models/PathNames';
-import { actions as pipelineActions, selectors as pipelineSelectors } from '@/redux/modules/pipelines';
 
+import { actions as jobsActions, selectors as jobsSelectors } from '@/redux/modules/jobs';
+import { actions as pipelineActions, selectors as pipelineSelectors } from '@/redux/modules/pipelines';
 import { actions as tasksActions, selectors as tasksSelectors } from '@/redux/modules/tasks';
+
 import Button from '+components/Button';
 import Link from '+components/Link';
 import Table from '+components/Table';
@@ -37,7 +39,12 @@ const Results = ( { sidebarWidth } ) => {
   const projectId = matchProjectPath ? matchProjectPath.params.id : undefined;
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const pipelines = useSelector(pipelineSelectors.getPipelinesWithTasksForVis(projectId)) || {};
+  const matchPipelinePath = matchPath(location.pathname, {
+    path: `/${PathNames.projects}/${projectId}/${PathNames.processes}/:id`,
+  });
+  const pipelineId = matchPipelinePath ? matchPipelinePath.params.id : undefined;
   const images_results = useSelector(tasksSelectors.getTaskVisualizations || {});
+  const jobTypes = useSelector(jobsSelectors.getJobTypes);
   const [taskToPanels, setTasksToPanels] = useState([]);
   const [currImages, setCurrImages] = useState({});
   const [refresher, setRefresher] = useState(null);
@@ -45,25 +52,47 @@ const Results = ( { sidebarWidth } ) => {
   const [selectedRows, setSelectedRows] = useState([]);
   const [activeDataTab, setActiveDataTab] = useState('');
 
-  const onLoadVisualize = useCallback(
-    () => {
-      taskToPanels.forEach((item) => {
-        dispatch(tasksActions.fetchTaskVisualize({ id: item.id, name: item.name }));
-      });
-    },
-    [dispatch, taskToPanels],
-  );
-
-
   const pipelineData = useMemo(
     () => {
       if (pipelines.length === 0 || Object.keys(pipelines).length === 0) {
         return [];
       }
-      return Object.values(pipelines);
+      return [pipelines[pipelineId]];
     },
+    [pipelines, pipelineId],
+  );
 
-    [pipelines],
+  const nameReturnKey = useMemo(
+    () => {
+      if (Object.keys(jobTypes).length === 0) {
+        return {};
+      }
+      let returnValues = {};
+      Object.keys(jobTypes).forEach((jobType) => {
+        jobTypes[jobType]['stages'].forEach((stage) => {
+          stage['scripts'].forEach((script) => {
+            returnValues[script['name']] = Object.keys(script['return'])[0];
+          });
+        });
+      });
+      return returnValues;
+    },
+    [jobTypes],
+  );
+
+  const onLoadVisualize = useCallback(
+    () => {
+      taskToPanels.forEach((item) => {
+        dispatch(tasksActions.fetchTaskVisualize({
+          id: item.id,
+          name: item.name,
+          script: item.params?.script,
+          channels: item.params?.channels,
+          key: nameReturnKey[item.name],
+        }));
+      });
+    },
+    [dispatch, taskToPanels, nameReturnKey],
   );
 
   const onSelectedRowsChange = useCallback(
@@ -114,12 +143,12 @@ const Results = ( { sidebarWidth } ) => {
 
   useEffect(
     () => {
-      if (!projectId) {
+      if (!projectId && !pipelineId) {
         return;
       }
       dispatch(pipelineActions.fetchPipelinesForVis(projectId));
     },
-    [dispatch, projectId, refresher],
+    [dispatch, projectId, pipelineId, refresher],
   );
 
   useEffect(
@@ -163,9 +192,7 @@ const Results = ( { sidebarWidth } ) => {
         let taskList = [];
         pipelines.forEach(function (o) {
           o.jobs.forEach(function (job) {
-            if ([id].includes(job.id) === true) {
-              taskList = [...taskList, ...job.tasks];
-            }
+            taskList = [...taskList, ...job.tasks];
           });
         });
 
@@ -231,6 +258,16 @@ const Results = ( { sidebarWidth } ) => {
     [onSelectedRowsChange],
   );
 
+  useEffect(
+    () => {
+      dispatch(jobsActions.fetchJobTypes());
+      return () => {
+        dispatch(jobsActions.clearJobTypes());
+      };
+    },
+    [dispatch],
+  );
+
   return (
     <Fragment>
 
@@ -241,18 +278,13 @@ const Results = ( { sidebarWidth } ) => {
         SubComponent={WithSelected}
       />
       <Box>
-        <Tabs
-          value={activeDataTab}
-          onChange={onDataTabChange}
-        >
-          {Object.values(tabsData).map((type) => (
-            <Tab
-              key={type}
-              label={type}
-              value={type}
-            />
-          ))}
-        </Tabs>
+        {Object.values(tabsData).map((type) => (
+          <Tab
+            key={type}
+            label={type}
+            value={type}
+          />
+        ))}
       </Box>
       <Accordion expanded>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
