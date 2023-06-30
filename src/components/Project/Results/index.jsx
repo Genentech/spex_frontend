@@ -26,7 +26,7 @@ import { actions as tasksActions, selectors as tasksSelectors } from '@/redux/mo
 import Button from '+components/Button';
 import Link from '+components/Link';
 import Table from '+components/Table';
-import Tabs, { Tab, Box } from '+components/Tabs';
+import { Tab, Box } from '+components/Tabs';
 import SubComponent from './components/SubComponent';
 
 const refreshInterval = 6e4; // 1 minute
@@ -50,14 +50,18 @@ const Results = ( { sidebarWidth } ) => {
   const [refresher, setRefresher] = useState(null);
   const selectedRef = useRef({});
   const [selectedRows, setSelectedRows] = useState([]);
+  // eslint-disable-next-line no-unused-vars
   const [activeDataTab, setActiveDataTab] = useState('');
 
-  const pipelineData = useMemo(
+  const jobs_data = useMemo(
     () => {
       if (pipelines.length === 0 || Object.keys(pipelines).length === 0) {
         return [];
       }
-      return [pipelines[pipelineId]];
+      if (pipelines[pipelineId]) {
+        return pipelines[pipelineId]['jobs'];
+      }
+      return [];
     },
     [pipelines, pipelineId],
   );
@@ -95,50 +99,46 @@ const Results = ( { sidebarWidth } ) => {
     [dispatch, taskToPanels, nameReturnKey],
   );
 
-  const onSelectedRowsChange = useCallback(
-    (selected, parent) => {
-      selectedRef.current[parent.id] = selected.map(({ id }) => id);
-      const selected2 = Object.values(selectedRef.current).flat();
-      setSelectedRows(selected2);
-    },
-    [],
-  );
-
   const columns = useMemo(
-    () => ([{
-      accessor: 'id',
-      Header: 'id',
-      getCellProps: () => ({ style: { textTransform: 'capitalize' } }),
-      Cell: ({ row: { original: { id } } }) => useMemo(
-        () => (
-          <Link
-            to={`/${PathNames.projects}/${projectId}/${PathNames.pipelines}/${id}`}
-            underline="always"
-          >
-            {id}
-          </Link>
+    () => ([
+      {
+        id: 'id',
+        accessor: 'id',
+        Header: 'id',
+        Cell: ({ row: { original: { id } } }) => useMemo(
+          () => (
+            // <Link to={`/${PathNames.jobs}/${id}`}>
+            <div> {id} </div>
+            // </Link>
+          ),
+          [id],
         ),
-        [id],
-      ),
-      minWidth: 50,
-      maxWidth: 50,
-    }, {
-      accessor: 'name',
-      Header: 'name',
-      getCellProps: () => ({ style: { textTransform: 'capitalize' } }),
-      Cell: ({ row: { original: { name, id } } }) => useMemo(
-        () => (
-          <Link
-            to={`/${PathNames.projects}/${projectId}/${PathNames.pipelines}/${id}`}
-            underline="always"
-          >
-            {name}
-          </Link>
+      },
+      {
+        id: 'status',
+        accessor: 'status',
+        Header: 'Status',
+        Cell: ({ row: { original: { status } } }) => useMemo(
+          () => {
+            if (status == null) {
+              return 'N/A';
+            }
+            if (Math.round(status) === 0) {
+              return 'Waiting To Process';
+            }
+            if (Math.round(status) === 100) {
+              return 'Done';
+            }
+            return 'In Progress';
+          },
+          [status],
         ),
-        [id, name],
-      ),
-    }]),
-    [projectId],
+      }, {
+        id: 'name',
+        accessor: 'name',
+        Header: 'job name',
+      }]),
+    [],
   );
 
   useEffect(
@@ -187,13 +187,13 @@ const Results = ( { sidebarWidth } ) => {
   );
 
   const getTasks = useCallback(
-    (id, pipelines, taskToPanels) => {
+    (ids, jobs, taskToPanels) => {
       if (Object.keys(pipelines).length !== 0) {
         let taskList = [];
-        pipelines.forEach(function (o) {
-          o.jobs.forEach(function (job) {
-            taskList = [...taskList, ...job.tasks];
-          });
+        jobs.forEach(function (o) {
+          if (ids.includes(o.id)) {
+            taskList = [...taskList, ...o.tasks];
+          }
         });
 
         if (taskToPanels !== taskList) {
@@ -202,14 +202,13 @@ const Results = ( { sidebarWidth } ) => {
         return taskList;
       }
     },
-    [],
+    [pipelines],
   );
 
 
   const onDataTabChange = useCallback(
     (_, id) => {
-      setActiveDataTab(id);
-      const taskList = getTasks(id, pipelineData, taskToPanels);
+      const taskList = getTasks(selectedRows.map((object) => object.id), jobs_data, taskToPanels);
       setTasksToPanels(taskList);
       const taskIds = taskList.map((item) => {return item.id;});
       let imgToShow = {};
@@ -220,21 +219,19 @@ const Results = ( { sidebarWidth } ) => {
       });
       setCurrImages(imgToShow);
     },
-    [taskToPanels, pipelineData, getTasks, images_results],
+    [taskToPanels, jobs_data, getTasks, images_results, selectedRows],
   );
 
 
   const tabsData = useMemo(
     () => {
-      if (pipelineData.length === 0 || selectedRows.length === 0) {
+      if (jobs_data.length === 0 || selectedRows.length === 0) {
         return [];
       }
       let tabs = [];
       let pipelines_job_ids = [];
-      pipelineData.forEach((pipeline) => {
-        pipeline.jobs.forEach((job) => {
-          pipelines_job_ids.push(job.id);
-        });
+      jobs_data.forEach((job) => {
+        pipelines_job_ids.push(job.id);
       });
 
       tabs = selectedRows.filter(((n) => pipelines_job_ids.includes(n)));
@@ -243,19 +240,7 @@ const Results = ( { sidebarWidth } ) => {
       return tabs;
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [selectedRows, pipelineData],
-  );
-
-  const WithSelected = useCallback(
-    (subProps) => {
-      return (
-        <SubComponent
-          {...subProps}
-          onSelectedRowsChange={(selected) => onSelectedRowsChange(selected, subProps)}
-        />
-      );
-    },
-    [onSelectedRowsChange],
+    [selectedRows, jobs_data],
   );
 
   useEffect(
@@ -270,12 +255,13 @@ const Results = ( { sidebarWidth } ) => {
 
   return (
     <Fragment>
-
       <Table
-        onSelectedRowsChange={setSelectedRows}
+        data={jobs_data}
         columns={columns}
-        data={pipelineData}
-        SubComponent={WithSelected}
+        allowRowSelection
+        onSelectedRowsChange={setSelectedRows}
+        selectedRowIds={selectedRows.map((row) => row.id)}
+        // initialSelectedRowIds={project?.file_names}
       />
       <Box>
         {Object.values(tabsData).map((type) => (
@@ -323,6 +309,13 @@ const Results = ( { sidebarWidth } ) => {
         startIcon={<WallpaperIcon />}
       >
         Render value
+      </Button>
+      <Button
+        size="small"
+        variant="outlined"
+        startIcon={<WallpaperIcon />}
+      >
+        Download as pdf(coming soon)
       </Button>
     </Fragment>
   );

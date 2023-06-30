@@ -113,8 +113,7 @@ const ManageFilesModal = styled((props) => {
       </ModalFooter>
     </Modal>
   );
-})`
-  // Вставьте сюда дополнительные стили, если необходимо
+})`  
 `;
 
 ManageFilesModal.propTypes = {
