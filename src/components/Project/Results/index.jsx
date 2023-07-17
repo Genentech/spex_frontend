@@ -1,5 +1,5 @@
 import React, {
-  Fragment, useRef, useState, useMemo, useCallback, useEffect,
+  Fragment, useState, useMemo, useCallback, useEffect,
 } from 'react';
 import Accordion from '@material-ui/core/Accordion';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
@@ -10,8 +10,10 @@ import ListItemText from '@material-ui/core/ListItemText';
 import DynamicFeedOutlinedIcon from '@material-ui/icons/DynamicFeedOutlined';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import WallpaperIcon from '@material-ui/icons/Wallpaper';
+import SaveIcon from '@material-ui/icons/Save';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
+import { jsPDF } from 'jspdf';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { matchPath, useLocation } from 'react-router-dom';
@@ -24,10 +26,8 @@ import { actions as pipelineActions, selectors as pipelineSelectors } from '@/re
 import { actions as tasksActions, selectors as tasksSelectors } from '@/redux/modules/tasks';
 
 import Button from '+components/Button';
-import Link from '+components/Link';
 import Table from '+components/Table';
 import { Tab, Box } from '+components/Tabs';
-import SubComponent from './components/SubComponent';
 
 const refreshInterval = 6e4; // 1 minute
 
@@ -48,10 +48,7 @@ const Results = ( { sidebarWidth } ) => {
   const [taskToPanels, setTasksToPanels] = useState([]);
   const [currImages, setCurrImages] = useState({});
   const [refresher, setRefresher] = useState(null);
-  const selectedRef = useRef({});
   const [selectedRows, setSelectedRows] = useState([]);
-  // eslint-disable-next-line no-unused-vars
-  const [activeDataTab, setActiveDataTab] = useState('');
 
   const jobs_data = useMemo(
     () => {
@@ -98,6 +95,46 @@ const Results = ( { sidebarWidth } ) => {
     },
     [dispatch, taskToPanels, nameReturnKey],
   );
+
+  const downloadPdf = useCallback(() => {
+    let doc = new jsPDF('p', 'px', 'a4');
+    let pageHeight = doc.internal.pageSize.getHeight();
+    let imageWidth = doc.internal.pageSize.getWidth() - 20;
+
+    let y = 20;
+    for (const task of taskToPanels) {
+      doc.setFontSize(10);
+      doc.text(`Task: ${task.name} ${task.id}`, 10, 10);
+
+      for (const key in currImages[task.id]) {
+        const base64Image = currImages[task.id][key];
+        const image = base64Image.replace('data:image/png;base64,', '');
+
+        const img = new Image();
+        img.src = base64Image;
+        const imgWidth = img.width;
+        const imgHeight = img.height;
+        const aspectRatio = imgWidth / imgHeight;
+
+        const finalImageHeight = imageWidth / aspectRatio;
+        if (y + finalImageHeight + 20 > pageHeight) {
+          doc.addPage();
+          y = 20;
+        }
+
+        doc.addImage(image, 'PNG', 10, y, imageWidth, finalImageHeight);
+        y += finalImageHeight + 10;
+
+        if (y + finalImageHeight + 20 > pageHeight) {
+          doc.addPage();
+          y = 20;
+        }
+      }
+    }
+
+    doc.save('images.pdf');
+  }, [taskToPanels, currImages]);
+
 
   const columns = useMemo(
     () => ([
@@ -313,9 +350,10 @@ const Results = ( { sidebarWidth } ) => {
       <Button
         size="small"
         variant="outlined"
-        startIcon={<WallpaperIcon />}
+        onClick={downloadPdf}
+        startIcon={<SaveIcon />}
       >
-        Download as pdf(coming soon)
+        PDF
       </Button>
     </Fragment>
   );
