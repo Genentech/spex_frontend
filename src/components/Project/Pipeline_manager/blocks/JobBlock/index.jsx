@@ -7,7 +7,6 @@ import PlayArrowIcon from '@material-ui/icons/PlayCircleOutline';
 import PropTypes from 'prop-types';
 import { Handle } from 'react-flow-renderer';
 import styled from 'styled-components';
-import { statusColor } from '+utils/statusFormatter';
 import Name from './components/Name';
 
 const iconButtonStyle = {
@@ -53,7 +52,7 @@ const JobBlock = (props) => {
       <Container>
         <Name>
           {data.name && <span>{data.name}</span>}
-          <StatusIcon statuscolor={statusColor(data.status)} />
+          <StatusIcon statuscolor={data.color} />
         </Name>
         <ButtonGroup>
           {data.onDelete && (
@@ -104,6 +103,7 @@ JobBlock.propTypes = {
     onAdd: PropTypes.func,
     onDelete: PropTypes.func,
     onRestart: PropTypes.func,
+    color: PropTypes.string,
   }).isRequired,
   isConnectable: PropTypes.bool.isRequired,
 };

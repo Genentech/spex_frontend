@@ -203,6 +203,9 @@ const Process = ( { sidebarWidth } ) => {
       }
 
       _elements = createElements(pipelineClone, _elements, options, selectedBlock);
+      if (_elements.length > 1) {
+        _elements.splice(1, 1);
+      }
       return createGraphLayout(_elements, flowDirection);
     },
     [pipeline, selectedBlock],

@@ -9,7 +9,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { matchPath, useLocation } from 'react-router-dom';
 import SplitPane from 'react-split-pane';
 import styled from 'styled-components';
-
 import PathNames from '@/models/PathNames';
 import { actions as jobsActions, selectors as jobsSelectors } from '@/redux/modules/jobs';
 import { actions as omeroActions, selectors as omeroSelectors } from '@/redux/modules/omero';
@@ -20,6 +19,7 @@ import { actions as tasksActions, selectors as tasksSelectors } from '@/redux/mo
 import ConfirmModal, { ConfirmActions } from '+components/ConfirmModal';
 import ThumbnailsViewer from '+components/ThumbnailsViewer';
 
+import { statusColor } from '+utils/statusFormatter';
 import JobBlock from './blocks/JobBlock';
 import Container from './components/Container';
 import FlowWrapper from './components/FlowWrapper';
@@ -86,6 +86,7 @@ const createElements = (inputData, result, options = {}, selectedBlock) => {
       data: {
         ...job,
         ...options.data,
+        color: statusColor(job.status),
       },
     });
 
@@ -109,7 +110,7 @@ const createGraphLayout = (elements, direction = 'LR') => {
   graph.setGraph({ rankdir: direction });
   graph.setDefaultEdgeLabel(() => ({}));
 
-  elements.forEach((el) => {
+ elements.forEach((el) => {
     if (isNode(el)) {
       graph.setNode(el.id, { width: nodeWidth, height: nodeHeight });
     } else {
@@ -168,35 +169,46 @@ const Manager = ( { sidebarWidth } ) => {
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
   const [actionWithBlock, setActionWithBlock] = useState(null);
   const [selectedBlock, setSelectedBlock] = useState(null);
+
   // eslint-disable-next-line no-unused-vars
   const [currImages, setCurrImages] = useState({});
   const images_visualization = useSelector(tasksSelectors.getTaskVisualizations || {});
+  const [elements, setElements] = useState([]);
 
-  const elements = useMemo(
-    () => {
-      let _elements = [];
+  const updateElements = useCallback(() => {
+    let _elements = [];
+    setElements(_elements);
+    if (!pipeline) {
+      setElements(_elements);
+      return;
+    }
 
-      if (!pipeline) {
-        return _elements;
-      }
+    const options = {
+      position: { x: 0, y: 0 },
+      data: {
+        direction: flowDirection,
+        onAdd: () => setActionWithBlock('add'),
+        onDelete: () => setActionWithBlock('delete'),
+        onRestart: () => setActionWithBlock('restart'),
+      },
+    };
 
-      const options = {
-        position: { x: 0, y: 0 },
-        data: {
-          direction: flowDirection,
-          onAdd: () => setActionWithBlock('add'),
-          onDelete: () => setActionWithBlock('delete'),
-          onRestart: () => setActionWithBlock('restart'),
-        },
-      };
+    const pipelineClone = cloneDeep(pipeline);
+    _elements = createElements(pipelineClone, _elements, options, selectedBlock);
+    if (_elements.length > 1) {
+      _elements.splice(1, 1);
+    }
+    setElements(createGraphLayout(_elements, flowDirection));
+  }, [pipeline, selectedBlock, setActionWithBlock]);
 
-      const pipelineClone = cloneDeep(pipeline);
+  useEffect(() => {
+    updateElements();
+  }, [updateElements]);
 
-      _elements = createElements(pipelineClone, _elements, options, selectedBlock);
-      return createGraphLayout(_elements, flowDirection);
-    },
-    [pipeline, selectedBlock],
-  );
+  const handleRefresh = () => {
+    dispatch(jobsActions.fetchJobsByPipelineId(pipelineId));
+    updateElements();
+  };
 
   const projectImagesOptions = useMemo(
     () => Object.entries(projectImagesThumbnails || {})
@@ -580,6 +592,16 @@ const Manager = ( { sidebarWidth } ) => {
                         }}
                         onClick={onStartPipeline}
                       > Start ▶
+                      </ControlButton>
+                      <ControlButton
+                        style={{
+                          backgroundColor: 'blue',
+                          color: 'white',
+                          whiteSpace: 'nowrap',
+                          zIndex: 99, width: '80% ',
+                        }}
+                        onClick={handleRefresh}
+                      > Refresh
                       </ControlButton>
                     </Controls>
 

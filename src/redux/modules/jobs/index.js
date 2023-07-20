@@ -1,5 +1,6 @@
 import { all, call, put } from 'redux-saga/effects';
 import backendClient from '@/middleware/backendClient';
+import { actions as pipelineActions } from '@/redux/modules/pipelines';
 import { createSlice, createSelector, startFetching, stopFetching } from '@/redux/utils';
 
 import hash from '+utils/hash';
@@ -244,6 +245,12 @@ const slice = createSlice({
           const result = (Array.isArray(data.data) ? data.data : [])
               .filter((job) => job.tasks.length > 0);
           yield put(actions.fetchJobsByPipelineIdSuccess( { pipelineId, jobs: result } ));
+
+          const url2 = `/pipeline/${pipelineId}`;
+          const data2 = yield call(api.get, url2);
+          yield put(pipelineActions.fetchPipelinesSuccess({
+            projectId: '', data: data2['data']['data']['pipelines'],
+          }));
         } catch (error) {
           yield put(actions.requestFail(error));
           // eslint-disable-next-line no-console
@@ -262,6 +269,12 @@ const slice = createSlice({
           const result = (Array.isArray(data.data) ? data.data : [])
             .filter((job) => job.tasks.length > 0);
           yield put(actions.fetchJobsByPipelineIdSuccess({ pipelineId, jobs: result } ));
+
+          const url2 = `/pipeline/${pipelineId}`;
+          const data2 = yield call(api.get, url2);
+          yield put(pipelineActions.fetchPipelinesSuccess({
+            projectId: '', data: data2['data']['data']['pipelines'],
+          }));
         } catch (error) {
           yield put(actions.requestFail(error));
           // eslint-disable-next-line no-console
