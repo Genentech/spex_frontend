@@ -30,10 +30,16 @@ const slice = createSlice({
     createProject: startFetching,
     updateProject: startFetching,
     deleteProject: startFetching,
+    fetchProjectById: startFetching,
 
     fetchProjectsSuccess: (state, { payload: projects }) => {
       stopFetching(state);
       state.projects = hash(projects || [], 'id');
+    },
+
+    fetchProjectByIdSuccess: (state, { payload: project }) => {
+      stopFetching(state);
+      state.projects[project.id] = project;
     },
 
     updateProjectSuccess: (state, { payload: project }) => {
@@ -85,6 +91,22 @@ const slice = createSlice({
             // eslint-disable-next-line no-console
             console.error(error.message);
           }
+        }
+      },
+    },
+
+    [actions.fetchProjectById]: {
+      *saga({ payload: id }) {
+        initApi();
+
+        try {
+          const url = `${baseUrl}/${id}`;
+          const { data } = yield call(api.get, url);
+          yield put(actions.fetchProjectByIdSuccess(data.data));
+        } catch (error) {
+          yield put(actions.requestFail(error));
+          // eslint-disable-next-line no-console
+          console.error(error.message);
         }
       },
     },

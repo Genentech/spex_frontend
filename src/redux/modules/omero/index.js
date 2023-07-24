@@ -10,6 +10,7 @@ const initialState = {
   thumbnails: {},
   imagesDetails: {},
   error: '',
+  omeroWeb: '',
 };
 
 let api;
@@ -30,6 +31,12 @@ const slice = createSlice({
     fetchProjectsSuccess: (state, { payload: { projects } }) => {
       stopFetching(state);
       state.projects = (projects || []);
+    },
+
+    fetchOmeroWeb: startFetching,
+    setOmeroWeb: (state, { payload }) => {
+      stopFetching(state);
+      state.omeroWeb = payload;
     },
 
     fetchDatasets: startFetching,
@@ -186,6 +193,22 @@ const slice = createSlice({
       },
     },
 
+    [actions.fetchOmeroWeb]: {
+      *saga() {
+        initApi();
+
+        try {
+          const url = `${baseUrl}/omero_web`;
+          const { data } = yield call(api.get, url);
+          yield put(actions.setOmeroWeb(data.omero_web));
+        } catch (error) {
+          yield put(actions.requestFail(error));
+          // eslint-disable-next-line no-console
+          console.error(error.message);
+        }
+      },
+    },
+
     [actions.fetchImageDetails]: {
       * saga({ payload: id }) {
         initApi();
@@ -243,6 +266,11 @@ const slice = createSlice({
     getImages: (datasetId) => createSelector(
       [getState],
       (state) => state?.images[datasetId],
+    ),
+
+    getOmeroWeb: createSelector(
+      [getState],
+      (state) => state?.omeroWeb,
     ),
 
     getImagesThumbnails: (ids) => createSelector(

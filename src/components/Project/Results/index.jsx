@@ -14,15 +14,17 @@ import WallpaperIcon from '@material-ui/icons/Wallpaper';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import { jsPDF } from 'jspdf';
+import moment from 'moment';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { matchPath, useLocation } from 'react-router-dom';
 
-
 import PathNames from '@/models/PathNames';
 
 import { actions as jobsActions, selectors as jobsSelectors } from '@/redux/modules/jobs';
+import { actions as omeroActions, selectors as omeroSelectors } from '@/redux/modules/omero';
 import { actions as pipelineActions, selectors as pipelineSelectors } from '@/redux/modules/pipelines';
+import { selectors as projectSelectors } from '@/redux/modules/projects';
 import { actions as tasksActions, selectors as tasksSelectors } from '@/redux/modules/tasks';
 
 import Button from '+components/Button';
@@ -37,6 +39,8 @@ const Results = ( { sidebarWidth } ) => {
 
   const matchProjectPath = matchPath(location.pathname, { path: `/${PathNames.projects}/:id` });
   const projectId = matchProjectPath ? matchProjectPath.params.id : undefined;
+  const project = useSelector(projectSelectors.getProject(projectId));
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const pipelines = useSelector(pipelineSelectors.getPipelinesWithTasksForVis(projectId)) || {};
   const matchPipelinePath = matchPath(location.pathname, {
@@ -49,6 +53,7 @@ const Results = ( { sidebarWidth } ) => {
   const [currImages, setCurrImages] = useState({});
   const [refresher, setRefresher] = useState(null);
   const [selectedRows, setSelectedRows] = useState([]);
+  const omeroWeb = useSelector(omeroSelectors.getOmeroWeb);
 
   const jobs_data = useMemo(
     () => {
@@ -61,6 +66,17 @@ const Results = ( { sidebarWidth } ) => {
       return [];
     },
     [pipelines, pipelineId],
+  );
+
+  useEffect(
+    () => {
+      if (omeroWeb === null) {
+        return;
+      }
+
+      dispatch(omeroActions.fetchOmeroWeb());
+    },
+    [dispatch, omeroWeb],
   );
 
   const nameReturnKey = useMemo(
@@ -97,43 +113,110 @@ const Results = ( { sidebarWidth } ) => {
   );
 
   const downloadPdf = useCallback(() => {
-    let doc = new jsPDF('p', 'px', 'a4');
-    let pageHeight = doc.internal.pageSize.getHeight();
-    let imageWidth = doc.internal.pageSize.getWidth() - 20;
+    const doc = new jsPDF('p', 'px', 'a4');
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const imageWidth = pageWidth - 20;
+    let currentYPos = 85; // Defined at the level of the downloadPdf function
+    const yPosStep = 15; // Vertical position increment for each subsequent ID
 
-    let y = 20;
-    for (const task of taskToPanels) {
-      doc.setFontSize(10);
-      doc.text(`Task: ${task.name} ${task.id}`, 10, 10);
+    const addImageList = () => {
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      const imageIds = project?.omeroIds || [];
 
-      for (const key in currImages[task.id]) {
-        const base64Image = currImages[task.id][key];
-        const image = base64Image.replace('data:image/png;base64,', '');
+      for (let i = 0; i < imageIds.length; i++) {
+        const id = imageIds[i];
+        doc.text(`Image ${i + 1} ID: ${id}`, 10, currentYPos);
+        currentYPos += yPosStep;
 
-        const img = new Image();
-        img.src = base64Image;
-        const imgWidth = img.width;
-        const imgHeight = img.height;
-        const aspectRatio = imgWidth / imgHeight;
-
-        const finalImageHeight = imageWidth / aspectRatio;
-        if (y + finalImageHeight + 20 > pageHeight) {
+        if (currentYPos + yPosStep > doc.internal.pageSize.getHeight() - 20) {
           doc.addPage();
-          y = 20;
-        }
-
-        doc.addImage(image, 'PNG', 10, y, imageWidth, finalImageHeight);
-        y += finalImageHeight + 10;
-
-        if (y + finalImageHeight + 20 > pageHeight) {
-          doc.addPage();
-          y = 20;
+          addHeader();
+          currentYPos = 85;
         }
       }
-    }
+    };
+
+    const addEmptyLine = (doc, xPos, yPos) => {
+      doc.text(' ', xPos, yPos);
+      currentYPos += yPosStep;
+    };
+
+    const addHeader = () => {
+      const reportTitle = 'SPEX Analysis Report';
+      const date = moment().format('MMMM Do, YYYY');
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(15);
+      doc.setTextColor(0, 0, 255);
+      doc.text(reportTitle, 10, 15);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      doc.text(date, pageWidth - 10, 15, { align: 'right' });
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(15);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Name: ${project.name}`, 10, 35);
+      doc.text(`Description: ${project.description}`, 10, 50);
+
+      const authorText = `Author: ${project.author.login}`;
+      const authorTextWidth = doc.getTextWidth(authorText);
+      const authorX = pageWidth - 10 - authorTextWidth;
+      doc.text(authorText, authorX, 50);
+
+      doc.setDrawColor(0, 0, 255);
+      doc.setLineWidth(0.5);
+      doc.line(10, 60, pageWidth - 10, 60);
+
+      addEmptyLine(doc, 10, currentYPos);
+
+      if (doc.internal.getCurrentPageInfo().pageNumber === 1) {
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(18);
+        doc.text(`Images – (Name of OMERO server, i.e. ${omeroWeb})`, 10, 75);
+      }
+
+      addEmptyLine(doc, 10, currentYPos);
+    };
+
+    addHeader();
+    addImageList();
+    let y = 80;
+
+    console.log(project);
+
+    // for (const task of taskToPanels) {
+    //   doc.setFontSize(10);
+    //   doc.text(`Task: ${task.name} ${task.id}`, 10, y);
+    //
+    //   for (const key in currImages[task.id]) {
+    //     const base64Image = currImages[task.id][key];
+    //     const image = base64Image.replace('data:image/png;base64,', '');
+    //
+    //     const img = new Image();
+    //     img.src = base64Image;
+    //     const imgWidth = img.width;
+    //     const imgHeight = img.height;
+    //     const aspectRatio = imgWidth / imgHeight;
+    //
+    //     const finalImageHeight = imageWidth / aspectRatio;
+    //     if (y + finalImageHeight + 20 > doc.internal.pageSize.getHeight() - 20) {
+    //       doc.addPage();
+    //       addHeader();
+    //       y = 80;
+    //     }
+    //
+    //     doc.addImage(image, 'PNG', 10, y + 10, imageWidth, finalImageHeight);
+    //     y += finalImageHeight + 20;
+    //   }
+    // }
 
     doc.save('images.pdf');
-  }, [taskToPanels, currImages]);
+  }, [taskToPanels, currImages, project, omeroWeb]);
 
 
   const columns = useMemo(
