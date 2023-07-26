@@ -19,9 +19,9 @@ import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
 import ErrorIcon from '@material-ui/icons/Error';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import PropTypes from 'prop-types';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 import styled from 'styled-components';
 import { statusFormatter } from '+utils/statusFormatter';
-import { CopyToClipboard } from 'react-copy-to-clipboard';
 
 
 const StyledAccordionDetails = styled(AccordionDetails)`

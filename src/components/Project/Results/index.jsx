@@ -13,12 +13,18 @@ import SaveIcon from '@material-ui/icons/Save';
 import WallpaperIcon from '@material-ui/icons/Wallpaper';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
+import classNames from 'classnames';
+import dagre from 'dagre';
+import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
+import cloneDeep from 'lodash/cloneDeep';
 import moment from 'moment';
 import PropTypes from 'prop-types';
+import ReactFlow, { isNode } from 'react-flow-renderer';
 import { useDispatch, useSelector } from 'react-redux';
 import { matchPath, useLocation } from 'react-router-dom';
 
+import JobBlock from '@/components/Project/Process/blocks/JobBlock';
 import PathNames from '@/models/PathNames';
 
 import { actions as jobsActions, selectors as jobsSelectors } from '@/redux/modules/jobs';
@@ -32,6 +38,101 @@ import Table from '+components/Table';
 import { Tab, Box } from '+components/Tabs';
 
 const refreshInterval = 6e4; // 1 minute
+
+const flowDirection = 'LR';
+const nodeWidth = 172;
+const nodeHeight = 36;
+
+const nodeTypes = {
+  job: JobBlock,
+};
+
+const addNewVirtualJobToPipeline = (rootId, newJob, node) => {
+  if (node.id === rootId) {
+    if (!node.jobs) {
+      node.jobs = [];
+    }
+    node.jobs.push(newJob);
+  } else {
+    for (let i = 0; i < (node.jobs || []).length; i++) {
+      // eslint-disable-next-line no-unused-vars
+      addNewVirtualJobToPipeline(rootId, newJob, node.jobs[i]);
+    }
+  }
+};
+
+const createElements = (inputData, result, options = {}, selectedBlock) => {
+  const { jobs } = inputData;
+
+  if (!jobs) {
+    return result;
+  }
+
+  jobs.forEach((job) => {
+    if (!job.id) {
+      return;
+    }
+
+    result.push({
+      id: job.id,
+      type: 'job',
+      position: options.position,
+      className: classNames({
+        new: job.id === 'new',
+        selected: job.id === selectedBlock?.id,
+      }),
+      data: {
+        ...job,
+        ...options.data,
+      },
+    });
+
+    result.push({
+      id: `${inputData.id}-${job.id}`,
+      type: 'smoothstep',
+      source: inputData.id,
+      target: job.id,
+      animated: job.status !== 1,
+    });
+
+    result = createElements(job, result, options, selectedBlock);
+  });
+
+  return result;
+};
+
+const createGraphLayout = (elements, direction = 'LR') => {
+  const graph = new dagre.graphlib.Graph();
+
+  graph.setGraph({ rankdir: direction });
+  graph.setDefaultEdgeLabel(() => ({}));
+
+  elements.forEach((el) => {
+    if (isNode(el)) {
+      graph.setNode(el.id, { width: nodeWidth, height: nodeHeight });
+    } else {
+      graph.setEdge(el.source, el.target);
+    }
+  });
+
+  dagre.layout(graph);
+
+  const isHorizontal = direction === 'LR';
+
+  return elements.map((el) => {
+    if (isNode(el)) {
+      const nodeWithPosition = graph.node(el.id);
+      el.targetPosition = isHorizontal ? 'left' : 'top';
+      el.sourcePosition = isHorizontal ? 'right' : 'bottom';
+      el.position = {
+        x: nodeWithPosition.x - nodeWidth / 2 + Math.random() / 1000,
+        y: nodeWithPosition.y - nodeHeight / 2,
+      };
+    }
+    return el;
+  });
+};
+
 
 const Results = ( { sidebarWidth } ) => {
   const dispatch = useDispatch();
@@ -54,6 +155,65 @@ const Results = ( { sidebarWidth } ) => {
   const [refresher, setRefresher] = useState(null);
   const [selectedRows, setSelectedRows] = useState([]);
   const omeroWeb = useSelector(omeroSelectors.getOmeroWeb);
+  // eslint-disable-next-line no-unused-vars
+  const [selectedBlock, setSelectedBlock] = useState(null);
+  const [reactFlowInstance, setReactFlowInstance] = useState(null);
+  const pipeline = useSelector(pipelineSelectors.getPipeline(projectId, pipelineId));
+
+  const elements = useMemo(
+    () => {
+      let _elements = [];
+
+      if (!pipeline) {
+        return _elements;
+      }
+
+      const options = {
+        position: { x: 0, y: 0 },
+        data: {
+          direction: flowDirection,
+        },
+      };
+
+      const pipelineClone = cloneDeep(pipeline);
+
+      if (selectedBlock && selectedBlock.rootId && selectedBlock.id === 'new') {
+        // addNewVirtualJobToPipeline(selectedBlock.rootId, selectedBlock, pipelineClone);
+      }
+
+      _elements = createElements(pipelineClone, _elements, options, selectedBlock);
+      if (_elements.length > 1) {
+        _elements.splice(1, 1);
+      }
+      return createGraphLayout(_elements, flowDirection);
+    },
+    [pipeline, selectedBlock],
+  );
+  const onLoad = useCallback(
+    (instance) => {
+      setReactFlowInstance(instance);
+    },
+    [setReactFlowInstance],
+  );
+
+  useEffect(
+    () => {
+      if (!(elements && reactFlowInstance)) {
+        return;
+      }
+
+      const reactFlowTimeoutId = setTimeout(() => {
+        reactFlowInstance.fitView();
+      }, 100);
+
+      return () => {
+        if (reactFlowTimeoutId) {
+          clearTimeout(reactFlowTimeoutId);
+        }
+      };
+    },
+    [elements, reactFlowInstance],
+  );
 
   const jobs_data = useMemo(
     () => {
@@ -112,12 +272,11 @@ const Results = ( { sidebarWidth } ) => {
     [dispatch, taskToPanels, nameReturnKey],
   );
 
-  const downloadPdf = useCallback(() => {
+  const downloadPdf = useCallback(async () => {
     const doc = new jsPDF('p', 'px', 'a4');
     const pageWidth = doc.internal.pageSize.getWidth();
-    const imageWidth = pageWidth - 20;
-    let currentYPos = 85; // Defined at the level of the downloadPdf function
-    const yPosStep = 15; // Vertical position increment for each subsequent ID
+    let currentYPos = 85;
+    const yPosStep = 15;
 
     const addImageList = () => {
       doc.setFont('helvetica', 'normal');
@@ -183,40 +342,104 @@ const Results = ( { sidebarWidth } ) => {
       addEmptyLine(doc, 10, currentYPos);
     };
 
+    const addPipelineInfo = () => {
+      addEmptyLine(doc, 10, currentYPos);
+
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(18);
+      doc.setTextColor(0, 0, 0);
+      doc.text('Pipeline', 10, currentYPos);
+      currentYPos += yPosStep;
+
+      const pipelineName = pipelines[pipelineId]?.name;
+      if (pipelineName) {
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(15);
+        doc.text(pipelineName, 10, currentYPos);
+        currentYPos += yPosStep;
+
+        if (currentYPos + yPosStep > doc.internal.pageSize.getHeight() - 20) {
+          doc.addPage();
+          addHeader();
+          currentYPos = 85;
+        }
+      }
+    };
+
+    function printTasks(data) {
+      if (data.hasOwnProperty('name') && data.hasOwnProperty('params')) {
+        doc.text('Task: ' + data.name, 10, currentYPos);
+        currentYPos += yPosStep;
+        doc.setFontSize(10);
+        let filteredParams = Object.fromEntries(
+          Object.entries(data.params)
+            .filter(([key]) => key !== 'img'
+              && key !== 'id'
+              && key !== 'folder'
+              && key !== 'script'
+              && key !== 'part'
+              && key !== 'omeroIds'),
+        );
+        let paramsString = 'Parameters: ' + JSON.stringify(filteredParams);
+        let textLines = doc.splitTextToSize(paramsString, pageWidth - 20);
+        for (let line of textLines) {
+          doc.text(line, 10, currentYPos);
+          currentYPos += yPosStep;
+        }
+        doc.setFontSize(12);
+
+        if (currentYPos + yPosStep > doc.internal.pageSize.getHeight() - 20) {
+          doc.addPage();
+          addHeader();
+          currentYPos = 85;
+        }
+      }
+
+      if (data.hasOwnProperty('jobs')) {
+        data.jobs.forEach(printTasks);
+      }
+      if (data.hasOwnProperty('tasks')) {
+        data.tasks.forEach(printTasks);
+      }
+    }
+
+    const addFlowDiagram = async () => {
+      const input = document.getElementById('react-flow__pane_2');
+      if (input) {
+        try {
+          const canvas = await html2canvas(input);
+          const imgData = canvas.toDataURL('image/png');
+          const imgProps = doc.getImageProperties(imgData);
+          const pdfWidth = doc.internal.pageSize.getWidth();
+          const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+          doc.addImage(imgData, 'PNG', 0, currentYPos, pdfWidth, pdfHeight);
+          currentYPos += pdfHeight + yPosStep;
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.error('Oops, something went wrong!', err);
+        }
+      }
+    };
+
     addHeader();
     addImageList();
-    let y = 80;
+    addPipelineInfo();
+    await addFlowDiagram();
+    addEmptyLine(doc, 10, currentYPos);
 
-    console.log(project);
 
-    // for (const task of taskToPanels) {
-    //   doc.setFontSize(10);
-    //   doc.text(`Task: ${task.name} ${task.id}`, 10, y);
-    //
-    //   for (const key in currImages[task.id]) {
-    //     const base64Image = currImages[task.id][key];
-    //     const image = base64Image.replace('data:image/png;base64,', '');
-    //
-    //     const img = new Image();
-    //     img.src = base64Image;
-    //     const imgWidth = img.width;
-    //     const imgHeight = img.height;
-    //     const aspectRatio = imgWidth / imgHeight;
-    //
-    //     const finalImageHeight = imageWidth / aspectRatio;
-    //     if (y + finalImageHeight + 20 > doc.internal.pageSize.getHeight() - 20) {
-    //       doc.addPage();
-    //       addHeader();
-    //       y = 80;
-    //     }
-    //
-    //     doc.addImage(image, 'PNG', 10, y + 10, imageWidth, finalImageHeight);
-    //     y += finalImageHeight + 20;
-    //   }
-    // }
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(18);
+    doc.setTextColor(0, 0, 0);
+    doc.text('Parameters', 10, currentYPos);
+    currentYPos += yPosStep;
+    printTasks(pipeline);
+
+
 
     doc.save('images.pdf');
-  }, [taskToPanels, currImages, project, omeroWeb]);
+  }, [project, omeroWeb, pipelineId, pipelines, pipeline]);
 
 
   const columns = useMemo(
@@ -342,6 +565,17 @@ const Results = ( { sidebarWidth } ) => {
     [taskToPanels, jobs_data, getTasks, images_results, selectedRows],
   );
 
+  useEffect(
+    () => {
+      dispatch(jobsActions.fetchJobTypes());
+      dispatch(tasksActions.fetchTasks());
+      return () => {
+        dispatch(jobsActions.clearJobTypes());
+        dispatch(tasksActions.clearTasks());
+      };
+    },
+    [dispatch],
+  );
 
   const tabsData = useMemo(
     () => {
@@ -422,6 +656,8 @@ const Results = ( { sidebarWidth } ) => {
           </List>
         </AccordionDetails>
       </Accordion>
+
+
       <Button
         size="small"
         variant="outlined"
@@ -438,6 +674,18 @@ const Results = ( { sidebarWidth } ) => {
       >
         PDF
       </Button>
+      <div style={{ height: 200, width: '100%', position: 'absolute', left: '-9999px' }}>
+        <ReactFlow
+          id='react-flow__pane_2'
+          nodeTypes={nodeTypes}
+          elements={elements}
+          onLoad={onLoad}
+          nodesDraggable={false}
+          nodesConnectable={false}
+          elementsSelectable={false}
+          snapToGrid
+        />
+      </div>
     </Fragment>
   );
 };
