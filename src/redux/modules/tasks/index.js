@@ -12,6 +12,28 @@ const initialState = {
   taskKeys: {},
   results: {},
   vis: {},
+  vt_config: {},
+};
+
+const {
+  REACT_APP_BACKEND_URL_ROOT,
+} = process.env;
+
+const replaceURLRootInObject = (obj) => {
+  for (let key in obj) {
+    if (typeof obj[key] === 'string') {
+      obj[key] = obj[key].replace('REACT_APP_BACKEND_URL_ROOT', REACT_APP_BACKEND_URL_ROOT);
+    } else if (Array.isArray(obj[key])) {
+      obj[key].forEach((item) => {
+        if (typeof item === 'object' && item !== null) {
+          replaceURLRootInObject(item);
+        }
+      });
+    } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+      replaceURLRootInObject(obj[key]);
+    }
+  }
+  return obj;
 };
 
 let api;
@@ -112,6 +134,7 @@ const slice = createSlice({
     fetchTasks: startFetching,
     fetchTaskImage: startFetching,
     fetchTaskKeys: startFetching,
+    fetchTaskVitessce: startFetching,
     fetchTaskResult: startFetching,
     fetchTaskResultOnImage: startFetching,
     fetchTaskVisualize: startFetching,
@@ -128,6 +151,11 @@ const slice = createSlice({
     fetchTaskImageSuccess: (state, { payload: { id, image } }) => {
       stopFetching(state);
       state.images[id] = image;
+    },
+
+    fetchTaskVitessceSuccess: (state, { payload: { id, config } }) => {
+      stopFetching(state);
+      state.vt_config[id] = config;
     },
 
     fetchTaskKeysSuccess: (state, { payload: task }) => {
@@ -230,6 +258,22 @@ const slice = createSlice({
       },
     },
 
+    [actions.fetchTaskVitessce]: {
+      * saga({ payload: id }) {
+        initApi();
+
+        try {
+          const url = `${baseUrl}/vitessce/${id}`;
+          const { data } = yield call(api.get, url);
+          yield put(actions.fetchTaskVitessceSuccess({ id, config: replaceURLRootInObject(data) }));
+        } catch (error) {
+          yield put(actions.requestFail(error));
+          // eslint-disable-next-line no-console
+          console.error(error.message);
+        }
+      },
+    },
+
     [actions.fetchTaskKeys]: {
       * saga({ payload: id }) {
         initApi();
@@ -265,7 +309,7 @@ const slice = createSlice({
           let url_keys = `${baseUrl}/file/${id}?key=${key}`;
           if (key === 'dataframe') {
             url_keys = `${baseUrl}/anndata/${id}`;
-          };
+          }
 
           const res = yield call(api.get, url_keys, { responseType: 'blob' });
 
@@ -467,6 +511,16 @@ const slice = createSlice({
     getTaskKeys: (id) => createSelector(
       [getState],
       (state) => state?.taskKeys?.[id],
+    ),
+
+    getTaskVitessceConfig: (id) => createSelector(
+      [getState],
+      (state) => state?.vt_config?.[id],
+    ),
+
+    getTaskVitessceConfigs: createSelector(
+      [getState],
+      (state) => state?.vt_config,
     ),
 
     getTaskResults: (id) => createSelector(

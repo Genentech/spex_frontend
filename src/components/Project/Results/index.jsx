@@ -23,6 +23,7 @@ import PropTypes from 'prop-types';
 import ReactFlow, { isNode } from 'react-flow-renderer';
 import { useDispatch, useSelector } from 'react-redux';
 import { matchPath, useLocation } from 'react-router-dom';
+import { Vitessce } from 'vitessce';
 
 import JobBlock from '@/components/Project/Process/blocks/JobBlock';
 import PathNames from '@/models/PathNames';
@@ -149,6 +150,7 @@ const Results = ( { sidebarWidth } ) => {
   });
   const pipelineId = matchPipelinePath ? matchPipelinePath.params.id : undefined;
   const images_results = useSelector(tasksSelectors.getTaskVisualizations || {});
+  const tasksVitessceConfigs = useSelector(tasksSelectors.getTaskVitessceConfigs || {});
   const jobTypes = useSelector(jobsSelectors.getJobTypes);
   const [taskToPanels, setTasksToPanels] = useState([]);
   const [currImages, setCurrImages] = useState({});
@@ -607,6 +609,15 @@ const Results = ( { sidebarWidth } ) => {
     [dispatch],
   );
 
+  useEffect(
+    () => {
+      taskToPanels.forEach((item) => {
+        dispatch(tasksActions.fetchTaskVitessce(item.id));
+      });
+    },
+    [dispatch, taskToPanels],
+  );
+
   return (
     <Fragment>
       <Table
@@ -637,6 +648,13 @@ const Results = ( { sidebarWidth } ) => {
                 <ListItemText
                   primary={`task id: ${type.id}.`}
                 />
+                <div style={{ height: '100vh', width: '100vw' }}>
+                  <Vitessce
+                    config={tasksVitessceConfigs[type.id]}
+                    height={800}
+                    theme="light"
+                  />
+                </div>
                 <ImageList cols={2}>
                   {Object.keys(Object(currImages[type.id])).map((key) => (
                     <ImageListItem key={`${type.id}-${key}-${type.id}`}>
