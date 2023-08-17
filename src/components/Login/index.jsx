@@ -10,6 +10,7 @@ import Progress from '+components/Progress';
 
 import Alert from './components/Alert';
 import Container from './components/Container';
+import spex from './components/spex.png';
 
 const Auth = () => {
   const dispatch = useDispatch();
@@ -35,6 +36,8 @@ const Auth = () => {
             {error}
           </Alert>
         )}
+
+        <img src={spex} alt="spex" />
 
         <Field
           name="username"
