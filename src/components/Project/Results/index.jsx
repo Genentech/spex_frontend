@@ -38,8 +38,6 @@ import Button from '+components/Button';
 import Table from '+components/Table';
 import { Tab, Box } from '+components/Tabs';
 
-const refreshInterval = 6e4; // 1 minute
-
 const flowDirection = 'LR';
 const nodeWidth = 172;
 const nodeHeight = 36;
@@ -154,7 +152,6 @@ const Results = ( { sidebarWidth } ) => {
   const jobTypes = useSelector(jobsSelectors.getJobTypes);
   const [taskToPanels, setTasksToPanels] = useState([]);
   const [currImages, setCurrImages] = useState({});
-  const [refresher, setRefresher] = useState(null);
   const [selectedRows, setSelectedRows] = useState([]);
   const omeroWeb = useSelector(omeroSelectors.getOmeroWeb);
   // eslint-disable-next-line no-unused-vars
@@ -493,7 +490,7 @@ const Results = ( { sidebarWidth } ) => {
       }
       dispatch(pipelineActions.fetchPipelinesForVis(projectId));
     },
-    [dispatch, projectId, pipelineId, refresher],
+    [dispatch, projectId, pipelineId],
   );
 
   useEffect(
@@ -503,18 +500,6 @@ const Results = ( { sidebarWidth } ) => {
       }
     },
     [selectedRows],
-  );
-
-  useEffect(
-    () => {
-      const intervalId = setInterval(() => {
-        setRefresher(Date.now());
-      }, refreshInterval);
-      return () => {
-        clearInterval(intervalId);
-      };
-    },
-    [dispatch],
   );
 
   useEffect(
