@@ -22,7 +22,7 @@ const {
 const replaceURLRootInObject = (obj) => {
   for (let key in obj) {
     if (typeof obj[key] === 'string') {
-      obj[key] = obj[key].replace('REACT_APP_BACKEND_URL_ROOT', REACT_APP_BACKEND_URL_ROOT);
+      obj[key] = obj[key].replace('REACT_APP_BACKEND_URL_ROOT', REACT_APP_BACKEND_URL_ROOT+'/');
     } else if (Array.isArray(obj[key])) {
       obj[key].forEach((item) => {
         if (typeof item === 'object' && item !== null) {
