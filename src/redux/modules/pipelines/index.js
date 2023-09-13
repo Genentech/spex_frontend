@@ -8,7 +8,7 @@ const initialState = {
   isFetching: false,
   error: '',
   pipelines: [],
-  visPipelines: [],
+  visPipelines: {},
 };
 
 let api;
@@ -46,13 +46,10 @@ const slice = createSlice({
       }
     },
 
-    fetchPipelinesForVisSuccess: (state, { payload: { projectId, data } }) => {
+    fetchPipelinesForVisSuccess: (state, { payload: { data } }) => {
       stopFetching(state);
-      const hashedPipelines = hash(data || [], 'id');
-      if (JSON.stringify(hashedPipelines) === JSON.stringify( { } ) ) {
-        state.visPipelines[projectId] = [];
-      } else {
-        state.visPipelines[projectId] = hashedPipelines;
+      if (data[0].jobs.length > 0) {
+        state.visPipelines[data[0].id] = data[0];
       }
     },
 
@@ -113,13 +110,15 @@ const slice = createSlice({
     },
 
     [actions.fetchPipelinesForVis]: {
-      * saga({ payload: projectId }) {
+      * saga({ payload: { projectId, pipelineId } }) {
         initApi();
-
         try {
-          const url = `projects/${projectId}/list`;
+          let url = `projects/${projectId}/list`;
+          if (pipelineId) {
+            url += `?pipeline_id=${pipelineId}`;
+          }
           const { data } = yield call(api.get, url);
-          yield put(actions.fetchPipelinesForVisSuccess({ projectId: projectId, data: data['data'] }));
+          yield put(actions.fetchPipelinesForVisSuccess({ data: data['data'] }));
         } catch (error) {
           yield put(actions.requestFail(error));
           // eslint-disable-next-line no-console
@@ -323,9 +322,9 @@ const slice = createSlice({
       (state) => state?.pipelines,
     ),
 
-    getPipelinesWithTasksForVis: (projectId) => createSelector(
+    getPipelinesWithTasksForVis: (pipelineId) => createSelector(
       [getState],
-      (state) => state?.visPipelines[projectId],
+      (state) => state?.visPipelines[pipelineId],
     ),
 
     getPipeline: (projectId, pipelineId) => createSelector(

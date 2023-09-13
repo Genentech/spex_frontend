@@ -28,7 +28,6 @@ import { Vitessce } from 'vitessce';
 import JobBlock from '@/components/Project/Process/blocks/JobBlock';
 import PathNames from '@/models/PathNames';
 
-import { actions as jobsActions, selectors as jobsSelectors } from '@/redux/modules/jobs';
 import { actions as omeroActions, selectors as omeroSelectors } from '@/redux/modules/omero';
 import { actions as pipelineActions, selectors as pipelineSelectors } from '@/redux/modules/pipelines';
 import { selectors as projectSelectors } from '@/redux/modules/projects';
@@ -140,16 +139,14 @@ const Results = ( { sidebarWidth } ) => {
   const matchProjectPath = matchPath(location.pathname, { path: `/${PathNames.projects}/:id` });
   const projectId = matchProjectPath ? matchProjectPath.params.id : undefined;
   const project = useSelector(projectSelectors.getProject(projectId));
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const pipelines = useSelector(pipelineSelectors.getPipelinesWithTasksForVis(projectId)) || {};
   const matchPipelinePath = matchPath(location.pathname, {
     path: `/${PathNames.projects}/${projectId}/${PathNames.processes}/:id`,
   });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const pipelineId = matchPipelinePath ? matchPipelinePath.params.id : undefined;
+  const pipelines = useSelector(pipelineSelectors.getPipelinesWithTasksForVis(pipelineId) || {});
   const images_results = useSelector(tasksSelectors.getTaskVisualizations || {});
   const tasksVitessceConfigs = useSelector(tasksSelectors.getTaskVitessceConfigs || {});
-  const jobTypes = useSelector(jobsSelectors.getJobTypes);
   const [taskToPanels, setTasksToPanels] = useState([]);
   const [currImages, setCurrImages] = useState({});
   const [selectedRows, setSelectedRows] = useState([]);
@@ -216,11 +213,14 @@ const Results = ( { sidebarWidth } ) => {
 
   const jobs_data = useMemo(
     () => {
+      if (pipelines === undefined) {
+        return [];
+      }
       if (pipelines.length === 0 || Object.keys(pipelines).length === 0) {
         return [];
       }
-      if (pipelines[pipelineId]) {
-        return pipelines[pipelineId]['jobs'];
+      if (pipelines && pipelines.id === pipelineId) {
+        return pipelines['jobs'];
       }
       return [];
     },
@@ -238,38 +238,6 @@ const Results = ( { sidebarWidth } ) => {
     [dispatch, omeroWeb],
   );
 
-  const nameReturnKey = useMemo(
-    () => {
-      if (Object.keys(jobTypes).length === 0) {
-        return {};
-      }
-      let returnValues = {};
-      Object.keys(jobTypes).forEach((jobType) => {
-        jobTypes[jobType]['stages'].forEach((stage) => {
-          stage['scripts'].forEach((script) => {
-            returnValues[script['name']] = Object.keys(script['return'])[0];
-          });
-        });
-      });
-      return returnValues;
-    },
-    [jobTypes],
-  );
-
-  const onLoadVisualize = useCallback(
-    () => {
-      taskToPanels.forEach((item) => {
-        dispatch(tasksActions.fetchTaskVisualize({
-          id: item.id,
-          name: item.name,
-          script: item.params?.script,
-          channels: item.params?.channels,
-          key: nameReturnKey[item.name],
-        }));
-      });
-    },
-    [dispatch, taskToPanels, nameReturnKey],
-  );
 
   const downloadPdf = useCallback(async () => {
     const doc = new jsPDF('p', 'px', 'a4');
@@ -488,7 +456,7 @@ const Results = ( { sidebarWidth } ) => {
       if (!projectId && !pipelineId) {
         return;
       }
-      dispatch(pipelineActions.fetchPipelinesForVis(projectId));
+      dispatch(pipelineActions.fetchPipelinesForVis( { projectId, pipelineId } ));
     },
     [dispatch, projectId, pipelineId],
   );
@@ -552,17 +520,6 @@ const Results = ( { sidebarWidth } ) => {
     [taskToPanels, jobs_data, getTasks, images_results, selectedRows],
   );
 
-  useEffect(
-    () => {
-      dispatch(jobsActions.fetchJobTypes());
-      dispatch(tasksActions.fetchTasks());
-      return () => {
-        dispatch(jobsActions.clearJobTypes());
-        dispatch(tasksActions.clearTasks());
-      };
-    },
-    [dispatch],
-  );
 
   const tabsData = useMemo(
     () => {
@@ -584,15 +541,6 @@ const Results = ( { sidebarWidth } ) => {
     [selectedRows, jobs_data],
   );
 
-  useEffect(
-    () => {
-      dispatch(jobsActions.fetchJobTypes());
-      return () => {
-        dispatch(jobsActions.clearJobTypes());
-      };
-    },
-    [dispatch],
-  );
 
   useEffect(
     () => {
@@ -660,15 +608,6 @@ const Results = ( { sidebarWidth } ) => {
         </AccordionDetails>
       </Accordion>
 
-
-      <Button
-        size="small"
-        variant="outlined"
-        onClick={onLoadVisualize}
-        startIcon={<WallpaperIcon />}
-      >
-        Render value
-      </Button>
       <Button
         size="small"
         variant="outlined"
