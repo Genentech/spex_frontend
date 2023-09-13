@@ -75,7 +75,6 @@ const Processes = () => {
       } else {
         dispatch(pipelineActions.createPipeline(normalizedPipeline));
       }
-
       setPipelineToManage(null);
     },
     [dispatch],
@@ -120,7 +119,7 @@ const Processes = () => {
         [id],
       ),
       minWidth: 50,
-      maxWidth: 50,
+      maxWidth: 80,
     }, {
       accessor: 'name',
       Header: 'name',

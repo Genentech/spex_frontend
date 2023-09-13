@@ -151,6 +151,7 @@ const slice = createSlice({
           const url = `${baseUrl}s/${pipeline.project}`;
           const { data } = yield call(api.post, url, pipeline);
           yield put(actions.createPipelineSuccess(data.data));
+          yield put(actions.fetchPipelines(pipeline.project));
         } catch (error) {
           yield put(actions.requestFail(error));
           // eslint-disable-next-line no-console
@@ -167,6 +168,7 @@ const slice = createSlice({
           const url = `${baseUrl}/${pipeline.id}`;
           const { data } = yield call(api.put, url, pipeline);
           yield put(actions.updatePipelineSuccess(data.data));
+          yield put(actions.fetchPipelines(pipeline.project));
         } catch (error) {
           yield put(actions.requestFail(error));
           // eslint-disable-next-line no-console
@@ -182,6 +184,7 @@ const slice = createSlice({
           const url = `${baseUrl}/${pipelineId}`;
           yield call(api.delete, url);
           yield put(actions.deletePipelineSuccess([projectId, pipelineId]));
+          yield put(actions.fetchPipelines(projectId));
         } catch (error) {
           yield put(actions.requestFail(error));
           // eslint-disable-next-line no-console
