@@ -1,12 +1,12 @@
 import React, { useCallback } from 'react';
 import {
   Accordion,
-  ListItemText,
   AccordionSummary,
   AccordionDetails,
   Button,
 } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import SaveIcon from '@material-ui/icons/Save';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { actions as jobsActions, selectors as jobsSelectors } from '@/redux/modules/jobs';
@@ -42,13 +42,21 @@ const JobsData = ({ jobs }) => {
       {filteredJobs.map((job, i) => (
         <Accordion key={job.id} onChange={() => handleAccordionExpand(job.id)}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <ListItemText
-              primary={`Job ${i + 1}: ${job.name}`}
-              secondary={`Status: ${statusFormatter(job.status)}`}
-            />
-            <Button variant="contained" color="primary" onClick={() => onDownload(job.id)}>
-              Download ann data
-            </Button>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <span style={{ marginRight: 10 }}>{`Job ${i + 1}: ${job.name}`}</span>
+                <span style={{ fontWeight: 'bold' }}>{`Status: ${statusFormatter(job.status)}`}</span>
+              </div>
+              <Button
+                size="small"
+                variant="contained"
+                color="inherit"
+                startIcon={<SaveIcon />}
+                onClick={() => onDownload(job.id)}
+              >
+                Download zarr
+              </Button>
+            </div>
           </AccordionSummary>
           <AccordionDetails>
             {jobData[job.id] && <pre>{JSON.stringify(jobData[job.id], null, 2)}</pre>}

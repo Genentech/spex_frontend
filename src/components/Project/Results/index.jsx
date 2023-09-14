@@ -6,7 +6,6 @@ import AccordionDetails from '@material-ui/core/AccordionDetails';
 import AccordionSummary from '@material-ui/core/AccordionSummary';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
 import DynamicFeedOutlinedIcon from '@material-ui/icons/DynamicFeedOutlined';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import SaveIcon from '@material-ui/icons/Save';
@@ -23,6 +22,7 @@ import PropTypes from 'prop-types';
 import ReactFlow, { isNode } from 'react-flow-renderer';
 import { useDispatch, useSelector } from 'react-redux';
 import { matchPath, useLocation } from 'react-router-dom';
+import styled from 'styled-components';
 import { Vitessce } from 'vitessce';
 
 import JobBlock from '@/components/Project/Process/blocks/JobBlock';
@@ -44,6 +44,10 @@ const nodeHeight = 36;
 const nodeTypes = {
   job: JobBlock,
 };
+
+const TasksBlock = styled.div`
+  max-width: 100%;
+`;
 
 const addNewVirtualJobToPipeline = (rootId, newJob, node) => {
   if (node.id === rootId) {
@@ -226,6 +230,7 @@ const Results = ( { sidebarWidth } ) => {
     },
     [pipelines, pipelineId],
   );
+
 
   useEffect(
     () => {
@@ -425,6 +430,17 @@ const Results = ( { sidebarWidth } ) => {
         ),
       },
       {
+        id: 'omeroIds',
+        accessor: 'omeroIds',
+        Header: 'OMERO IDs',
+        Cell: ({ row: { original: { omeroIds } } }) => useMemo(
+          () => (
+            <div>{omeroIds.map((omero) => omero).join(', ')}</div>
+          ),
+          [omeroIds],
+        ),
+      },
+      {
         id: 'status',
         accessor: 'status',
         Header: 'Status',
@@ -559,7 +575,6 @@ const Results = ( { sidebarWidth } ) => {
         allowRowSelection
         onSelectedRowsChange={setSelectedRows}
         selectedRowIds={selectedRows.map((row) => row.id)}
-        // initialSelectedRowIds={project?.file_names}
       />
       <Box>
         {Object.values(tabsData).map((type) => (
@@ -575,39 +590,45 @@ const Results = ( { sidebarWidth } ) => {
           <DynamicFeedOutlinedIcon /> Tasks
         </AccordionSummary>
         <AccordionDetails>
-          <List dense component="div">
-            {taskToPanels.map((type) => (
-              <ListItem component="div" key={type.id}>
-                <ListItemText
-                  primary={`task id: ${type.id}.`}
-                />
-                <div style={{ height: '100vh', width: '100vw' }}>
-                  <Vitessce
-                    config={tasksVitessceConfigs[type.id]}
-                    height={800}
-                    theme="light"
-                  />
-                </div>
-                <ImageList cols={2}>
-                  {Object.keys(Object(currImages[type.id])).map((key) => (
-                    <ImageListItem key={`${type.id}-${key}-${type.id}`}>
-                      <p>
-                        <Box
-                          key={`${type.id}-${key}-${type.id}`}
-                          component="img"
-                          src={currImages[type.id][key]}
-                          alt={key}
+          <TasksBlock>
+            <List dense component="div">
+              {taskToPanels.map((type) => (
+                <Accordion key={type.id} style={{ backgroundColor: 'white' }}>
+                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                    Task {type.id}, image id {type.omeroId}
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <div style={{ height: '100vh', width: '100vw' }}>
+                        <Vitessce
+                          config={tasksVitessceConfigs[type.id]}
+                          height={800}
+                          theme="light"
                         />
-                      </p>
-                    </ImageListItem>
-                  ))}
-                </ImageList>
-              </ListItem>
-            ))}
-          </List>
+                      </div>
+                    </div>
+                    <ImageList cols={2}>
+                      {Object.keys(Object(currImages[type.id])).map((key) => (
+                        <ImageListItem key={`${type.id}-${key}-${type.id}`}>
+                          <p>
+                            <Box
+                              key={`${type.id}-${key}-${type.id}`}
+                              component="img"
+                              src={currImages[type.id][key]}
+                              alt={key}
+                            />
+                          </p>
+                        </ImageListItem>
+                      ))}
+                    </ImageList>
+                  </AccordionDetails>
+                </Accordion>
+
+              ))}
+            </List>
+          </TasksBlock>
         </AccordionDetails>
       </Accordion>
-
       <Button
         size="small"
         variant="outlined"
@@ -631,6 +652,7 @@ const Results = ( { sidebarWidth } ) => {
     </Fragment>
   );
 };
+
 
 Results.propTypes = {
   // eslint-disable-next-line react/require-default-props
