@@ -8,6 +8,7 @@ const initialState = {
   isFetching: false,
   error: '',
   tasks: {},
+  tasksMessage: {},
   images: {},
   taskKeys: {},
   results: {},
@@ -141,6 +142,8 @@ const slice = createSlice({
     createTask: startFetching,
     updateTask: startFetching,
     deleteTask: startFetching,
+    deleteTaskData: startFetching,
+    checkTaskData: startFetching,
 
     fetchTasksSuccess: (state, { payload: tasks }) => {
       stopFetching(state);
@@ -188,6 +191,16 @@ const slice = createSlice({
     deleteTaskSuccess(state, { payload: id }) {
       stopFetching(state);
       delete state.tasks[id];
+    },
+
+    deleteTaskDataSuccess(state, { payload: data }) {
+      stopFetching(state);
+      state.tasksMessage = data;
+    },
+
+    updateTaskDataSuccess(state, { payload: data }) {
+      stopFetching(state);
+      state.tasksMessage = data;
     },
 
     clearTasks: (state) => {
@@ -480,6 +493,38 @@ const slice = createSlice({
         }
       },
     },
+
+    [actions.deleteTaskData]: {
+      * saga({ payload: id }) {
+        initApi();
+
+        try {
+          const url = `${baseUrl}/vitessce/${id}`;
+          const { data } = yield call(api.delete, url);
+          yield put(actions.deleteTaskDataSuccess(data));
+        } catch (error) {
+          yield put(actions.requestFail(error));
+          // eslint-disable-next-line no-console
+          console.error(error.message);
+        }
+      },
+    },
+
+    [actions.checkTaskData]: {
+      * saga({ payload: id }) {
+        initApi();
+
+        try {
+          const url = `${baseUrl}/vitessce/${id}`;
+          const { data } = yield call(api.post, url, {});
+          yield put(actions.updateTaskDataSuccess(data));
+        } catch (error) {
+          yield put(actions.requestFail(error));
+          // eslint-disable-next-line no-console
+          console.error(error.message);
+        }
+      },
+    },
   }),
 
   selectors: (getState) => ({
@@ -501,6 +546,11 @@ const slice = createSlice({
     getTask: (id) => createSelector(
       [getState],
       (state) => state?.tasks?.[id],
+    ),
+
+    getDataMessage: createSelector(
+      [getState],
+      (state) => state?.tasksMessage,
     ),
 
     getTaskImage: (id) => createSelector(

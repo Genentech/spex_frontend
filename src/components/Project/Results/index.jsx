@@ -5,11 +5,11 @@ import Accordion from '@material-ui/core/Accordion';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
 import AccordionSummary from '@material-ui/core/AccordionSummary';
 import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
+import DeleteIcon from '@material-ui/icons/Delete';
 import DynamicFeedOutlinedIcon from '@material-ui/icons/DynamicFeedOutlined';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import Refresh from '@material-ui/icons/Refresh';
 import SaveIcon from '@material-ui/icons/Save';
-import WallpaperIcon from '@material-ui/icons/Wallpaper';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import classNames from 'classnames';
@@ -34,6 +34,7 @@ import { selectors as projectSelectors } from '@/redux/modules/projects';
 import { actions as tasksActions, selectors as tasksSelectors } from '@/redux/modules/tasks';
 
 import Button from '+components/Button';
+import Message from '+components/Message';
 import Table from '+components/Table';
 import { Tab, Box } from '+components/Tabs';
 
@@ -159,6 +160,7 @@ const Results = ( { sidebarWidth } ) => {
   const [selectedBlock, setSelectedBlock] = useState(null);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
   const pipeline = useSelector(pipelineSelectors.getPipeline(projectId, pipelineId));
+  const error = useSelector(tasksSelectors.getDataMessage);
 
   const elements = useMemo(
     () => {
@@ -519,6 +521,14 @@ const Results = ( { sidebarWidth } ) => {
     [pipelines],
   );
 
+  const handleDeleteTaskData = useCallback((taskId) => {
+    dispatch(tasksActions.deleteTaskData(taskId));
+  }, [dispatch]);
+
+  const handleUpdateTaskData = useCallback((taskId) => {
+    dispatch(tasksActions.checkTaskData(taskId));
+  }, [dispatch]);
+
 
   const onDataTabChange = useCallback(
     (_, id) => {
@@ -536,6 +546,10 @@ const Results = ( { sidebarWidth } ) => {
     [taskToPanels, jobs_data, getTasks, images_results, selectedRows],
   );
 
+  const errorMessage = useMemo(() => {
+      return error.message || 'An error occurred';
+    return null;
+  }, [error]);
 
   const tabsData = useMemo(
     () => {
@@ -595,7 +609,37 @@ const Results = ( { sidebarWidth } ) => {
               {taskToPanels.map((type) => (
                 <Accordion key={type.id} style={{ backgroundColor: 'white' }}>
                   <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                    Task {type.id}, image id {type.omeroId}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <span style={{ marginRight: 10 }}>Task {type.id}, image id {type.omeroId}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                        <Button
+                          size="small"
+                          variant="contained"
+                          color="inherit"
+                          startIcon={<Refresh />}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleUpdateTaskData(type.id);
+                          }}
+                        >
+                          create zarr data
+                        </Button>
+                        <Button
+                          size="small"
+                          variant="contained"
+                          color="inherit"
+                          startIcon={<DeleteIcon />}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteTaskData(type.id);
+                          }}
+                        >
+                          delete zarr data
+                        </Button>
+                      </div>
+                    </div>
                   </AccordionSummary>
                   <AccordionDetails>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -628,6 +672,7 @@ const Results = ( { sidebarWidth } ) => {
             </List>
           </TasksBlock>
         </AccordionDetails>
+        {errorMessage && <Message message={errorMessage} />}
       </Accordion>
       <Button
         size="small"
