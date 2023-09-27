@@ -111,9 +111,13 @@ const getFieldComponent = (type) => {
     case 'channels':
       return Select;
     case 'int':
-    case 'float':
       return NumberField;
+    case 'float':
+      return Controls.NumberField;
     case 'string':
+      return Controls.TextField;
+    case 'enum':
+      return Controls.TextField;
     default:
       return TextField;
   }
@@ -122,7 +126,7 @@ const getFieldComponent = (type) => {
 const getFieldParser = (type) => {
   switch (type) {
     case 'int':
-      return Parsers.number;
+      return Parsers.integer;
     case 'file':
       return Parsers.file;
     default:
@@ -146,7 +150,10 @@ const getFieldAdditionalProps = (type, block, { imagesOptions, imagesChannelsOpt
         options: filesOptions,
         file_names:  block.file_names,
       };
-
+    case 'int':
+      return {
+        options: imagesChannelsOptions,
+      };
     default:
       return {};
   }

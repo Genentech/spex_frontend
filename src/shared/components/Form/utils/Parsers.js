@@ -1,5 +1,7 @@
 const number = (value) => (isNaN(parseFloat(value)) ? null : parseFloat(value));
 
+const integer = (value) => (isNaN(parseInt(value)) ? null : parseInt(value));
+
 const numberBetween = (value, min, max) => Math.min(max, Math.max(min, number(value)));
 
 const omeroIds = (value) => value.map((el) => el?.id ?? el);
@@ -16,6 +18,7 @@ const Parsers = {
   file,
   channels,
   channel,
+  integer,
 };
 
 export default Parsers;

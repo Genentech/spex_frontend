@@ -548,7 +548,6 @@ const Results = ( { sidebarWidth } ) => {
 
   const errorMessage = useMemo(() => {
       return error.message || 'An error occurred';
-    return null;
   }, [error]);
 
   const tabsData = useMemo(
