@@ -165,7 +165,6 @@ const getFieldAdditionalProps = (type, block, { imagesOptions, imagesChannelsOpt
 };
 
 const focusOnFirstFieldDecorator = createFocusOnFirstFieldDecorator();
-
 // TODO: Hardcode results
 // [, label, centroid-0, centroid-1, 0],
 let res = [
@@ -351,6 +350,8 @@ const BlockSettingsForm = (props) => {
     [block, results, currentTask, taskResults?.dataframe],
   );
 
+  const memoizedDecorator = useMemo(() => [focusOnFirstFieldDecorator], []);
+
   return (
     <Form
       {...tail}
@@ -380,6 +381,7 @@ const BlockSettingsForm = (props) => {
                     <Field
                       // eslint-disable-next-line react/no-array-index-key
                       key={`${i}-${field.name}`}
+                      id={`${i}-${field.name}`}
                       name={field.name}
                       label={field.label}
                       placeholder={field.placeholder}
@@ -437,7 +439,7 @@ const BlockSettingsForm = (props) => {
           changeValue(state, field, () => value);
         },
       }}
-      decorators={[focusOnFirstFieldDecorator]}
+      decorators={memoizedDecorator}
       onSubmit={onSubmit}
     />
   );

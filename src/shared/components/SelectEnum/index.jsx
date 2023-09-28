@@ -33,12 +33,12 @@ const SelectEnum = (props) => {
 
   return (
     <FormControl variant="outlined">
-      <InputLabel htmlFor="select-enum">{label}</InputLabel>
+      <InputLabel htmlFor={label}>{label}</InputLabel>
       <Select
         value={fixedValue}
         onChange={doChange}
         input={
-          <OutlinedInput label={label} notched={Boolean(label)} id="select-enum" />
+          <OutlinedInput label={label} notched={Boolean(label)} id={label} />
         }
       >
         {options.map(({ value, label }) => (

@@ -26,8 +26,7 @@ L.Control.Fullscreen = L.Control.extend({
     L.DomEvent.on(this.link, 'click', this._click, this);
     L.DomEvent.on(this.link, 'dblclick', this._noop, this);
     L.DomEvent.on(this.link, 'mousedown ', this._noop, this);
-    L.DomEvent.on(this.link, 'touchstart ', this._noop, this);
-
+    this.link.addEventListener('touchstart', this._noop.bind(this), { passive: true });
     return container;
   },
 

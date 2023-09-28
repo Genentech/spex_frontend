@@ -316,6 +316,8 @@ const ImageViewer = (props) => {
           {(channels || []).map((channel, index) => (
             <Channel key={channel.label}>
               <Checkbox
+                id={`checkbox-${index}-${channel.color}`}
+                name={`checkbox-${index}-${channel.color}`}
                 $color={`#${channel.color}`}
                 checked={channel.active}
                 onChange={onChannelToggle(index)}
