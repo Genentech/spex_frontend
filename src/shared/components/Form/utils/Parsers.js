@@ -8,6 +8,7 @@ const omeroIds = (value) => value.map((el) => el?.id ?? el);
 
 const channel = (value) => value?.value ?? value;
 
+const e_num = (value) => value?.value ?? value;
 const file = (value) => value?.value ?? value;
 const channels = (value) => value.map(channel);
 
@@ -19,6 +20,7 @@ const Parsers = {
   channels,
   channel,
   integer,
+  e_num,
 };
 
 export default Parsers;

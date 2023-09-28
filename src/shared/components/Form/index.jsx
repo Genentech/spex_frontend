@@ -5,6 +5,7 @@ import styled from 'styled-components';
 
 import ImagePicker from '+components/ImagePicker';
 import { Option as SelectOption } from '+components/Select';
+import SelectEnum from '+components/SelectEnum';
 import SelectFile from '+components/SelectFile';
 import SelectJobs from '+components/SelectJobs';
 import SelectJobsPipeline from '+components/SelectJobsInPipeline';
@@ -41,6 +42,7 @@ const Controls = {
   SelectJobsPipeline,
   SelectNew,
   SelectFile,
+  SelectEnum,
   Slider,
   SingleTransferList,
   TransferList,

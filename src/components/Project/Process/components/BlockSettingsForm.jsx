@@ -117,7 +117,7 @@ const getFieldComponent = (type) => {
     case 'string':
       return Controls.TextField;
     case 'enum':
-      return Controls.TextField;
+      return Controls.SelectEnum;
     default:
       return TextField;
   }
@@ -134,7 +134,7 @@ const getFieldParser = (type) => {
   }
 };
 
-const getFieldAdditionalProps = (type, block, { imagesOptions, imagesChannelsOptions, filesOptions }) => {
+const getFieldAdditionalProps = (type, block, { imagesOptions, imagesChannelsOptions, filesOptions, blockOptions }) => {
   switch (type) {
     case 'omero':
       return { options: imagesOptions };
@@ -153,6 +153,11 @@ const getFieldAdditionalProps = (type, block, { imagesOptions, imagesChannelsOpt
     case 'int':
       return {
         options: imagesChannelsOptions,
+      };
+    case 'enum':
+      return {
+        options: blockOptions,
+        value: '123',
       };
     default:
       return {};
@@ -241,6 +246,25 @@ const BlockSettingsForm = (props) => {
     }));
   }, [projectImagesDetails]);
 
+
+  const projectBlockOptions = useMemo(() => {
+    const enumOptionsByLabel = {};
+
+    if (block && block.params_meta) {
+      Object.entries(block.params_meta).forEach(([key, { type, enum: enumOptions }]) => {
+        if (type === 'enum') {
+          enumOptionsByLabel[key] = enumOptions.map((option) => ({
+            value: option,
+            label: option,
+            index: option,
+          }));
+        }
+      });
+    }
+
+    return enumOptionsByLabel;
+  }, [block]);
+
   const status = block?.id === 'new' ? 'New' : statusFormatter(block.status);
   const header = `[${status}] ${block.description || block.name || ''}`;
 
@@ -264,6 +288,7 @@ const BlockSettingsForm = (props) => {
         placeholder: description,
         type,
         required,
+        enum: item.enum,
       };
       return { ...acc, [name]: param };
     }, {})),
@@ -365,6 +390,7 @@ const BlockSettingsForm = (props) => {
                         imagesOptions: projectImagesOptions,
                         imagesChannelsOptions: projectImagesChannelsOptions,
                         filesOptions: projectFilesOptions,
+                        blockOptions: projectBlockOptions[field.label],
                       })}
                       disabled={disabled}
                     />
