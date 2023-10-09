@@ -684,7 +684,7 @@ const Process = ( { sidebarWidth } ) => {
   const verticalResizerStyles = {
     width: '5px',
     cursor: 'col-resize',
-    zIndex: 1,
+    zIndex: 99,
     boxSizing: 'border-box',
     background: 'linear-gradient(to right, transparent 1px, #ccc 1px, #ccc 4px, transparent 1px)',
   };
@@ -692,7 +692,7 @@ const Process = ( { sidebarWidth } ) => {
   const horizontalResizerStyles = {
     height: '5px',
     cursor: 'row-resize',
-    zIndex: 1,
+    zIndex: 99,
     boxSizing: 'border-box',
     background: 'linear-gradient(to bottom, transparent 1px, #ccc 1px, #ccc 2px, transparent 1px)',
   };

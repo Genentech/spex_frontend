@@ -92,9 +92,7 @@ const NumberField = styled(Controls.NumberField)`
 `;
 
 const Select = styled(Controls.SelectNew)`
-  max-width: 300px;
-  max-height: 200px;
-  overflow-y: auto;
+ 
 `;
 
 const getFieldComponent = (type) => {
