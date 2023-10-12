@@ -18,6 +18,7 @@ import Progress from '+components/Progress';
 import Select, { Option } from '+components/Select';
 import Typography from '+components/Typography';
 
+import spex_banner from './components/banner_50.png';
 import Body from './components/Body';
 import Container from './components/Container';
 
@@ -112,7 +113,15 @@ const Layout = ({ children }) => {
         className={classes.appBar}
       >
         <Toolbar>
-          <Typography variant="h6"><Link to="/">SPEX</Link></Typography>
+          <Typography variant="h6">
+            <Link to="/">
+              <img
+                src={spex_banner}
+                alt='spex_banner'
+                style={{ maxHeight: '80%', objectFit: 'contain' }}
+              />
+            </Link>
+          </Typography>
 
           {projectsArr.length > 0 && !isProjectsFetching && (
             <Select
