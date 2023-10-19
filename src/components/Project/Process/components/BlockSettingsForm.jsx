@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-sort-default-props */
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import GetAppIcon from '@material-ui/icons/GetApp';
 import Refresh from '@material-ui/icons/Refresh';
 import createFocusOnFirstFieldDecorator from 'final-form-focus-on-first-field';
@@ -8,12 +8,13 @@ import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { actions as omeroActions, selectors as omeroSelectors } from '@/redux/modules/omero';
 import { selectors as projectsSelectors } from '@/redux/modules/projects';
-import { selectors as tasksSelectors } from '@/redux/modules/tasks';
+import { selectors as tasksSelectors, actions as tasksActions } from '@/redux/modules/tasks';
 import Button, { ButtonColors } from '+components/Button';
 import Form, { Controls, Field, FormRenderer, Validators, Parsers } from '+components/Form';
 import NoData from '+components/NoData';
 import { ScrollBarMixin } from '+components/ScrollBar';
 import { statusFormatter } from '+utils/statusFormatter';
+
 
 const Container = styled.div`
   width: 100%;
@@ -193,6 +194,7 @@ const BlockSettingsForm = (props) => {
 
   const currentTask = useSelector(tasksSelectors.getSelectedTask);
   const taskResults = useSelector(tasksSelectors.getTaskResults(currentTask));
+  const tasksChannels = useSelector(tasksSelectors.getTaskClusterChannels(block?.rootId || []));
   const [results, setResuls] = useState(res);
 
   const projectImagesOptions = useMemo(
@@ -218,6 +220,13 @@ const BlockSettingsForm = (props) => {
     })),
     [project],
   );
+  
+  const onGetChannels = useCallback(
+    (file) => {
+      dispatch(tasksActions.fetchTaskChannels(block?.rootId));
+    },
+    [dispatch, block?.rootId],
+  );
 
   const projectImagesChannelsOptions = useMemo(() => {
     let allImgChannels = [];
@@ -235,13 +244,29 @@ const BlockSettingsForm = (props) => {
         return allImgChannels.find((a) => a.label === label);
       });
 
+    if (tasksChannels !== undefined && tasksChannels.length > 0) {
+      const filteredImgChannels = uniqueImgChannels.filter((imgChannel) => {
+        const sanitizedImgChannelLabel = imgChannel.label.replace(/[^0-9a-zA-Z]/g, '').toLowerCase().replace('target', '');
+
+        return tasksChannels.some((taskChannel) => taskChannel.toLowerCase() === sanitizedImgChannelLabel);
+      });
+
+      return filteredImgChannels.map((el) => ({
+        value: el.label,
+        label: el.label,
+        color: el.color,
+        index: el.value,
+      }));
+    }
+
+
     return uniqueImgChannels.map((el) => ({
       value: el.label,
       label: el.label,
       color: el.color,
       index: el.value,
     }));
-  }, [projectImagesDetails]);
+  }, [projectImagesDetails, tasksChannels]);
 
 
   const projectBlockOptions = useMemo(() => {
@@ -309,6 +334,16 @@ const BlockSettingsForm = (props) => {
       },
     }),
     [block],
+  );
+
+  useEffect(
+    () => {
+      if (!block?.rootId) {
+        return;
+      }
+      dispatch(tasksActions.fetchTaskChannels(block?.rootId));
+    },
+    [dispatch, block?.rootId],
   );
 
   useEffect(
