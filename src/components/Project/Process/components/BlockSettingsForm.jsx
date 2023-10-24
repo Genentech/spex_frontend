@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-sort-default-props */
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import GetAppIcon from '@material-ui/icons/GetApp';
 import Refresh from '@material-ui/icons/Refresh';
 import createFocusOnFirstFieldDecorator from 'final-form-focus-on-first-field';
@@ -221,12 +221,12 @@ const BlockSettingsForm = (props) => {
     [project],
   );
   
-  const onGetChannels = useCallback(
-    (file) => {
-      dispatch(tasksActions.fetchTaskChannels(block?.rootId));
-    },
-    [dispatch, block?.rootId],
-  );
+  // const onGetChannels = useCallback(
+  //   (file) => {
+  //     dispatch(tasksActions.fetchTaskChannels(block?.rootId));
+  //   },
+  //   [dispatch, block?.rootId],
+  // );
 
   const projectImagesChannelsOptions = useMemo(() => {
     let allImgChannels = [];
