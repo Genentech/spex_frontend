@@ -6,18 +6,13 @@ import AccordionDetails from '@material-ui/core/AccordionDetails';
 import AccordionSummary from '@material-ui/core/AccordionSummary';
 import List from '@material-ui/core/List';
 import DeleteIcon from '@material-ui/icons/Delete';
-import DynamicFeedOutlinedIcon from '@material-ui/icons/DynamicFeedOutlined';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Refresh from '@material-ui/icons/Refresh';
-import SaveIcon from '@material-ui/icons/Save';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import classNames from 'classnames';
 import dagre from 'dagre';
-import html2canvas from 'html2canvas';
-import { jsPDF } from 'jspdf';
 import cloneDeep from 'lodash/cloneDeep';
-import moment from 'moment';
 import PropTypes from 'prop-types';
 import ReactFlow, { isNode } from 'react-flow-renderer';
 import { useDispatch, useSelector } from 'react-redux';
@@ -35,7 +30,6 @@ import { actions as tasksActions, selectors as tasksSelectors } from '@/redux/mo
 
 import Button from '+components/Button';
 import Message from '+components/Message';
-import Table from '+components/Table';
 import { Tab, Box } from '+components/Tabs';
 
 const flowDirection = 'LR';
@@ -150,9 +144,9 @@ const Results = ( { sidebarWidth } ) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const pipelineId = matchPipelinePath ? matchPipelinePath.params.id : undefined;
   const pipelines = useSelector(pipelineSelectors.getPipelinesWithTasksForVis(pipelineId) || {});
-  const images_results = useSelector(tasksSelectors.getTaskVisualizations || {});
   const tasksVitessceConfigs = useSelector(tasksSelectors.getTaskVitessceConfigs || {});
   const [taskToPanels, setTasksToPanels] = useState([]);
+  const [taskToPipeline, setTasksToPipeline] = useState([]);
   const [currImages, setCurrImages] = useState({});
   const [selectedRows, setSelectedRows] = useState([]);
   const omeroWeb = useSelector(omeroSelectors.getOmeroWeb);
@@ -246,176 +240,6 @@ const Results = ( { sidebarWidth } ) => {
   );
 
 
-  const downloadPdf = useCallback(async () => {
-    const doc = new jsPDF('p', 'px', 'a4');
-    const pageWidth = doc.internal.pageSize.getWidth();
-    let currentYPos = 85;
-    const yPosStep = 15;
-
-    const addImageList = () => {
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(12);
-      doc.setTextColor(0, 0, 0);
-      const imageIds = project?.omeroIds || [];
-
-      for (let i = 0; i < imageIds.length; i++) {
-        const id = imageIds[i];
-        doc.text(`Image ${i + 1} ID: ${id}`, 10, currentYPos);
-        currentYPos += yPosStep;
-
-        if (currentYPos + yPosStep > doc.internal.pageSize.getHeight() - 20) {
-          doc.addPage();
-          addHeader();
-          currentYPos = 85;
-        }
-      }
-    };
-
-    const addEmptyLine = (doc, xPos, yPos) => {
-      doc.text(' ', xPos, yPos);
-      currentYPos += yPosStep;
-    };
-
-    const addHeader = () => {
-      const reportTitle = 'SPEX Analysis Report';
-      const date = moment().format('MMMM Do, YYYY');
-
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(15);
-      doc.setTextColor(0, 0, 255);
-      doc.text(reportTitle, 10, 15);
-
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(10);
-      doc.setTextColor(0, 0, 0);
-      doc.text(date, pageWidth - 10, 15, { align: 'right' });
-
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(15);
-      doc.setTextColor(0, 0, 0);
-      doc.text(`Name: ${project.name}`, 10, 35);
-      doc.text(`Description: ${project.description}`, 10, 50);
-
-      const authorText = `Author: ${project.author.login}`;
-      const authorTextWidth = doc.getTextWidth(authorText);
-      const authorX = pageWidth - 10 - authorTextWidth;
-      doc.text(authorText, authorX, 50);
-
-      doc.setDrawColor(0, 0, 255);
-      doc.setLineWidth(0.5);
-      doc.line(10, 60, pageWidth - 10, 60);
-
-      addEmptyLine(doc, 10, currentYPos);
-
-      if (doc.internal.getCurrentPageInfo().pageNumber === 1) {
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(18);
-        doc.text(`Images – (Name of OMERO server, i.e. ${omeroWeb})`, 10, 75);
-      }
-
-      addEmptyLine(doc, 10, currentYPos);
-    };
-
-    const addPipelineInfo = () => {
-      addEmptyLine(doc, 10, currentYPos);
-
-
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(18);
-      doc.setTextColor(0, 0, 0);
-      doc.text('Pipeline', 10, currentYPos);
-      currentYPos += yPosStep;
-
-      const pipelineName = pipelines[pipelineId]?.name;
-      if (pipelineName) {
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(15);
-        doc.text(pipelineName, 10, currentYPos);
-        currentYPos += yPosStep;
-
-        if (currentYPos + yPosStep > doc.internal.pageSize.getHeight() - 20) {
-          doc.addPage();
-          addHeader();
-          currentYPos = 85;
-        }
-      }
-    };
-
-    function printTasks(data) {
-      if (data.hasOwnProperty('name') && data.hasOwnProperty('params')) {
-        doc.text('Task: ' + data.name, 10, currentYPos);
-        currentYPos += yPosStep;
-        doc.setFontSize(10);
-        let filteredParams = Object.fromEntries(
-          Object.entries(data.params)
-            .filter(([key]) => key !== 'img'
-              && key !== 'id'
-              && key !== 'folder'
-              && key !== 'script'
-              && key !== 'part'
-              && key !== 'omeroIds'),
-        );
-        let paramsString = 'Parameters: ' + JSON.stringify(filteredParams);
-        let textLines = doc.splitTextToSize(paramsString, pageWidth - 20);
-        for (let line of textLines) {
-          doc.text(line, 10, currentYPos);
-          currentYPos += yPosStep;
-        }
-        doc.setFontSize(12);
-
-        if (currentYPos + yPosStep > doc.internal.pageSize.getHeight() - 20) {
-          doc.addPage();
-          addHeader();
-          currentYPos = 85;
-        }
-      }
-
-      if (data.hasOwnProperty('jobs')) {
-        data.jobs.forEach(printTasks);
-      }
-      if (data.hasOwnProperty('tasks')) {
-        data.tasks.forEach(printTasks);
-      }
-    }
-
-    const addFlowDiagram = async () => {
-      const input = document.getElementById('react-flow__pane_2');
-      if (input) {
-        try {
-          const canvas = await html2canvas(input);
-          const imgData = canvas.toDataURL('image/png');
-          const imgProps = doc.getImageProperties(imgData);
-          const pdfWidth = doc.internal.pageSize.getWidth();
-          const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-          doc.addImage(imgData, 'PNG', 0, currentYPos, pdfWidth, pdfHeight);
-          currentYPos += pdfHeight + yPosStep;
-        } catch (err) {
-          // eslint-disable-next-line no-console
-          console.error('Oops, something went wrong!', err);
-        }
-      }
-    };
-
-    addHeader();
-    addImageList();
-    addPipelineInfo();
-    await addFlowDiagram();
-    addEmptyLine(doc, 10, currentYPos);
-
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(18);
-    doc.setTextColor(0, 0, 0);
-    doc.text('Parameters', 10, currentYPos);
-    currentYPos += yPosStep;
-    printTasks(pipeline);
-
-
-
-    doc.save('images.pdf');
-  }, [project, omeroWeb, pipelineId, pipelines, pipeline]);
-
-
   const columns = useMemo(
     () => ([
       {
@@ -479,47 +303,28 @@ const Results = ( { sidebarWidth } ) => {
     [dispatch, projectId, pipelineId],
   );
 
-  useEffect(
-    () => {
-      if (selectedRows.length === 0) {
-        setTasksToPanels([]);
-      }
-    },
-    [selectedRows],
-  );
-
-  useEffect(
-    () => {
-      let imgToShow = {};
-      const taskIds = taskToPanels.map((item) => {return item.id;});
-      Object.keys(images_results).forEach((task_id) => {
-        if (taskIds.includes(task_id)) {
-          imgToShow[task_id] = images_results[task_id];
+  useEffect(() => {
+    if (pipelines === undefined) {
+      return [];
+    }
+    let taskList = [];
+    let clusterList = [];
+    if (Object.keys(pipelines).length !== 0) {
+      jobs_data.forEach(function (o) {
+        if (o.name !== 'phenograph_cluster') {
+          taskList = [...taskList, ...o.tasks];
+        } else {
+          clusterList = [...o.tasks];
         }
       });
-      setCurrImages(imgToShow);
-    },
-    [images_results, taskToPanels, setCurrImages],
-  );
-
-  const getTasks = useCallback(
-    (ids, jobs, taskToPanels) => {
-      if (Object.keys(pipelines).length !== 0) {
-        let taskList = [];
-        jobs.forEach(function (o) {
-          if (ids.includes(o.id)) {
-            taskList = [...taskList, ...o.tasks];
-          }
-        });
-
-        if (taskToPanels !== taskList) {
-          return taskList;
-        }
-        return taskList;
-      }
-    },
-    [pipelines],
-  );
+    }
+    if (taskList.length !== taskToPanels.length) {
+      setTasksToPanels(taskList);
+    }
+    if (clusterList.length !== taskToPipeline.length) {
+      setTasksToPipeline(clusterList);
+    }
+  }, [jobs_data, taskToPanels, pipelines, taskToPanels]);
 
   const handleDeleteTaskData = useCallback((taskId) => {
     dispatch(tasksActions.deleteTaskData(taskId));
@@ -529,22 +334,6 @@ const Results = ( { sidebarWidth } ) => {
     dispatch(tasksActions.checkTaskData(taskId));
   }, [dispatch]);
 
-
-  const onDataTabChange = useCallback(
-    (_, id) => {
-      const taskList = getTasks(selectedRows.map((object) => object.id), jobs_data, taskToPanels);
-      setTasksToPanels(taskList);
-      const taskIds = taskList.map((item) => {return item.id;});
-      let imgToShow = {};
-      Object.keys(images_results).forEach((task_id) => {
-        if (taskIds.includes(task_id)) {
-          imgToShow[task_id] = images_results[task_id];
-        }
-      });
-      setCurrImages(imgToShow);
-    },
-    [taskToPanels, jobs_data, getTasks, images_results, selectedRows],
-  );
 
   const errorMessage = useMemo(() => {
       return error.message || 'An error occurred';
@@ -562,7 +351,6 @@ const Results = ( { sidebarWidth } ) => {
       });
 
       tabs = selectedRows.filter(((n) => pipelines_job_ids.includes(n)));
-      onDataTabChange('', tabs[0]);
 
       return tabs;
     },
@@ -576,19 +364,15 @@ const Results = ( { sidebarWidth } ) => {
       taskToPanels.forEach((item) => {
         dispatch(tasksActions.fetchTaskVitessce(item.id));
       });
+      taskToPipeline.forEach((item) => {
+        dispatch(tasksActions.fetchTaskVitessce(item.id));
+      });
     },
-    [dispatch, taskToPanels],
+    [dispatch, taskToPanels, taskToPipeline],
   );
 
   return (
     <Fragment>
-      <Table
-        data={jobs_data}
-        columns={columns}
-        allowRowSelection
-        onSelectedRowsChange={setSelectedRows}
-        selectedRowIds={selectedRows.map((row) => row.id)}
-      />
       <Box>
         {Object.values(tabsData).map((type) => (
           <Tab
@@ -598,89 +382,96 @@ const Results = ( { sidebarWidth } ) => {
           />
         ))}
       </Box>
-      <Accordion expanded>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <DynamicFeedOutlinedIcon /> Tasks
-        </AccordionSummary>
-        <AccordionDetails>
-          <TasksBlock>
-            <List dense component="div">
-              {taskToPanels.map((type) => (
-                <Accordion key={type.id} style={{ backgroundColor: 'white' }}>
-                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                      <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <span style={{ marginRight: 10 }}>Task {type.id}, image id {type.omeroId}</span>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-                        <Button
-                          size="small"
-                          variant="contained"
-                          color="inherit"
-                          startIcon={<Refresh />}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleUpdateTaskData(type.id);
-                          }}
-                        >
-                          create zarr data
-                        </Button>
-                        <Button
-                          size="small"
-                          variant="contained"
-                          color="inherit"
-                          startIcon={<DeleteIcon />}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteTaskData(type.id);
-                          }}
-                        >
-                          delete zarr data
-                        </Button>
-                      </div>
-                    </div>
-                  </AccordionSummary>
-                  <AccordionDetails>
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <div style={{ height: '100vh', width: '100vw' }}>
-                        <Vitessce
-                          config={tasksVitessceConfigs[type.id]}
-                          height={800}
-                          theme="light"
-                        />
-                      </div>
-                    </div>
-                    <ImageList cols={2}>
-                      {Object.keys(Object(currImages[type.id])).map((key) => (
-                        <ImageListItem key={`${type.id}-${key}-${type.id}`}>
-                          <p>
-                            <Box
-                              key={`${type.id}-${key}-${type.id}`}
-                              component="img"
-                              src={currImages[type.id][key]}
-                              alt={key}
-                            />
-                          </p>
-                        </ImageListItem>
-                      ))}
-                    </ImageList>
-                  </AccordionDetails>
-                </Accordion>
+      <TasksBlock>
+        <Accordion style={{ backgroundColor: 'white' }}>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <div> Process </div>
+          </AccordionSummary>
+          <AccordionDetails>
+            {taskToPipeline.map((type) => (
+              <div key={type.id} style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ marginRight: 10 }}> id:{type.id}/{type.name}</span>
+                <div style={{ height: '100vh', width: '100vw' }}>
+                  <Vitessce
+                    config={tasksVitessceConfigs[type.id]}
+                    height={800}
+                    theme="light"
+                  />
+                </div>
+              </div>
+            ))}
+          </AccordionDetails>
+        </Accordion>
 
-              ))}
-            </List>
-          </TasksBlock>
-        </AccordionDetails>
-        {errorMessage && <Message message={errorMessage} />}
-      </Accordion>
-      <Button
-        size="small"
-        variant="outlined"
-        onClick={downloadPdf}
-        startIcon={<SaveIcon />}
-      >
-        PDF
-      </Button>
+
+        <List dense component="div">
+          {taskToPanels.map((type) => (
+            <Accordion key={type.id} style={{ backgroundColor: 'white' }}>
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <span style={{ marginRight: 10 }}> image id {type.omeroId} </span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                    <Button
+                      size="small"
+                      variant="contained"
+                      color="inherit"
+                      startIcon={<Refresh />}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleUpdateTaskData(type.id);
+                      }}
+                    >
+                      create zarr data
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="contained"
+                      color="inherit"
+                      startIcon={<DeleteIcon />}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteTaskData(type.id);
+                      }}
+                    >
+                      delete zarr data
+                    </Button>
+                  </div>
+                </div>
+              </AccordionSummary>
+              <AccordionDetails>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ marginRight: 10 }}> id:{type.id}/{type.name}</span>
+                  <div style={{ height: '100vh', width: '100vw' }}>
+                    <Vitessce
+                      config={tasksVitessceConfigs[type.id]}
+                      height={800}
+                      theme="light"
+                    />
+                  </div>
+                </div>
+                <ImageList cols={2}>
+                  {Object.keys(Object(currImages[type.id])).map((key) => (
+                    <ImageListItem key={`${type.id}-${key}-${type.id}`}>
+                      <p>
+                        <Box
+                          key={`${type.id}-${key}-${type.id}`}
+                          component="img"
+                          src={currImages[type.id][key]}
+                          alt={key}
+                        />
+                      </p>
+                    </ImageListItem>
+                  ))}
+                </ImageList>
+              </AccordionDetails>
+            </Accordion>
+
+          ))}
+        </List>
+      </TasksBlock>
+      {errorMessage && <Message message={errorMessage} />}
       <div style={{ height: 200, width: '100%', position: 'absolute', left: '-9999px' }}>
         <ReactFlow
           id='react-flow__pane_2'

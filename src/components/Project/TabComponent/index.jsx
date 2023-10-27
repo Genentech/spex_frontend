@@ -10,7 +10,7 @@ const TabContainer = ({ sidebarWidth }) => {
 
   const processComponent = useMemo(() => <Process sidebarWidth={sidebarWidth} />, [sidebarWidth]);
   const managerComponent = useMemo(() => <Manager sidebarWidth={sidebarWidth} />, [sidebarWidth]);
-  const resultsComponent = useMemo(() => <Results sidebarWidth={sidebarWidth} />, [sidebarWidth]);
+  const processResultComponent = useMemo(() => <Results sidebarWidth={sidebarWidth} />, [sidebarWidth]);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -38,7 +38,7 @@ const TabContainer = ({ sidebarWidth }) => {
       )}
       {value === 2 && (
         <TabPanel value={value} index={2}>
-          {resultsComponent}
+          {processResultComponent}
         </TabPanel>
       )}
     </Fragment>
