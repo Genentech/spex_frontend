@@ -287,23 +287,25 @@ const Manager = ( { sidebarWidth } ) => {
   const onJobRestart = useCallback(
     (_) => {
       const job = {
-        id: jobs[selectedBlock?.id].id,
-        status: 0,
-        tasks: jobs[selectedBlock?.id].tasks,
+        id: jobs[selectedBlock?.id]?.id,
+        status: jobs[selectedBlock?.id]?.status === 100 ? 100 : 0,
+        tasks: jobs[selectedBlock?.id]?.tasks,
       };
 
-      if (job.id) {
+      if (job.id && job.status !== 100) {
         for (const el of job.tasks) {
-          const task = {
-            id: el.id, status: 0, result: '',
-          };
+          if (el.status !== 100) {
+            const task = {
+              id: el.id, status: 0, result: '',
+            };
 
-          dispatch(tasksActions.updateTask(task));
+            dispatch(tasksActions.updateTask(task));
+          }
         }
         delete job.tasks;
         dispatch(jobsActions.updateJob(job));
         elements.forEach((el) => {
-          if (el.id === selectedBlock?.id) {
+          if (el.id === selectedBlock?.id && el.data.status !== 100) {
             el.data.status = 0;
           }
         });
@@ -311,6 +313,7 @@ const Manager = ( { sidebarWidth } ) => {
     },
     [dispatch, elements, jobs, selectedBlock?.id],
   );
+
 
   const onPaneClick = useCallback(
     () => {
