@@ -147,6 +147,7 @@ const Results = ( { sidebarWidth } ) => {
   const tasksVitessceConfigs = useSelector(tasksSelectors.getTaskVitessceConfigs || {});
   const [taskToPanels, setTasksToPanels] = useState([]);
   const [taskToPipeline, setTasksToPipeline] = useState([]);
+  const [activeAccordion, setActiveAccordion] = useState(null);
   const [currImages, setCurrImages] = useState({});
   const [selectedRows, setSelectedRows] = useState([]);
   const omeroWeb = useSelector(omeroSelectors.getOmeroWeb);
@@ -191,6 +192,11 @@ const Results = ( { sidebarWidth } ) => {
     },
     [setReactFlowInstance],
   );
+
+  const handleAccordionChange = useCallback((id) => {
+    setActiveAccordion(activeAccordion => activeAccordion === id ? null : id);
+  }, []);
+
 
   useEffect(
     () => {
@@ -371,6 +377,12 @@ const Results = ( { sidebarWidth } ) => {
     [dispatch, taskToPanels, taskToPipeline],
   );
 
+  useEffect(() => {
+    if (taskToPipeline.length > 1) {
+      setTasksToPipeline(taskToPipeline.slice(0, 1));
+    }
+  }, [taskToPipeline]);
+
   return (
     <Fragment>
       <Box>
@@ -390,7 +402,34 @@ const Results = ( { sidebarWidth } ) => {
           <AccordionDetails>
             {taskToPipeline.map((type) => (
               <div key={type.id} style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ marginRight: 10 }}> id:{type.id}/{type.name}</span>
+                <span style={{ marginRight: 10 }}> id:{type.id}/{type.name}
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <Button
+                      size="small"
+                      variant="contained"
+                      color="inherit"
+                      startIcon={<Refresh />}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleUpdateTaskData(type.id);
+                      }}
+                    >
+                      create zarr data
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="contained"
+                      color="inherit"
+                      startIcon={<DeleteIcon />}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteTaskData(type.id);
+                      }}
+                    >
+                      delete zarr data
+                    </Button>
+                  </div>
+                </span>
                 <div style={{ height: '100vh', width: '100vw' }}>
                   <Vitessce
                     config={tasksVitessceConfigs[type.id]}

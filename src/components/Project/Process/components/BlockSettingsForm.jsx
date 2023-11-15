@@ -248,7 +248,7 @@ const BlockSettingsForm = (props) => {
       const filteredImgChannels = uniqueImgChannels.filter((imgChannel) => {
         const sanitizedImgChannelLabel = imgChannel.label.replace(/[^0-9a-zA-Z]/g, '').toLowerCase().replace('target', '');
 
-        return tasksChannels.some((taskChannel) => taskChannel.toLowerCase() === sanitizedImgChannelLabel);
+        return tasksChannels.some((taskChannel) => taskChannel?.toLowerCase() === sanitizedImgChannelLabel);
       });
 
       return filteredImgChannels.map((el) => ({
