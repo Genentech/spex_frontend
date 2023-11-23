@@ -8,7 +8,15 @@ SSH clone URL: ssh://git@github.com:zverozabr/spex_frontend.git
 
 HTTPS clone URL: https://github.com/zverozabr/spex_frontend.git
 
+in ubuntu 18.04
+```
+set NODE_OPTIONS=--max-old-space-size=4096 && yarn build
 ``` 
+in windows
+```
+just install x64 version of nodejs
+```
+
 git clone https://github.com/zverozabr/spex_frontend.git .
 
 yarn install

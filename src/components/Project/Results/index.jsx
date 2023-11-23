@@ -1,5 +1,5 @@
 import React, {
-  Fragment, useState, useMemo, useCallback, useEffect,
+  Fragment, useState, useMemo, useCallback, useEffect, useRef,
 } from 'react';
 import Accordion from '@material-ui/core/Accordion';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
@@ -13,6 +13,12 @@ import ImageListItem from '@mui/material/ImageListItem';
 import classNames from 'classnames';
 import dagre from 'dagre';
 import cloneDeep from 'lodash/cloneDeep';
+import MenuList, { MenuItem } from '+components/MenuList';
+import ClickAwayListener from '+components/ClickAwayListener';
+import ButtonsContainer from '../components/ButtonsContainer';
+import Popper from '+components/Popper';
+import Grow from '+components/Grow';
+import Paper from '+components/Paper';
 import PropTypes from 'prop-types';
 import ReactFlow, { isNode } from 'react-flow-renderer';
 import { useDispatch, useSelector } from 'react-redux';
@@ -148,6 +154,7 @@ const Results = ( { sidebarWidth } ) => {
   const [taskToPanels, setTasksToPanels] = useState([]);
   const [taskToPipeline, setTasksToPipeline] = useState([]);
   const [activeAccordion, setActiveAccordion] = useState(null);
+  const [open, setOpen] = useState(false);
   const [currImages, setCurrImages] = useState({});
   const [selectedRows, setSelectedRows] = useState([]);
   const omeroWeb = useSelector(omeroSelectors.getOmeroWeb);
@@ -156,6 +163,11 @@ const Results = ( { sidebarWidth } ) => {
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
   const pipeline = useSelector(pipelineSelectors.getPipeline(projectId, pipelineId));
   const error = useSelector(tasksSelectors.getDataMessage);
+  const anchorRef = useRef(null);
+  const [manageImagesModalOpen, setManageImagesModalOpen] = useState(false);
+  const [manageTasksModalOpen, setManageTasksModalOpen] = useState(false);
+  const [manageFilesModalOpen, setManageFilesModalOpen] = useState(false);
+
 
   const elements = useMemo(
     () => {
@@ -191,6 +203,24 @@ const Results = ( { sidebarWidth } ) => {
       setReactFlowInstance(instance);
     },
     [setReactFlowInstance],
+  );
+
+  const onManageFilesModalOpen = useCallback(() => {
+    setManageFilesModalOpen(true);
+  }, []);
+
+  const onManageFilesModalClose = useCallback(() => {
+    setManageFilesModalOpen(false);
+  }, []);
+
+  const onKeyDownInMenu = useCallback(
+    (event) => {
+      if (event.key === 'Tab') {
+        event.preventDefault();
+        setOpen(false);
+      }
+    },
+    [setOpen],
   );
 
   const handleAccordionChange = useCallback((id) => {
@@ -243,6 +273,23 @@ const Results = ( { sidebarWidth } ) => {
       dispatch(omeroActions.fetchOmeroWeb());
     },
     [dispatch, omeroWeb],
+  );
+
+  const onToggle = useCallback(
+    () => {
+      setOpen((prevOpen) => !prevOpen);
+    },
+    [setOpen],
+  );
+
+  const onToggleClose = useCallback(
+    (event) => {
+      if (anchorRef.current && anchorRef.current.contains(event.target)) {
+        return;
+      }
+      setOpen(false);
+    },
+    [setOpen],
   );
 
 
@@ -344,6 +391,20 @@ const Results = ( { sidebarWidth } ) => {
   const errorMessage = useMemo(() => {
       return error.message || 'An error occurred';
   }, [error]);
+
+  const allImageIds = useMemo(() => {
+    let pairs = [];
+    taskToPanels.forEach((task) => {
+      if (task.omeroId) {
+        pairs.push([task.id, task.omeroId]);
+      }
+    });
+    return pairs;
+  }, [taskToPanels]);
+
+  const handleImageSelect = useCallback(([taskId, omeroId]) => {
+    console.log(`Task ID: ${taskId}, OMERO ID: ${omeroId}`);
+  }, []);
 
   const tabsData = useMemo(
     () => {
@@ -509,6 +570,36 @@ const Results = ( { sidebarWidth } ) => {
 
           ))}
         </List>
+        <ButtonsContainer>
+          <Button
+            ref={anchorRef}
+            aria-controls={open ? 'menu-list-grow' : undefined}
+            aria-haspopup="true"
+            onClick={onToggle}
+          >
+            Manage
+          </Button>
+          <Popper open={open} anchorEl={anchorRef.current} role={undefined} transition>
+            {({ TransitionProps, placement }) => (
+              <Grow
+                {...TransitionProps}
+                style={{ transformOrigin: placement === 'bottom' ? 'center top' : 'center bottom' }}
+              >
+                <Paper>
+                  <ClickAwayListener onClickAway={onToggleClose}>
+                    <MenuList>
+                      {allImageIds.map(([taskId, omeroId]) => (
+                        <MenuItem key={`${taskId}-${omeroId}`} onClick={() => handleImageSelect([taskId, omeroId])}>
+                          Task ID: {taskId}, OMERO ID: {omeroId}
+                        </MenuItem>
+                      ))}
+                    </MenuList>
+                  </ClickAwayListener>
+                </Paper>
+              </Grow>
+            )}
+          </Popper>
+        </ButtonsContainer>
       </TasksBlock>
       {errorMessage && <Message message={errorMessage} />}
       <div style={{ height: 200, width: '100%', position: 'absolute', left: '-9999px' }}>
