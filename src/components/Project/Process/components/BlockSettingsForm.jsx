@@ -16,9 +16,15 @@ import { ScrollBarMixin } from '+components/ScrollBar';
 import { statusFormatter } from '+utils/statusFormatter';
 
 
+
 const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
   width: 100%;
-  height: 100%;
+  max-height: 65vh;
+  overflow-y: auto;
+
 
   form {
     width: 100%;
@@ -37,30 +43,20 @@ const Header = styled.div`
 `;
 
 const Body = styled.div`
-  display: flex;
-  flex-direction: row;
-  height: 100%;
-  overflow-x: hidden;
-  overflow-y: scroll;
-
   ${ScrollBarMixin};
-
   gap: 20px;
 `;
 
+
+
+
 const RightPanel = styled.div`
-  padding: 20px 0;
-
-  width: 40%;
-  height: 100%;
-
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  flex-wrap: wrap;
+  width: fit-content;
+  height: 100%;
   overflow-x: hidden;
-  overflow-y: scroll;
-
-  ${ScrollBarMixin};
-
   gap: 20px;
 
   :only-child {
@@ -68,21 +64,22 @@ const RightPanel = styled.div`
   }
 `;
 
-const Footer = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  flex-wrap: nowrap;
 
-  :empty {
-    display: none;
-  }
+
+const Footer = styled.div`
+  align-self: end;
+  position: fixed;
+  bottom: 10px;
 
   .MuiButton-root + .MuiButton-root {
     margin-left: 15px;
-    flex-shrink: 1; 
+    flex-shrink: 1;
   }
 `;
+
+
+
+
 
 const TextField = styled(Controls.TextField)`
   max-width: 300px;
@@ -93,7 +90,7 @@ const NumberField = styled(Controls.NumberField)`
 `;
 
 const Select = styled(Controls.SelectNew)`
- 
+
 `;
 
 const getFieldComponent = (type) => {
@@ -220,7 +217,7 @@ const BlockSettingsForm = (props) => {
     })),
     [project],
   );
-  
+
   // const onGetChannels = useCallback(
   //   (file) => {
   //     dispatch(tasksActions.fetchTaskChannels(block?.rootId));
@@ -431,6 +428,7 @@ const BlockSettingsForm = (props) => {
                     />
                   ))}
                 </RightPanel>
+
               </Body>
 
               <Footer>
@@ -463,7 +461,9 @@ const BlockSettingsForm = (props) => {
                   Save
                 </Button>
               </Footer>
+
             </FormRenderer>
+
           </Container>
         );
       }}

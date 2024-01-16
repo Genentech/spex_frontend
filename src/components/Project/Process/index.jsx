@@ -302,13 +302,13 @@ const Process = ( { sidebarWidth } ) => {
         let blocks = [];
         Object.keys(jobTypes).forEach((jobType) => {
           jobTypes[jobType]['stages'].forEach((stage) => {
-              stage['scripts'].forEach((block) => {
-                const enabled = block.depends_and_script?.includes(selectedBlock.script_path)
-                   || block.depends_or_script?.includes(selectedBlock.script_path);
-                if (enabled) {
-                  blocks.push({ ...block, folder: jobType, script: jobType });
-                }
-              });
+            stage['scripts'].forEach((block) => {
+              const enabled = block.depends_and_script?.includes(selectedBlock.script_path)
+                || block.depends_or_script?.includes(selectedBlock.script_path);
+              if (enabled) {
+                blocks.push({ ...block, folder: jobType, script: jobType });
+              }
+            });
           });
         });
         setAvailableBlocks({ ...availableBlocks, [selectedBlock.name]: blocks });
@@ -707,7 +707,7 @@ const Process = ( { sidebarWidth } ) => {
         <SplitPane
           sizes={sizes}
           split="vertical"
-          minSize={200 + sidebarWidth}
+          minSize={250 + sidebarWidth}
           size={700}
           resizerStyle={verticalResizerStyles}
           onChange={(size) => setSizes([size, 1000 - size])}
@@ -770,7 +770,7 @@ const Process = ( { sidebarWidth } ) => {
                 container
                 direction='column'
                 xs={12}
-                style={{ paddingLeft: '6px', height: '75%' }}
+                style={{ paddingLeft: '6px', height: '65%' }}
               >
                 <BlockSettingsFormWrapper>
                   {selectedBlock?.id ? (
