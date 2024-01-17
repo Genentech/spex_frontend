@@ -24,7 +24,7 @@ const Container = styled.div`
   width: 100%;
   max-height: 65vh;
   overflow-y: auto;
-
+  
 
   form {
     width: 100%;
@@ -36,6 +36,7 @@ const Header = styled.div`
   font-size: 1.5em;
   font-weight: bold;
   text-transform: capitalize;
+  padding: 0 0 20px 0;
 
   :empty {
     display: none;
@@ -43,6 +44,7 @@ const Header = styled.div`
 `;
 
 const Body = styled.div`
+  height: 100%;
   ${ScrollBarMixin};
   gap: 20px;
 `;
@@ -54,9 +56,7 @@ const RightPanel = styled.div`
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  width: fit-content;
   height: 100%;
-  overflow-x: hidden;
   gap: 20px;
 
   :only-child {
@@ -70,7 +70,7 @@ const Footer = styled.div`
   align-self: end;
   position: fixed;
   bottom: 10px;
-
+  
   .MuiButton-root + .MuiButton-root {
     margin-left: 15px;
     flex-shrink: 1;
@@ -90,7 +90,7 @@ const NumberField = styled(Controls.NumberField)`
 `;
 
 const Select = styled(Controls.SelectNew)`
-
+  width: 100%;
 `;
 
 const getFieldComponent = (type) => {
@@ -430,13 +430,13 @@ const BlockSettingsForm = (props) => {
                 </RightPanel>
 
               </Body>
-
+             
               <Footer>
                 <Button
                   color={ButtonColors.secondary}
                   onClick={(event) => {
-                    form.restart();
-                    onDownload(event);
+                      form.restart();
+                      onDownload(event);
                   }}
                   title="Download"
                 >
@@ -445,8 +445,8 @@ const BlockSettingsForm = (props) => {
                 <Button
                   color={ButtonColors.secondary}
                   onClick={(event) => {
-                    onReload(event);
-                    form.restart();
+                      onReload(event);
+                      form.restart();
                   }}
                   title="Refresh state of the block"
                 >
@@ -461,7 +461,7 @@ const BlockSettingsForm = (props) => {
                   Save
                 </Button>
               </Footer>
-
+              
             </FormRenderer>
 
           </Container>

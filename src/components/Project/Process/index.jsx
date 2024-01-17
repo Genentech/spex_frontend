@@ -302,13 +302,13 @@ const Process = ( { sidebarWidth } ) => {
         let blocks = [];
         Object.keys(jobTypes).forEach((jobType) => {
           jobTypes[jobType]['stages'].forEach((stage) => {
-            stage['scripts'].forEach((block) => {
-              const enabled = block.depends_and_script?.includes(selectedBlock.script_path)
-                || block.depends_or_script?.includes(selectedBlock.script_path);
-              if (enabled) {
-                blocks.push({ ...block, folder: jobType, script: jobType });
-              }
-            });
+              stage['scripts'].forEach((block) => {
+                const enabled = block.depends_and_script?.includes(selectedBlock.script_path)
+                   || block.depends_or_script?.includes(selectedBlock.script_path);
+                if (enabled) {
+                  blocks.push({ ...block, folder: jobType, script: jobType });
+                }
+              });
           });
         });
         setAvailableBlocks({ ...availableBlocks, [selectedBlock.name]: blocks });
