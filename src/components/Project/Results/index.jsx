@@ -4,7 +4,6 @@ import React, {
 import Accordion from '@material-ui/core/Accordion';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
 import AccordionSummary from '@material-ui/core/AccordionSummary';
-import List from '@material-ui/core/List';
 import DeleteIcon from '@material-ui/icons/Delete';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Refresh from '@material-ui/icons/Refresh';
@@ -13,12 +12,6 @@ import ImageListItem from '@mui/material/ImageListItem';
 import classNames from 'classnames';
 import dagre from 'dagre';
 import cloneDeep from 'lodash/cloneDeep';
-import MenuList, { MenuItem } from '+components/MenuList';
-import ClickAwayListener from '+components/ClickAwayListener';
-import ButtonsContainer from '../components/ButtonsContainer';
-import Popper from '+components/Popper';
-import Grow from '+components/Grow';
-import Paper from '+components/Paper';
 import PropTypes from 'prop-types';
 import ReactFlow, { isNode } from 'react-flow-renderer';
 import { useDispatch, useSelector } from 'react-redux';
@@ -35,8 +28,15 @@ import { selectors as projectSelectors } from '@/redux/modules/projects';
 import { actions as tasksActions, selectors as tasksSelectors } from '@/redux/modules/tasks';
 
 import Button from '+components/Button';
+import ClickAwayListener from '+components/ClickAwayListener';
+import Grow from '+components/Grow';
+import MenuList, { MenuItem } from '+components/MenuList';
 import Message from '+components/Message';
-import { Tab, Box } from '+components/Tabs';
+import Paper from '+components/Paper';
+import Popper from '+components/Popper';
+import Tabs, { Tab, TabPanel } from '+components/Tabs';
+import { Box } from '+components/Tabs';
+import ButtonsContainer from '../components/ButtonsContainer';
 
 const flowDirection = 'LR';
 const nodeWidth = 172;
@@ -224,7 +224,7 @@ const Results = ( { sidebarWidth } ) => {
   );
 
   const handleAccordionChange = useCallback((id) => {
-    setActiveAccordion(activeAccordion => activeAccordion === id ? null : id);
+    setActiveAccordion((activeAccordion) => activeAccordion === id ? null : id);
   }, []);
 
 
@@ -444,105 +444,68 @@ const Results = ( { sidebarWidth } ) => {
     }
   }, [taskToPipeline]);
 
-  return (
-    <Fragment>
-      <Box>
-        {Object.values(tabsData).map((type) => (
-          <Tab
-            key={type}
-            label={type}
-            value={type}
-          />
-        ))}
-      </Box>
-      <TasksBlock>
-        <Accordion style={{ backgroundColor: 'white' }}>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <div> Process </div>
-          </AccordionSummary>
-          <AccordionDetails>
-            {taskToPipeline.map((type) => (
-              <div key={type.id} style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ marginRight: 10 }}> id:{type.id}/{type.name}
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <Button
-                      size="small"
-                      variant="contained"
-                      color="inherit"
-                      startIcon={<Refresh />}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleUpdateTaskData(type.id);
-                      }}
-                    >
-                      create zarr data
-                    </Button>
-                    <Button
-                      size="small"
-                      variant="contained"
-                      color="inherit"
-                      startIcon={<DeleteIcon />}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteTaskData(type.id);
-                      }}
-                    >
-                      delete zarr data
-                    </Button>
-                  </div>
-                </span>
-                <div style={{ height: '100vh', width: '100vw' }}>
-                  <Vitessce
-                    config={tasksVitessceConfigs[type.id]}
-                    height={800}
-                    theme="light"
-                  />
-                </div>
-              </div>
-            ))}
-          </AccordionDetails>
-        </Accordion>
+    const [expanded, setExpanded] = useState(null);
+    const [previousType, setPreviousType] = useState(null);
 
+    const handleChange = (panel) => (event, isExpanded) => {
+        setExpanded(isExpanded ? panel : null);
+    };
 
-        <List dense component="div">
-          {taskToPanels.map((type) => (
-            <Accordion key={type.id} style={{ backgroundColor: 'white' }}>
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <span style={{ marginRight: 10 }}> image id {type.omeroId} </span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-                    <Button
-                      size="small"
-                      variant="contained"
-                      color="inherit"
-                      startIcon={<Refresh />}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleUpdateTaskData(type.id);
-                      }}
-                    >
-                      create zarr data
-                    </Button>
-                    <Button
-                      size="small"
-                      variant="contained"
-                      color="inherit"
-                      startIcon={<DeleteIcon />}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteTaskData(type.id);
-                      }}
-                    >
-                      delete zarr data
-                    </Button>
-                  </div>
-                </div>
-              </AccordionSummary>
-              <AccordionDetails>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ marginRight: 10 }}> id:{type.id}/{type.name}</span>
+    const [expandedTab, setExpandedTab] = useState(null);
+    const handleChangeTabe = (event, newValue) => {
+        setExpandedTab(newValue);
+    };
+
+    return (
+      <Fragment>
+
+        <Box>
+          {Object.values(tabsData).map((type) => (
+            <Tab
+              key={type}
+              label={type}
+              value={type}
+            />
+                ))}
+        </Box>
+
+        <TasksBlock>
+          <Accordion style={{ backgroundColor: 'white' }}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <div> Process </div>
+            </AccordionSummary>
+            <AccordionDetails>
+              {taskToPipeline.map((type) => (
+                <div key={type.id} style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ marginRight: 10 }}> id:{type.id}/{type.name}
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <Button
+                        size="small"
+                        variant="contained"
+                        color="inherit"
+                        startIcon={<Refresh />}
+                        onClick={(e) => {
+                              e.stopPropagation();
+                              handleUpdateTaskData(type.id);
+                        }}
+                      >
+                        create zarr data
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="contained"
+                        color="inherit"
+                        startIcon={<DeleteIcon />}
+                        onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteTaskData(type.id);
+                        }}
+                      >
+                        delete zarr data
+                      </Button>
+
+                    </div>
+                  </span>
                   <div style={{ height: '100vh', width: '100vw' }}>
                     <Vitessce
                       config={tasksVitessceConfigs[type.id]}
@@ -551,71 +514,100 @@ const Results = ( { sidebarWidth } ) => {
                     />
                   </div>
                 </div>
-                <ImageList cols={2}>
-                  {Object.keys(Object(currImages[type.id])).map((key) => (
-                    <ImageListItem key={`${type.id}-${key}-${type.id}`}>
-                      <p>
-                        <Box
-                          key={`${type.id}-${key}-${type.id}`}
-                          component="img"
-                          src={currImages[type.id][key]}
-                          alt={key}
-                        />
-                      </p>
-                    </ImageListItem>
-                  ))}
-                </ImageList>
-              </AccordionDetails>
-            </Accordion>
+                        ))}
+            </AccordionDetails>
+          </Accordion>
 
-          ))}
-        </List>
-        <ButtonsContainer>
-          <Button
-            ref={anchorRef}
-            aria-controls={open ? 'menu-list-grow' : undefined}
-            aria-haspopup="true"
-            onClick={onToggle}
-          >
-            Manage
-          </Button>
-          <Popper open={open} anchorEl={anchorRef.current} role={undefined} transition>
-            {({ TransitionProps, placement }) => (
-              <Grow
-                {...TransitionProps}
-                style={{ transformOrigin: placement === 'bottom' ? 'center top' : 'center bottom' }}
-              >
-                <Paper>
-                  <ClickAwayListener onClickAway={onToggleClose}>
-                    <MenuList>
-                      {allImageIds.map(([taskId, omeroId]) => (
-                        <MenuItem key={`${taskId}-${omeroId}`} onClick={() => handleImageSelect([taskId, omeroId])}>
-                          Task ID: {taskId}, OMERO ID: {omeroId}
-                        </MenuItem>
-                      ))}
-                    </MenuList>
-                  </ClickAwayListener>
-                </Paper>
-              </Grow>
+          <Fragment style={{ marginTop: '16px' }}>
+            <Tabs
+              value={expandedTab}
+              onChange={handleChangeTabe}
+              variant="fullWidth"
+            >
+              {taskToPanels.map((type) => (
+                <Tab key={type.id} label={`Image ID: ${type.omeroId}`} value={type.id} />
+                    ))}
+            </Tabs>
+            {taskToPanels.map((type) => (
+              <TabPanel key={type.id} value={expandedTab} index={type.id}>
+
+                {(type.id === expandedTab) && (
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span style={{ marginRight: 10 }}> id:{type.id}/{type.name}</span>
+                    <div style={{ height: '100vh', width: '100vw' }} id={type.id}>
+                      <Vitessce
+                        config={tasksVitessceConfigs[type.id]}
+                        height={800}
+                        theme="light"
+                      />
+                    </div>
+                    <ImageList cols={2}>
+                      {Object.keys(Object(currImages[type.id])).map((key) => (
+                        <ImageListItem key={`${type.id}-${key}-${type.id}`}>
+                          <p>
+                            <Box
+                              key={`${type.id}-${key}-${type.id}`}
+                              component="img"
+                              src={currImages[type.id][key]}
+                              alt={key}
+                            />
+                          </p>
+                        </ImageListItem>
+                  ))}
+                    </ImageList>
+                  </div>
             )}
-          </Popper>
-        </ButtonsContainer>
-      </TasksBlock>
-      {errorMessage && <Message message={errorMessage} />}
-      <div style={{ height: 200, width: '100%', position: 'absolute', left: '-9999px' }}>
-        <ReactFlow
-          id='react-flow__pane_2'
-          nodeTypes={nodeTypes}
-          elements={elements}
-          onLoad={onLoad}
-          nodesDraggable={false}
-          nodesConnectable={false}
-          elementsSelectable={false}
-          snapToGrid
-        />
-      </div>
-    </Fragment>
-  );
+              </TabPanel>
+                ))}
+          </Fragment>
+
+          <ButtonsContainer>
+            <Button
+              ref={anchorRef}
+              aria-controls={open ? 'menu-list-grow' : undefined}
+              aria-haspopup="true"
+              onClick={onToggle}
+            >
+              Manage
+            </Button>
+
+            <Popper open={open} anchorEl={anchorRef.current} role={undefined} transition>
+              {({ TransitionProps, placement }) => (
+                <Grow
+                  {...TransitionProps}
+                  style={{ transformOrigin: placement === 'bottom' ? 'center top' : 'center bottom' }}
+                >
+                  <Paper>
+                    <ClickAwayListener onClickAway={onToggleClose}>
+                      <MenuList>
+                        {allImageIds.map(([taskId, omeroId]) => (
+                          <MenuItem key={`${taskId}-${omeroId}`} onClick={() => handleImageSelect([taskId, omeroId])}>
+                            Task ID: {taskId}, OMERO ID: {omeroId}
+                          </MenuItem>
+                                            ))}
+                      </MenuList>
+                    </ClickAwayListener>
+                  </Paper>
+                </Grow>
+                        )}
+            </Popper>
+          </ButtonsContainer>
+        </TasksBlock>
+        {errorMessage && <Message message={errorMessage} />}
+        <div style={{ height: 200, width: '100%', position: 'absolute', left: '-9999px' }}>
+          <ReactFlow
+            id='react-flow__pane_2'
+            nodeTypes={nodeTypes}
+            elements={elements}
+            onLoad={onLoad}
+            nodesDraggable={false}
+            nodesConnectable={false}
+            elementsSelectable={false}
+            snapToGrid
+          />
+        </div>
+      </Fragment>
+    );
 };
 
 

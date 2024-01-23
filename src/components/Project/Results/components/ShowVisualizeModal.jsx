@@ -74,13 +74,6 @@ const ShowVisualizeModal = (props) => {
           <DynamicFeedOutlinedIcon /> Tasks
         </AccordionSummary>
         <AccordionDetails>
-          {/*{initialValues.map((item) => (*/}
-          {/*  <ListItem component="div" key={item}>*/}
-          {/*    <ListItemText*/}
-          {/*      primary={`task id: ${item.id}.`}*/}
-          {/*    />*/}
-          {/*  </ListItem>*/}
-          {/*))}*/}
           {Object.values(images_visualization).map((children) => (
             Object.keys(children).map((key) => (
               <Container key={Object.keys(children)[0]}>
