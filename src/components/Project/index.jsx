@@ -7,7 +7,6 @@ import classNames from 'classnames';
 import { matchPath, useHistory, useLocation } from 'react-router-dom';
 
 import PathNames from '@/models/PathNames';
-// import DashboardICon from '@/shared/components/Icons/DashboardIcon';
 import ProjectIcon from '@/shared/components/Icons/ProjectIcon';
 import WorkFlowIcon from '@/shared/components/Icons/WorkFlowIcon';
 
@@ -82,21 +81,32 @@ const Project = () => {
   const matchProjectPath = matchPath(location.pathname, { path: `/${PathNames.projects}/:id` });
   const projectId = matchProjectPath ? matchProjectPath.params.id : undefined;
 
-  const mathcProcessPath = matchPath(location.pathname, { path: `/${PathNames.projects}/${projectId}/${PathNames.processes}/:id` });
-  const processId = mathcProcessPath ? mathcProcessPath.params.id : undefined;
+  const pathMatchOptionsWithoutTab = { path: `/${PathNames.projects}/${projectId}/${PathNames.processes}/:id` };
+  const pathMatchOptionsWithTab = { path: `/${PathNames.projects}/${projectId}/${PathNames.processes}/:id/:tabName` };
+  const matchWithoutTab = matchPath(location.pathname, pathMatchOptionsWithoutTab);
+  const matchWithTab = matchPath(location.pathname, pathMatchOptionsWithTab);
+  const processId = matchWithoutTab ? matchWithoutTab.params.id : undefined;
+  const processTabName = matchWithTab ? matchWithTab.params.tabName : undefined;
+  const ShowProcess = !!matchPath(location.pathname, { path: [pathMatchOptionsWithoutTab.path, pathMatchOptionsWithTab.path], exact: true });
+
+  const pathMatchOptionsWithReviewTab = { path: `/${PathNames.projects}/${projectId}/${PathNames.processes}/:id/review/:tabReview` };
+  const matchWithReviewTab = matchPath(location.pathname, pathMatchOptionsWithReviewTab);
+  const processReviewTabName = matchWithReviewTab ? matchWithReviewTab.params.tabReview : undefined;
+  const ShowProcessReviewTab = !!matchPath(location.pathname, { path: pathMatchOptionsWithReviewTab.path, exact: true });
+
+
+
   const mathcPipelinePath = matchPath(location.pathname, { path: `/${PathNames.projects}/${projectId}/${PathNames.pipelines}/:id` });
   const pipelineId = mathcPipelinePath ? mathcPipelinePath.params.id : undefined;
 
   const resourcesUrl = `/${PathNames.projects}/${projectId}`;
   const resultsUrl = `/${PathNames.projects}/${projectId}/${PathNames.results}`;
   const processesUrl = `/${PathNames.projects}/${projectId}/${PathNames.processes}`;
-  const processesPipelineUrl = `/${PathNames.projects}/${projectId}/${PathNames.processes}/${processId}`;
   const pipelinesUrl = `/${PathNames.projects}/${projectId}/${PathNames.pipelines}`;
   const pipelineUrl = `/${PathNames.projects}/${projectId}/${PathNames.pipelines}/${pipelineId}`;
 
   const showResources = !!matchPath(location.pathname, { path: resourcesUrl, exact: true });
   const ShowProcesses = !!matchPath(location.pathname, { path: processesUrl, exact: true });
-  const ShowProcess = !!matchPath(location.pathname, { path: processesPipelineUrl, exact: true });
   const ShowPipelines = !!matchPath(location.pathname, { path: pipelinesUrl, exact: true });
   const ShowPipeline = !!matchPath(location.pathname, { path: pipelineUrl, exact: true });
   const showResults = !!matchPath(location.pathname, { path: resultsUrl });
@@ -167,7 +177,7 @@ const Project = () => {
 
           <ListItem
             className={classes.listItem}
-            selected={ShowProcesses || ShowProcess}
+            selected={ShowProcesses || ShowProcess || ShowProcessReviewTab}
             onClick={onSidebarItemClick(processesUrl)}
             button
           >
@@ -180,7 +190,15 @@ const Project = () => {
 
       {showResources && <Resources />}
       {ShowProcesses && <Processes />}
-      {ShowProcess && <TabContainer sidebarWidth={sidebarWidth} />}
+      {(ShowProcess || ShowProcessReviewTab) && (
+        <TabContainer
+          sidebarWidth={sidebarWidth}
+          activeTab={processTabName}
+          projectId={projectId}
+          processId={processId}
+          processReviewTabName={processReviewTabName}
+        />
+      )}
       {ShowPipelines && <Pipelines />}
       {ShowPipeline && <Pipeline />}
       {showResults && <Results />}

@@ -48,6 +48,8 @@ const PrivateRoutes = () => {
             `/${PathNames.projects}/:id/${PathNames.pipelines}/:id`,
             `/${PathNames.projects}/:id/${PathNames.processes}`,
             `/${PathNames.projects}/:id/${PathNames.processes}/:id`,
+            `/${PathNames.projects}/:id/${PathNames.processes}/:id/:tabName`,
+            `/${PathNames.projects}/:id/${PathNames.processes}/:id/review/:tabReview`,
             `/${PathNames.projects}/:id/${PathNames.results}`,
           ]}
           component={Project}
