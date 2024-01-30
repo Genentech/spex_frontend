@@ -1,13 +1,10 @@
-/* eslint-disable react/react-in-jsx-scope, react/prop-types */
 import React from 'react';
-import Box from '@material-ui/core/Box';
-import Tab from '@material-ui/core/Tab';
-import Tabs from '@material-ui/core/Tabs';
+import BoxMui from '@material-ui/core/Box';
 import styled from 'styled-components';
 
 import { ScrollBarMixin } from '+components/ScrollBar';
 
-const TabPanel = styled((props) => {
+const TabPanelContainer = styled((props) => {
     const {
         className,
         children,
@@ -25,19 +22,21 @@ const TabPanel = styled((props) => {
         aria-labelledby={`tab-${index}`}
         {...other}
       >
-        {value === index && <Box p={1}>{children}</Box>}
+        {value === index && <BoxMui p={1}>{children}</BoxMui>}
       </div>
     );
 })`
   overflow: auto;
-  height: 100%;
+  height: 110vh;
+  width: 100%;
+  border-radius: 0 0 4px 4px;
+  outline: 1px solid #ccc;
   
   ${ScrollBarMixin}
 `;
 
-export {
-    Tabs as default,
-    Tab,
-    TabPanel,
-    Box,
+const TabPanel = (props) => {
+    return <TabPanelContainer {...props} />;
 };
+
+export default TabPanel;

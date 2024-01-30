@@ -1,12 +1,10 @@
 import React, {
-  Fragment, useState, useMemo, useCallback, useEffect, useRef,
+  Fragment, useState, useMemo, useCallback, useEffect,
 } from 'react';
 import IconButton from '@material-ui/core/IconButton';
 import { Launch } from '@material-ui/icons';
 import DeleteIcon from '@material-ui/icons/Delete';
 import Refresh from '@material-ui/icons/Refresh';
-import AnalyticsIcon from '@mui/icons-material/AnalyticsOutlined';
-import ImageIdIcon from '@mui/icons-material/ImageOutlined';
 import classNames from 'classnames';
 import dagre from 'dagre';
 import cloneDeep from 'lodash/cloneDeep';
@@ -27,8 +25,7 @@ import { actions as tasksActions, selectors as tasksSelectors } from '@/redux/mo
 
 import Button from '+components/Button';
 import Message from '+components/Message';
-import Tabs, { Tab, TabPanel } from '+components/Tabs';
-import { Box } from '+components/Tabs';
+import Tabs, { Tab, TabPanel } from '+components/TabsImages';
 
 const flowDirection = 'LR';
 const nodeWidth = 172;
@@ -128,8 +125,7 @@ const createGraphLayout = (elements, direction = 'LR') => {
   });
 };
 
-
-const Results = ( { sidebarWidth, processReviewTabName } ) => {
+  const Results = ( { sidebarWidth, processReviewTabName } ) => {
   const dispatch = useDispatch();
   const location = useLocation();
 
@@ -159,22 +155,22 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
         return _elements;
       }
 
-      const options = {
+  const options = {
         position: { x: 0, y: 0 },
         data: {
           direction: flowDirection,
         },
       };
 
-      const pipelineClone = cloneDeep(pipeline);
+  const pipelineClone = cloneDeep(pipeline);
 
-      _elements = createElements(pipelineClone, _elements, options, selectedBlock);
+  _elements = createElements(pipelineClone, _elements, options, selectedBlock);
       if (_elements.length > 1) {
         _elements.splice(1, 1);
       }
       return createGraphLayout(_elements, flowDirection);
     },
-    [pipeline, selectedBlock],
+  [pipeline, selectedBlock],
   );
   const onLoad = useCallback(
     (instance) => {
@@ -182,9 +178,6 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
     },
     [setReactFlowInstance],
   );
-
-
-
 
   useEffect(
     () => {
@@ -221,7 +214,6 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
     [pipelines, pipelineId],
   );
 
-
   useEffect(
     () => {
       if (omeroWeb === null) {
@@ -232,8 +224,6 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
     },
     [dispatch, omeroWeb],
   );
-
-
 
   useEffect(
     () => {
@@ -281,8 +271,6 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
       return error.message || 'An error occurred';
   }, [error]);
 
-
-
     useEffect(() => {
         taskToPanels.forEach((item) => {
             dispatch(tasksActions.fetchTaskVitessce(item.id, processReviewTabName)); // передаем processReviewTabName
@@ -322,17 +310,20 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
 
     const handleOpenInNewTab = (value) => {
         const tabLink = `/projects/${projectId}/processes/${matchPipelinePath.params.id}/review/${value}`;
+      // eslint-disable-next-line security/detect-non-literal-fs-filename
         window.open(tabLink, '_blank');
     };
-    
+
+  const DivIcon = styled.div`
+      position: absolute;
+      top: -10px;
+      right: -10px;
+`;
+
     return (
       <Fragment>
-
-
         <TasksBlock>
-
-
-          <Fragment style={{ marginTop: '16px' }}>
+          <div style={{ marginTop: '10px' }}>
             <Tabs
               value={expandedTab}
               onChange={handleChangeTabe}
@@ -342,16 +333,15 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
               <Tab
                 iconPosition="start"
                 label={
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <AnalyticsIcon style={{ marginRight: 8 }} />
+                  <div>
+                    <div>
                       Dataset
                     </div>
-                    <div>
-                      <IconButton onClick={() => handleOpenInNewTab('dataset')}>
+                    <DivIcon>
+                      <IconButton onClick={() => handleOpenInNewTab('dataset')} >
                         <Launch style={{ fontSize: 16 }} />
                       </IconButton>
-                    </div>
+                    </DivIcon>
                   </div>
                 }
                 value="dataset"
@@ -361,22 +351,22 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
                   iconPosition="start"
                   key={type.id}
                   label={
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <ImageIdIcon style={{ marginRight: 8 }} />
+                    <div>
+                      <div>
                         {type.omeroId}
                       </div>
-                      <div>
-                        <IconButton onClick={() => handleOpenInNewTab(type.omeroId)}>
+                      <DivIcon>
+                        <IconButton onClick={() => handleOpenInNewTab(type.omeroId)} >
                           <Launch style={{ fontSize: 16 }} />
                         </IconButton>
-                      </div>
+                      </DivIcon>
                     </div>
-                  }
+                          }
                   value={type.omeroId}
                 />
-                    ))}
+                  ))}
             </Tabs>
+
             <TabPanel value={expandedTab} index="dataset">
               {(expandedTab === 'dataset') && (
               taskToPipeline.map((type) => (
@@ -407,22 +397,18 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
                       >
                         delete zarr data
                       </Button>
-
                     </div>
                   </span>
-                  <div style={{ height: '100vh', width: '100vw' }}>
-                    <Vitessce
-                      config={tasksVitessceConfigs[type.id]}
-                      height={800}
-                      theme="light"
-                    />
-                  </div>
+                  <Vitessce
+                    config={tasksVitessceConfigs[type.id]}
+                    height={800}
+                    theme="light"
+                  />
                 </div>
                 )))}
             </TabPanel>
             {taskToPanels.map((type) => (
               <TabPanel key={type.id} value={expandedTab} index={type.omeroId}>
-
                 {(type.omeroId === expandedTab) && (
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <span style={{ marginRight: 10 }}> id:{type.id}/{type.name}
@@ -451,7 +437,6 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
                         >
                           delete zarr data
                         </Button>
-
                       </div>
                     </span>
                     <div style={{ height: '100vh', width: '100vw' }} id={type.id}>
@@ -465,9 +450,7 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
                 )}
               </TabPanel>
             ))}
-          </Fragment>
-
-
+          </div>
         </TasksBlock>
         {errorMessage && <Message message={errorMessage} />}
         <div style={{ height: 200, width: '100%', position: 'absolute', left: '-9999px' }}>
@@ -485,7 +468,6 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
       </Fragment>
     );
 };
-
 
 Results.propTypes = {
     // eslint-disable-next-line react/require-default-props
