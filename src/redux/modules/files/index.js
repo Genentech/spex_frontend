@@ -110,6 +110,7 @@ const slice = createSlice({
           formData.append('filenames', file);
           const { data } = yield call(api.post, url, formData, {
             headers: { 'Content-Type': 'multipart/form-data' },
+            timeout: 300000,
           });
           yield put(actions.uploadFileSuccess(data.data));
           yield put(actions.fetchFiles());
