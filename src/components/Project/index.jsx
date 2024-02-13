@@ -1,12 +1,16 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import Divider from '@material-ui/core/Divider';
 import Drawer from '@material-ui/core/Drawer';
 import { makeStyles } from '@material-ui/core/styles';
 import DoubleArrowIcon from '@material-ui/icons/DoubleArrow';
+import ResultsIcon from'@mui/icons-material/ManageHistory';
+import SettingsIcon from '@mui/icons-material/Settings';
 import classNames from 'classnames';
+import { useDispatch, useSelector } from 'react-redux';
 import { matchPath, useHistory, useLocation } from 'react-router-dom';
-
 import PathNames from '@/models/PathNames';
+import { actions as pipelineActions, selectors as pipelineSelectors } from '@/redux/modules/pipelines';
+
 import ProjectIcon from '@/shared/components/Icons/ProjectIcon';
 import WorkFlowIcon from '@/shared/components/Icons/WorkFlowIcon';
 
@@ -20,6 +24,7 @@ import Processes from './Processes';
 import Resources from './Resources';
 import Results from './Results';
 import TabContainer from './TabComponent';
+
 
 const drawerWidth = 240;
 const drawerWidthClosed = 72;
@@ -73,10 +78,35 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const Project = () => {
-  const classes = useStyles();
-
   const history = useHistory();
+  const [currentUrl, setCurrentUrl] = useState(window.location.pathname);
+
   const location = useLocation();
+
+  useEffect(() => {
+    setCurrentUrl(location.pathname);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const isSidebarOpened = getFromStorage('sidebarOpened') === 'true';
+    setSidebarOpened(isSidebarOpened);
+    const newSidebarWidth = isSidebarOpened ? drawerWidth : drawerWidthClosed;
+    setSidebarWidth(newSidebarWidth);
+  }, []);
+
+
+  const dispatch = useDispatch();
+  const selectedOption = useSelector(pipelineSelectors.getSelectedOption);
+
+  const handleSettingsClick = () => {
+    dispatch(pipelineActions.setSelectedOption('settings'));
+  };
+
+  const handleStatusClick = () => {
+    dispatch(pipelineActions.setSelectedOption('status'));
+  };
+
+  const classes = useStyles();
 
   const matchProjectPath = matchPath(location.pathname, { path: `/${PathNames.projects}/:id` });
   const projectId = matchProjectPath ? matchProjectPath.params.id : undefined;
@@ -93,8 +123,6 @@ const Project = () => {
   const matchWithReviewTab = matchPath(location.pathname, pathMatchOptionsWithReviewTab);
   const processReviewTabName = matchWithReviewTab ? matchWithReviewTab.params.tabReview : undefined;
   const ShowProcessReviewTab = !!matchPath(location.pathname, { path: pathMatchOptionsWithReviewTab.path, exact: true });
-
-
 
   const mathcPipelinePath = matchPath(location.pathname, { path: `/${PathNames.projects}/${projectId}/${PathNames.pipelines}/:id` });
   const pipelineId = mathcPipelinePath ? mathcPipelinePath.params.id : undefined;
@@ -121,17 +149,16 @@ const Project = () => {
     [history],
   );
 
-  const onSidebarToggle = useCallback(
-    () => {
-      setSidebarOpened((prevValue) => {
-        saveToStorage('sidebarOpened', !prevValue);
-        const newSidebarWidth = prevValue ? drawerWidthClosed : drawerWidth;
-        setSidebarWidth(newSidebarWidth);
-        return !prevValue;
-      });
-    },
-    [],
-  );
+  const onSidebarToggle = useCallback(() => {
+    setSidebarOpened((prevValue) => {
+      const newSidebarOpened = !prevValue;
+      saveToStorage('sidebarOpened', newSidebarOpened);
+      const newSidebarWidth = newSidebarOpened ? drawerWidth : drawerWidthClosed;
+      setSidebarWidth(newSidebarWidth);
+      return newSidebarOpened;
+    });
+  }, []);
+
 
   return (
     <Container
@@ -158,8 +185,12 @@ const Project = () => {
             className={classes.listItem}
             onClick={onSidebarToggle}
             button
+            // disabled={isProcessOpen}
           >
-            <ListItemIcon><DoubleArrowIcon className={classNames({ [classes.arrowIconOpen]: sidebarOpened })} /></ListItemIcon>
+            <ListItemIcon><DoubleArrowIcon
+              className={classNames({ [classes.arrowIconOpen]: sidebarOpened })}
+                          />
+            </ListItemIcon>
             <ListItemText primary="Collapse" />
           </ListItem>
 
@@ -185,6 +216,35 @@ const Project = () => {
             <ListItemText primary="Analysis" />
           </ListItem>
 
+          <Divider className={classes.divider} style={{ marginTop: '140px' }} />
+          <ListItem
+            className={classes.listItem} // Применяем стили элемента списка
+            selected={selectedOption === 'settings'}
+            onClick={handleSettingsClick}
+            button// Отображаем как кнопку
+            style={{ display: currentUrl.includes('/processes/') && currentUrl.includes('/build') ? 'block' : 'none' }}
+          >
+            <ListItemIcon><SettingsIcon fontSize="medium" />
+              <ListItemText
+                primary="Settings"
+                style={{ marginLeft: '25px' }} // Добавляем отступ слева от текста
+              />
+            </ListItemIcon>
+          </ListItem>
+          <ListItem
+            className={classes.listItem}
+            selected={selectedOption === 'status'}
+            onClick={handleStatusClick}
+            button
+            style={{ display: currentUrl.includes('/processes/') && currentUrl.includes('/build') ? 'block' : 'none' }}
+          >
+            <ListItemIcon><ResultsIcon fontSize="medium" />
+              <ListItemText
+                primary="Status"
+                style={{ marginLeft: '25px' }}
+              />
+            </ListItemIcon>
+          </ListItem>
         </List>
       </Drawer>
 

@@ -36,7 +36,7 @@ const nodeTypes = {
 };
 
 const TasksBlock = styled.div`
-  max-width: 100%;
+    max-width: 100%;
 `;
 
 const addNewVirtualJobToPipeline = (rootId, newJob, node) => {
@@ -125,7 +125,7 @@ const createGraphLayout = (elements, direction = 'LR') => {
   });
 };
 
-  const Results = ( { sidebarWidth, processReviewTabName } ) => {
+const Results = ( { sidebarWidth, processReviewTabName } ) => {
   const dispatch = useDispatch();
   const location = useLocation();
 
@@ -155,22 +155,22 @@ const createGraphLayout = (elements, direction = 'LR') => {
         return _elements;
       }
 
-  const options = {
+      const options = {
         position: { x: 0, y: 0 },
         data: {
           direction: flowDirection,
         },
       };
 
-  const pipelineClone = cloneDeep(pipeline);
+      const pipelineClone = cloneDeep(pipeline);
 
-  _elements = createElements(pipelineClone, _elements, options, selectedBlock);
+      _elements = createElements(pipelineClone, _elements, options, selectedBlock);
       if (_elements.length > 1) {
         _elements.splice(1, 1);
       }
       return createGraphLayout(_elements, flowDirection);
     },
-  [pipeline, selectedBlock],
+    [pipeline, selectedBlock],
   );
   const onLoad = useCallback(
     (instance) => {
@@ -256,7 +256,7 @@ const createGraphLayout = (elements, direction = 'LR') => {
     if (clusterList.length !== taskToPipeline.length) {
       setTasksToPipeline(clusterList);
     }
-  }, [jobs_data, taskToPanels, pipelines, taskToPanels]);
+  }, [jobs_data, taskToPanels, pipelines, taskToPipeline.length]);
 
   const handleDeleteTaskData = useCallback((taskId) => {
     dispatch(tasksActions.deleteTaskData(taskId));
@@ -268,17 +268,17 @@ const createGraphLayout = (elements, direction = 'LR') => {
 
 
   const errorMessage = useMemo(() => {
-      return error.message || 'An error occurred';
+    return error.message || 'An error occurred';
   }, [error]);
 
-    useEffect(() => {
-        taskToPanels.forEach((item) => {
-            dispatch(tasksActions.fetchTaskVitessce(item.id, processReviewTabName)); // передаем processReviewTabName
-        });
-        taskToPipeline.forEach((item) => {
-            dispatch(tasksActions.fetchTaskVitessce(item.id, processReviewTabName)); // передаем processReviewTabName
-        });
-    }, [dispatch, taskToPanels, taskToPipeline, processReviewTabName]);
+  useEffect(() => {
+    taskToPanels.forEach((item) => {
+      dispatch(tasksActions.fetchTaskVitessce(item.id, processReviewTabName)); // передаем processReviewTabName
+    });
+    taskToPipeline.forEach((item) => {
+      dispatch(tasksActions.fetchTaskVitessce(item.id, processReviewTabName)); // передаем processReviewTabName
+    });
+  }, [dispatch, taskToPanels, taskToPipeline, processReviewTabName]);
 
 
   useEffect(() => {
@@ -287,88 +287,88 @@ const createGraphLayout = (elements, direction = 'LR') => {
     }
   }, [taskToPipeline]);
 
-    const [expandedTab, setExpandedTab] = useState(processReviewTabName || 'dataset');
+  const [expandedTab, setExpandedTab] = useState(processReviewTabName || 'dataset');
 
-    useEffect(() => {
-        if (processReviewTabName) {
-            setExpandedTab(processReviewTabName);
-        }
-    }, [processReviewTabName]);
+  useEffect(() => {
+    if (processReviewTabName) {
+      setExpandedTab(processReviewTabName);
+    }
+  }, [processReviewTabName]);
 
-    const history = useHistory();
-    const handleChangeTabe = (event, newValue) => {
-        setExpandedTab(newValue);
-        const matchPipelinePath = matchPath(location.pathname, {
-            path: `/${PathNames.projects}/${projectId}/${PathNames.processes}/:id`,
-        });
+  const history = useHistory();
+  const handleChangeTabe = (event, newValue) => {
+    setExpandedTab(newValue);
+    const matchPipelinePath = matchPath(location.pathname, {
+      path: `/${PathNames.projects}/${projectId}/${PathNames.processes}/:id`,
+    });
 
-        if (matchPipelinePath) {
-            const newUrl = `/projects/${projectId}/processes/${matchPipelinePath.params.id}/review/${newValue}`;
-            history.push(newUrl);
-        }
-    };
+    if (matchPipelinePath) {
+      const newUrl = `/projects/${projectId}/processes/${matchPipelinePath.params.id}/review/${newValue}`;
+      history.push(newUrl);
+    }
+  };
 
-    const handleOpenInNewTab = (value) => {
-        const tabLink = `/projects/${projectId}/processes/${matchPipelinePath.params.id}/review/${value}`;
-      // eslint-disable-next-line security/detect-non-literal-fs-filename
-        window.open(tabLink, '_blank');
-    };
+  const handleOpenInNewTab = (value) => {
+    const tabLink = `/projects/${projectId}/processes/${matchPipelinePath.params.id}/review/${value}`;
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
+    window.open(tabLink, '_blank');
+  };
 
   const DivIcon = styled.div`
       position: absolute;
       top: -10px;
       right: -10px;
-`;
+  `;
 
-    return (
-      <Fragment>
-        <TasksBlock>
-          <div style={{ marginTop: '10px' }}>
-            <Tabs
-              value={expandedTab}
-              onChange={handleChangeTabe}
-              variant="scrollable"
-              scrollButtons="auto"
-            >
+  return (
+    <Fragment>
+      <TasksBlock>
+        <div style={{ marginTop: '10px' }}>
+          <Tabs
+            value={expandedTab}
+            onChange={handleChangeTabe}
+            variant="scrollable"
+            scrollButtons="auto"
+          >
+            <Tab
+              iconPosition="start"
+              label={
+                <div>
+                  <div>
+                    Dataset
+                  </div>
+                  <DivIcon>
+                    <IconButton onClick={() => handleOpenInNewTab('dataset')} >
+                      <Launch style={{ fontSize: 16 }} />
+                    </IconButton>
+                  </DivIcon>
+                </div>
+              }
+              value="dataset"
+            />
+            {taskToPanels.map((type) => (
               <Tab
                 iconPosition="start"
+                key={type.id}
                 label={
                   <div>
                     <div>
-                      Dataset
+                      {type.omeroId}
                     </div>
                     <DivIcon>
-                      <IconButton onClick={() => handleOpenInNewTab('dataset')} >
+                      <IconButton onClick={() => handleOpenInNewTab(type.omeroId)} >
                         <Launch style={{ fontSize: 16 }} />
                       </IconButton>
                     </DivIcon>
                   </div>
                 }
-                value="dataset"
+                value={type.omeroId}
               />
-              {taskToPanels.map((type) => (
-                <Tab
-                  iconPosition="start"
-                  key={type.id}
-                  label={
-                    <div>
-                      <div>
-                        {type.omeroId}
-                      </div>
-                      <DivIcon>
-                        <IconButton onClick={() => handleOpenInNewTab(type.omeroId)} >
-                          <Launch style={{ fontSize: 16 }} />
-                        </IconButton>
-                      </DivIcon>
-                    </div>
-                          }
-                  value={type.omeroId}
-                />
-                  ))}
-            </Tabs>
+            ))}
+          </Tabs>
 
-            <TabPanel value={expandedTab} index="dataset">
-              {(expandedTab === 'dataset') && (
+          <TabPanel value={expandedTab} index="dataset">
+            {(expandedTab === 'dataset') && (
               taskToPipeline.map((type) => (
                 <div key={type.id} style={{ display: 'flex', flexDirection: 'column' }}>
                   <span style={{ marginRight: 10 }}> id:{type.id}/{type.name}
@@ -379,8 +379,8 @@ const createGraphLayout = (elements, direction = 'LR') => {
                         color="inherit"
                         startIcon={<Refresh />}
                         onClick={(e) => {
-                              e.stopPropagation();
-                              handleUpdateTaskData(type.id);
+                          e.stopPropagation();
+                          handleUpdateTaskData(type.id);
                         }}
                       >
                         create zarr data
@@ -391,8 +391,8 @@ const createGraphLayout = (elements, direction = 'LR') => {
                         color="inherit"
                         startIcon={<DeleteIcon />}
                         onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteTaskData(type.id);
+                          e.stopPropagation();
+                          handleDeleteTaskData(type.id);
                         }}
                       >
                         delete zarr data
@@ -405,75 +405,75 @@ const createGraphLayout = (elements, direction = 'LR') => {
                     theme="light"
                   />
                 </div>
-                )))}
-            </TabPanel>
-            {taskToPanels.map((type) => (
-              <TabPanel key={type.id} value={expandedTab} index={type.omeroId}>
-                {(type.omeroId === expandedTab) && (
-                  <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <span style={{ marginRight: 10 }}> id:{type.id}/{type.name}
-                      <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <Button
-                          size="small"
-                          variant="contained"
-                          color="inherit"
-                          startIcon={<Refresh />}
-                          onClick={(e) => {
-                              e.stopPropagation();
-                              handleUpdateTaskData(type.id);
-                          }}
-                        >
-                          create zarr data
-                        </Button>
-                        <Button
-                          size="small"
-                          variant="contained"
-                          color="inherit"
-                          startIcon={<DeleteIcon />}
-                          onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteTaskData(type.id);
-                          }}
-                        >
-                          delete zarr data
-                        </Button>
-                      </div>
-                    </span>
-                    <div style={{ height: '100vh', width: '100vw' }} id={type.id}>
-                      <Vitessce
-                        config={tasksVitessceConfigs[type.id]}
-                        height={800}
-                        theme="light"
-                      />
+              )))}
+          </TabPanel>
+          {taskToPanels.map((type) => (
+            <TabPanel key={type.id} value={expandedTab} index={type.omeroId}>
+              {(type.omeroId === expandedTab) && (
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ marginRight: 10 }}> id:{type.id}/{type.name}
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <Button
+                        size="small"
+                        variant="contained"
+                        color="inherit"
+                        startIcon={<Refresh />}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            handleUpdateTaskData(type.id);
+                        }}
+                      >
+                        create zarr data
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="contained"
+                        color="inherit"
+                        startIcon={<DeleteIcon />}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteTaskData(type.id);
+                        }}
+                      >
+                        delete zarr data
+                      </Button>
                     </div>
+                  </span>
+                  <div style={{ height: '100vh', width: '100vw' }} id={type.id}>
+                    <Vitessce
+                      config={tasksVitessceConfigs[type.id]}
+                      height={800}
+                      theme="light"
+                    />
                   </div>
-                )}
-              </TabPanel>
-            ))}
-          </div>
-        </TasksBlock>
-        {errorMessage && <Message message={errorMessage} />}
-        <div style={{ height: 200, width: '100%', position: 'absolute', left: '-9999px' }}>
-          <ReactFlow
-            id='react-flow__pane_2'
-            nodeTypes={nodeTypes}
-            elements={elements}
-            onLoad={onLoad}
-            nodesDraggable={false}
-            nodesConnectable={false}
-            elementsSelectable={false}
-            snapToGrid
-          />
+                </div>
+              )}
+            </TabPanel>
+          ))}
         </div>
-      </Fragment>
-    );
+      </TasksBlock>
+      {errorMessage && <Message message={errorMessage} />}
+      <div style={{ height: 200, width: '100%', position: 'absolute', left: '-9999px' }}>
+        <ReactFlow
+          id='react-flow__pane_2'
+          nodeTypes={nodeTypes}
+          elements={elements}
+          onLoad={onLoad}
+          nodesDraggable={false}
+          nodesConnectable={false}
+          elementsSelectable={false}
+          snapToGrid
+        />
+      </div>
+    </Fragment>
+  );
 };
 
 Results.propTypes = {
-    // eslint-disable-next-line react/require-default-props
-    sidebarWidth: PropTypes.number,
-    // eslint-disable-next-line react/forbid-prop-types,react/require-default-props
-    processReviewTabName: PropTypes.string,
+  // eslint-disable-next-line react/require-default-props
+  sidebarWidth: PropTypes.number,
+  // eslint-disable-next-line react/forbid-prop-types,react/require-default-props
+  processReviewTabName: PropTypes.string,
 };
 
 // export default Results;

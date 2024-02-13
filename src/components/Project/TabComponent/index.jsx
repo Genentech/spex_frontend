@@ -9,8 +9,7 @@ import Tabs, { Tab, TabPanel } from '+components/Tabs';
 
 const tabMappings = {
     'build': 0,
-    'execute': 1,
-    'review': 2,
+    'review': 1,
 };
 
 const TabContainer = ({ sidebarWidth, activeTab, projectId, processId, processReviewTabName, history }) => {
@@ -22,7 +21,6 @@ const TabContainer = ({ sidebarWidth, activeTab, projectId, processId, processRe
     }, [activeTab, projectId, processId, history]);
 
     const processComponent = useMemo(() => <Process sidebarWidth={sidebarWidth} />, [sidebarWidth]);
-    const managerComponent = useMemo(() => <Manager sidebarWidth={sidebarWidth} />, [sidebarWidth]);
     const processResultComponent = useMemo(() => <Results sidebarWidth={sidebarWidth} processReviewTabName={processReviewTabName} />, [sidebarWidth, processReviewTabName]);
     const handleChange = (event, newValue) => {
         const tabName = Object.keys(tabMappings).find((key) => tabMappings[key] === newValue);
@@ -40,7 +38,6 @@ const TabContainer = ({ sidebarWidth, activeTab, projectId, processId, processRe
       <Fragment>
         <Tabs value={tabMappings[activeTab]} onChange={handleChange}>
           <Tab label="Build" />
-          <Tab label="Execute" />
           <Tab label="Review" />
         </Tabs>
         {tabMappings[activeTab] === 0 && (
@@ -50,11 +47,6 @@ const TabContainer = ({ sidebarWidth, activeTab, projectId, processId, processRe
             )}
         {tabMappings[activeTab] === 1 && (
           <TabPanel value={tabMappings[activeTab]} index={1}>
-            {managerComponent}
-          </TabPanel>
-            )}
-        {tabMappings[activeTab] === 2 && (
-          <TabPanel value={tabMappings[activeTab]} index={2}>
             {processResultComponent}
           </TabPanel>
             )}
@@ -66,7 +58,8 @@ TabContainer.propTypes = {
     // eslint-disable-next-line react/require-default-props
     sidebarWidth: PropTypes.number,
     // eslint-disable-next-line react/require-default-props
-    activeTab: PropTypes.oneOf(['build', 'execute', 'review']),
+    activeTab: PropTypes.oneOf(['build', 'review']),
+    // eslint-disable-next-line react/require-default-props
     projectId: PropTypes.string,
     // eslint-disable-next-line react/require-default-props
     processId: PropTypes.string,

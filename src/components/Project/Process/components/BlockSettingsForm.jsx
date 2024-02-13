@@ -22,13 +22,12 @@ const Container = styled.div`
   flex-direction: column;
   flex-wrap: wrap;
   width: 100%;
-  max-height: 65vh;
+  height: 100%;
   overflow-y: auto;
   
 
   form {
     width: 100%;
-    height: 100%;
   }
 `;
 
@@ -217,13 +216,6 @@ const BlockSettingsForm = (props) => {
     })),
     [project],
   );
-
-  // const onGetChannels = useCallback(
-  //   (file) => {
-  //     dispatch(tasksActions.fetchTaskChannels(block?.rootId));
-  //   },
-  //   [dispatch, block?.rootId],
-  // );
 
   const projectImagesChannelsOptions = useMemo(() => {
     let allImgChannels = [];

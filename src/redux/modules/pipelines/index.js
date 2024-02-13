@@ -37,6 +37,10 @@ const slice = createSlice({
     updateJob: startFetching,
     deleteJob: startFetching,
 
+    setSelectedOption: (state, { payload }) => {
+      state.selectedOption = payload || 'settings';
+    },
+
     fetchPipelinesSuccess: (state, { payload: { projectId, data } }) => {
       stopFetching(state);
       let hashedPipelines = hash(data || [], 'id');
@@ -334,8 +338,15 @@ const slice = createSlice({
       [getState],
       (state) => state?.pipelines[pipelineId],
     ),
+
+    getSelectedOption: createSelector(
+      [getState],
+      (state) => state?.selectedOption || 'settings',
+    ),
+
   }),
 });
 
 export const { actions, selectors } = slice;
+export const { setSelectedOption } = actions;
 export default slice;

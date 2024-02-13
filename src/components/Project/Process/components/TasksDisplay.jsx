@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Accordion,
   ListItem,
@@ -15,22 +15,25 @@ import {
   Button,
 
 } from '@material-ui/core';
+import AssignmentIcon from '@material-ui/icons/Assignment';
 import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
 import ErrorIcon from '@material-ui/icons/Error';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import DownloadIcon from '@mui/icons-material/Download';
 import PropTypes from 'prop-types';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
+import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
+import { actions as jobsActions, selectors as jobsSelectors } from '@/redux/modules/jobs';
 import { statusFormatter } from '+utils/statusFormatter';
 
 
-
 const StyledAccordionDetails = styled(AccordionDetails)`
-  width: 100%;
+    width: 100%;
 `;
 
 const FullWidthList = styled(List)`
-  width: 100%;  
+    width: 100%;
 `;
 
 const ScrollableTasksContainer = styled.div`
@@ -38,8 +41,9 @@ const ScrollableTasksContainer = styled.div`
     overflow-y: auto;
 `;
 
+
+
 const TasksDisplay = ({ jobs }) => {
-  const [selectedTask, setSelectedTask] = useState(null);
   const [containerHeight, setContainerHeight] = useState('600px');
   const [openDialog, setOpenDialog] = useState(false);
   const [errorText, setErrorText] = useState('');
@@ -58,7 +62,7 @@ const TasksDisplay = ({ jobs }) => {
     },
     []);
   const handleTaskClick = (task) => {
-    setSelectedTask(task);
+    // setSelectedTask(task);
     if(task.error) {
       setErrorText(task.error);
       setOpenDialog(true);
@@ -75,6 +79,37 @@ const TasksDisplay = ({ jobs }) => {
     jobsByStatus[job.status].push(job);
   });
 
+  const dispatch = useDispatch();
+  const onDownload = useCallback(
+    async (job_id) => {
+      const fileName = `job_${job_id}.zip`;
+
+      dispatch(jobsActions.downloadJob({ jobId: job_id, fileName }));
+    },
+    [dispatch],
+  );
+
+  const jobData = useSelector(jobsSelectors.getJobData);
+  const [openDialogLog, setOpenDialogLog] = useState(false);
+  const [idJobOpen, setIdJobOpen] = useState(false);
+
+  const handleWindowExpand = useCallback(
+    async (jobId) => {
+      if (!jobData[jobId]) {
+        await dispatch(jobsActions.fetchJobData(jobId));
+      }
+    },
+    [dispatch, jobData],
+  );
+  const handleLogClose = () => {
+    setOpenDialogLog(false);
+  };
+  const handleLogClick = (job) => {
+    setIdJobOpen(job);
+    handleWindowExpand(job);
+    setOpenDialogLog(true);
+  };
+  
   return (
     <ScrollableTasksContainer height={containerHeight}>
       {Object.entries(jobsByStatus).map(([status, jobs]) => (
@@ -93,6 +128,55 @@ const TasksDisplay = ({ jobs }) => {
                       primary={`Job ${i + 1}: ${job.name}`}
                       secondary={`Status: ${statusFormatter(job.status)}`}
                     />
+                    {job.name === 'feature_extraction' && (
+                      <div>
+                        <Dialog
+                          open={openDialogLog}
+                          onClose={handleLogClose}
+                          aria-labelledby="alert-dialog-title"
+                          aria-describedby="alert-dialog-description"
+                        >
+                          <DialogTitle id="alert-dialog-title">
+                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                              <span style={{ marginRight: 10 }}>{`Job ${i + 1}: ${job.name}`}</span>
+                              <span style={{ fontWeight: 'bold' }}>{`Status: ${statusFormatter(job.status)}`}</span>
+                            </div>
+                          </DialogTitle>
+                          <DialogContent>
+                            <DialogContentText id="alert-dialog-description">
+                              {jobData[idJobOpen] && <pre>{JSON.stringify(jobData[idJobOpen], null, 2)}</pre>}
+                            </DialogContentText>
+                          </DialogContent>
+                          <DialogActions>
+                            <CopyToClipboard text={JSON.stringify(jobData[idJobOpen])}>
+                              <Button onClick={handleClose} color="primary" autoFocus>
+                                Copy to Clipboard
+                              </Button>
+                            </CopyToClipboard>
+                          </DialogActions>
+                        </Dialog>
+
+                        <Button
+                          size="small"
+                          variant="contained"
+                          color="inherit"
+                          startIcon={<AssignmentIcon />}
+                          onClick={() => handleLogClick(job.id)}
+                        >
+                          Info
+                        </Button>
+                        <span style={{ marginRight: 10 }} />
+                        <Button
+                          size="small"
+                          variant="contained"
+                          color="inherit"
+                          startIcon={<DownloadIcon />}
+                          onClick={() => onDownload(job.id)}
+                        >
+                          zarr
+                        </Button>
+                      </div>
+                    )}
                   </AccordionSummary>
                   <StyledAccordionDetails>
                     <FullWidthList component="div">
@@ -103,17 +187,21 @@ const TasksDisplay = ({ jobs }) => {
                           </AccordionSummary>
                           <StyledAccordionDetails>
                             <FullWidthList>
-                              <ListItem
-                                button
-                                selected={selectedTask === task}
-                                onClick={() => handleTaskClick(task)}
-                              >
+                              <ListItem style={{ display: 'flex', justifyContent: 'space-between' }}>
                                 <ListItemText
                                   primary={`Task ID: ${task.id}, image id: ${task.omeroId} Status: ${statusFormatter(task.status)}`}
-                                  secondary={task.error}
-                                >
-                                  <ErrorIcon /> {task.error}
-                                </ListItemText>
+                                />
+                                {task.error && (
+                                  <Button
+                                    size="small"
+                                    variant="contained"
+                                    color="red"
+                                    startIcon={<ErrorIcon />}
+                                    onClick={() => handleTaskClick(task)}
+                                  >
+                                    Info
+                                  </Button>
+                                )}
                               </ListItem>
                               <ListItem>
                                 {task.status === 'pending' && <CircularProgress />}
@@ -152,6 +240,7 @@ const TasksDisplay = ({ jobs }) => {
           </CopyToClipboard>
         </DialogActions>
       </Dialog>
+
     </ScrollableTasksContainer>
   );
 };

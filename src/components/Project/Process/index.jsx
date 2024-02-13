@@ -4,7 +4,7 @@ import classNames from 'classnames';
 import dagre from 'dagre';
 import cloneDeep from 'lodash/cloneDeep';
 import PropTypes from 'prop-types';
-import ReactFlow, { ReactFlowProvider, Controls, Background, isNode } from 'react-flow-renderer';
+import ReactFlow, { ReactFlowProvider, Controls, Background, isNode, ControlButton } from 'react-flow-renderer';
 import { useDispatch, useSelector } from 'react-redux';
 import { matchPath, useLocation } from 'react-router-dom';
 import SplitPane from 'react-split-pane';
@@ -14,6 +14,7 @@ import PathNames from '@/models/PathNames';
 import { actions as jobsActions, selectors as jobsSelectors } from '@/redux/modules/jobs';
 import { actions as omeroActions, selectors as omeroSelectors } from '@/redux/modules/omero';
 import { actions as pipelineActions, selectors as pipelineSelectors } from '@/redux/modules/pipelines';
+
 import { selectors as projectsSelectors } from '@/redux/modules/projects';
 import { actions as tasksActions, selectors as tasksSelectors } from '@/redux/modules/tasks';
 
@@ -23,13 +24,15 @@ import ImageViewer from '+components/ImageViewer';
 import NoData from '+components/NoData';
 import ThumbnailsViewer from '+components/ThumbnailsViewer';
 
+import { statusColor } from '+utils/statusFormatter';
 import JobBlock from './blocks/JobBlock';
 import BlockScrollWrapper from './components/BlockScrollWrapper';
 import BlockSettingsForm from './components/BlockSettingsForm';
 import BlockSettingsFormWrapper from './components/BlockSettingsFormWrapper';
+import BlockStatusForm from './components/BlockStatusForm';
 import Container from './components/Container';
 import FlowWrapper from './components/FlowWrapper';
-
+import TasksDisplay from './components/TasksDisplay';
 
 const jobRefreshInterval = 6e4; // 1 minute
 
@@ -43,15 +46,24 @@ const nodeTypes = {
 
 
 const ImageViewerContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 100%;
-  background-color: #ccc;
-  border-radius: 4px;
-  //overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    background-color: #ccc;
+    border-radius: 4px;
+`;
+
+const BlockTab = styled.div`
+    height: auto;
+    min-height: 70%;
+    max-height: 70%;
+    overflow: auto;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    padding: 4px;
 `;
 
 const addNewVirtualJobToPipeline = (rootId, newJob, node) => {
@@ -91,6 +103,7 @@ const createElements = (inputData, result, options = {}, selectedBlock) => {
       data: {
         ...job,
         ...options.data,
+        color: statusColor(job.status),
       },
     });
 
@@ -140,7 +153,6 @@ const createGraphLayout = (elements, direction = 'LR') => {
   });
 };
 
-
 const sortTaskById = ({ id: a }, { id: b }) => {
   return +a - +b;
 };
@@ -174,42 +186,36 @@ const Process = ( { sidebarWidth } ) => {
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
   const [actionWithBlock, setActionWithBlock] = useState(null);
   const [selectedBlock, setSelectedBlock] = useState(null);
-  // eslint-disable-next-line no-unused-vars
   const [currImages, setCurrImages] = useState({});
   const [availableBlocks, setAvailableBlocks] = useState({});
   const images_visualization = useSelector(tasksSelectors.getTaskVisualizations || {});
+  const [elements, setElements] = useState([]);
 
-  const elements = useMemo(
-    () => {
-      let _elements = [];
+  useMemo(() => {
+    let _elements = [];
 
-      if (!pipeline) {
-        return _elements;
-      }
+    if (!pipeline) {
+      return _elements;
+    }
 
-      const options = {
-        position: { x: 0, y: 0 },
-        data: {
-          direction: flowDirection,
-          onAdd: () => setActionWithBlock('add'),
-          onDelete: () => setActionWithBlock('delete'),
-        },
-      };
+    const options = {
+      position: { x: 0, y: 0 },
+      data: {
+        direction: flowDirection,
+        onAdd: () => setActionWithBlock('add'),
+        onDelete: () => setActionWithBlock('delete'),
+        onRestart: () => setActionWithBlock('restart'),
+      },
+    };
 
-      const pipelineClone = cloneDeep(pipeline);
+    const pipelineClone = cloneDeep(pipeline);
+    _elements = createElements(pipelineClone, _elements, options, selectedBlock);
+    if (_elements.length > 1) {
+      _elements.splice(1, 1);
+    }
+    setElements(createGraphLayout(_elements, flowDirection));
+  }, [pipeline, selectedBlock, setActionWithBlock]);
 
-      if (selectedBlock && selectedBlock.rootId && selectedBlock.id === 'new') {
-        // addNewVirtualJobToPipeline(selectedBlock.rootId, selectedBlock, pipelineClone);
-      }
-
-      _elements = createElements(pipelineClone, _elements, options, selectedBlock);
-      if (_elements.length > 1) {
-        _elements.splice(1, 1);
-      }
-      return createGraphLayout(_elements, flowDirection);
-    },
-    [pipeline, selectedBlock],
-  );
 
   const initialBlocks = useMemo(() => {
     let blocks = [];
@@ -302,13 +308,13 @@ const Process = ( { sidebarWidth } ) => {
         let blocks = [];
         Object.keys(jobTypes).forEach((jobType) => {
           jobTypes[jobType]['stages'].forEach((stage) => {
-              stage['scripts'].forEach((block) => {
-                const enabled = block.depends_and_script?.includes(selectedBlock.script_path)
-                   || block.depends_or_script?.includes(selectedBlock.script_path);
-                if (enabled) {
-                  blocks.push({ ...block, folder: jobType, script: jobType });
-                }
-              });
+            stage['scripts'].forEach((block) => {
+              const enabled = block.depends_and_script?.includes(selectedBlock.script_path)
+                || block.depends_or_script?.includes(selectedBlock.script_path);
+              if (enabled) {
+                blocks.push({ ...block, folder: jobType, script: jobType });
+              }
+            });
           });
         });
         setAvailableBlocks({ ...availableBlocks, [selectedBlock.name]: blocks });
@@ -684,7 +690,7 @@ const Process = ( { sidebarWidth } ) => {
   const verticalResizerStyles = {
     width: '5px',
     cursor: 'col-resize',
-    zIndex: 99,
+    zIndex: 1,
     boxSizing: 'border-box',
     background: 'linear-gradient(to right, transparent 1px, #ccc 1px, #ccc 4px, transparent 1px)',
   };
@@ -692,10 +698,63 @@ const Process = ( { sidebarWidth } ) => {
   const horizontalResizerStyles = {
     height: '5px',
     cursor: 'row-resize',
-    zIndex: 99,
+    zIndex: 1,
     boxSizing: 'border-box',
     background: 'linear-gradient(to bottom, transparent 1px, #ccc 1px, #ccc 2px, transparent 1px)',
   };
+
+  const onStartPipeline = useCallback(
+    () => {
+      dispatch(jobsActions.startPipeline(pipelineId));
+    },
+    [dispatch, pipelineId],
+  );
+
+  const updateElements = useCallback(() => {
+    let _elements = [];
+    setElements(_elements);
+    if (!pipeline) {
+      setElements(_elements);
+      return;
+    }
+
+    const options = {
+      position: { x: 0, y: 0 },
+      data: {
+        direction: flowDirection,
+        onAdd: () => setActionWithBlock('add'),
+        onDelete: () => setActionWithBlock('delete'),
+        onRestart: () => setActionWithBlock('restart'),
+      },
+    };
+
+    const pipelineClone = cloneDeep(pipeline);
+    _elements = createElements(pipelineClone, _elements, options, selectedBlock);
+    if (_elements.length > 1) {
+      _elements.splice(1, 1);
+    }
+    setElements(createGraphLayout(_elements, flowDirection));
+  }, [pipeline, selectedBlock, setActionWithBlock]);
+
+  useEffect(() => {
+    updateElements();
+  }, [updateElements]);
+
+
+
+  const handleRefresh = () => {
+    dispatch(jobsActions.fetchJobsByPipelineId(pipelineId));
+    updateElements();
+  };
+
+
+  const selectedOption = useSelector(pipelineSelectors.getSelectedOption);
+
+  useEffect(() => {
+    dispatch(pipelineActions.setSelectedOption('settings'));
+  }, [dispatch ,selectedBlock]);
+
+
 
   return (
     <ReactFlowProvider>
@@ -707,7 +766,7 @@ const Process = ( { sidebarWidth } ) => {
         <SplitPane
           sizes={sizes}
           split="vertical"
-          minSize={250 + sidebarWidth}
+          minSize={sidebarWidth}
           size={700}
           resizerStyle={verticalResizerStyles}
           onChange={(size) => setSizes([size, 1000 - size])}
@@ -745,7 +804,30 @@ const Process = ( { sidebarWidth } ) => {
                       elementsSelectable={false}
                       snapToGrid
                     >
-                      <Controls showInteractive={false} style={{ position: 'absolute', left: 0, display: 'flex' }} />
+                      <Controls showInteractive={false} style={{ position: 'absolute', left: 0, display: 'flex' }}>
+                        <ControlButton
+                          style={{
+                            backgroundColor: 'green',
+                            color: 'white',
+                            whiteSpace: 'nowrap',
+                            zIndex: 99,
+                            width: '80%',
+                          }}
+                          onClick={onStartPipeline}
+                        > Start ▶
+                        </ControlButton>
+                        <ControlButton
+                          style={{
+                            backgroundColor: 'blue',
+                            color: 'white',
+                            whiteSpace: 'nowrap',
+                            zIndex: 99,
+                            width: '80%',
+                          }}
+                          onClick={handleRefresh}
+                        > Refresh
+                        </ControlButton>
+                      </Controls>
                       <Background />
                     </ReactFlow>
                   </FlowWrapper>
@@ -768,23 +850,35 @@ const Process = ( { sidebarWidth } ) => {
               <Grid
                 item
                 container
-                direction='column'
+                direction='row'
                 xs={12}
-                style={{ paddingLeft: '6px', height: '65%' }}
+                style={{ padding: '6px 6px 50px 6px', height: '95%' }}
               >
-                <BlockSettingsFormWrapper>
-                  {selectedBlock?.id ? (
-                    <BlockSettingsForm
-                      block={selectedBlock}
-                      onRestart={onJobRestart}
-                      onSubmit={onJobSubmit}
-                      onClose={onJobCancel}
-                    />
-                  ) : (
-                    <NoData>Select block</NoData>
-                  )}
-                </BlockSettingsFormWrapper>
+                <Grid item xs style={{ width: '100%' }}>
+                  <BlockTab>
+                    <div style={{ display: selectedOption === 'settings' ? 'block' : 'none' }}>
+                      {selectedBlock?.id ? (
+                        <BlockSettingsFormWrapper>
+                          <BlockSettingsForm
+                            block={selectedBlock}
+                            onRestart={onJobRestart}
+                            onSubmit={onJobSubmit}
+                            onClose={onJobCancel}
+                          />
+                        </BlockSettingsFormWrapper>
+                        ) : (
+                          <NoData>Select block</NoData>
+                        )}
+                    </div>
+                    <div style={{ maxHeight: '70%', overflow: 'auto', display: selectedOption === 'status' ? 'block' : 'none' }}>
+                      <BlockStatusForm>
+                        <TasksDisplay jobs={jobs} />
+                      </BlockStatusForm>
+                    </div>
+                  </BlockTab>
+                </Grid>
               </Grid>
+
             </SplitPane>
           </div>
           <div>
@@ -810,7 +904,6 @@ const Process = ( { sidebarWidth } ) => {
           </div>
         </SplitPane>
       </Grid>
-
       {actionWithBlock === 'delete' && selectedBlock?.id && (
         <ConfirmModal
           action={ConfirmActions.delete}
