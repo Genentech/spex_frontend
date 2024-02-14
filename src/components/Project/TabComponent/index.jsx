@@ -2,7 +2,6 @@ import React, { useMemo, Fragment, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import PathNames from '@/models/PathNames';
-import Manager from 'components/Project/Pipeline_manager';
 import Process from 'components/Project/Process';
 import Results from 'components/Project/Results';
 import Tabs, { Tab, TabPanel } from '+components/Tabs';
@@ -26,12 +25,13 @@ const TabContainer = ({ sidebarWidth, activeTab, projectId, processId, processRe
         const tabName = Object.keys(tabMappings).find((key) => tabMappings[key] === newValue);
         let url = `/${PathNames.projects}/${projectId}/${PathNames.processes}/${processId}/${tabName}`;
 
-        if (newValue === 2 && processReviewTabName) {
-            url += `/review/${processReviewTabName}`;
+        if (newValue === 1 && processReviewTabName) {
+            url = `/${PathNames.projects}/${projectId}/${PathNames.processes}/${processId}/review/${processReviewTabName}`;
         }
 
         history.push(url);
     };
+
 
 
     return (

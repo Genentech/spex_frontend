@@ -125,6 +125,7 @@ const createGraphLayout = (elements, direction = 'LR') => {
   });
 };
 
+
 const Results = ( { sidebarWidth, processReviewTabName } ) => {
   const dispatch = useDispatch();
   const location = useLocation();
@@ -179,6 +180,9 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
     [setReactFlowInstance],
   );
 
+
+
+
   useEffect(
     () => {
       if (!(elements && reactFlowInstance)) {
@@ -214,6 +218,7 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
     [pipelines, pipelineId],
   );
 
+
   useEffect(
     () => {
       if (omeroWeb === null) {
@@ -224,6 +229,8 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
     },
     [dispatch, omeroWeb],
   );
+
+
 
   useEffect(
     () => {
@@ -256,7 +263,7 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
     if (clusterList.length !== taskToPipeline.length) {
       setTasksToPipeline(clusterList);
     }
-  }, [jobs_data, taskToPanels, pipelines, taskToPipeline.length]);
+  }, [jobs_data, taskToPanels, pipelines, taskToPanels]);
 
   const handleDeleteTaskData = useCallback((taskId) => {
     dispatch(tasksActions.deleteTaskData(taskId));
@@ -270,6 +277,8 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
   const errorMessage = useMemo(() => {
     return error.message || 'An error occurred';
   }, [error]);
+
+
 
   useEffect(() => {
     taskToPanels.forEach((item) => {
@@ -310,7 +319,6 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
 
   const handleOpenInNewTab = (value) => {
     const tabLink = `/projects/${projectId}/processes/${matchPipelinePath.params.id}/review/${value}`;
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
     window.open(tabLink, '_blank');
   };
 
@@ -323,7 +331,7 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
   return (
     <Fragment>
       <TasksBlock>
-        <div style={{ marginTop: '10px' }}>
+        <Fragment style={{ marginTop: '16px' }}>
           <Tabs
             value={expandedTab}
             onChange={handleChangeTabe}
@@ -338,7 +346,7 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
                     Dataset
                   </div>
                   <DivIcon>
-                    <IconButton onClick={() => handleOpenInNewTab('dataset')} >
+                    <IconButton onClick={() => handleOpenInNewTab('dataset')}>
                       <Launch style={{ fontSize: 16 }} />
                     </IconButton>
                   </DivIcon>
@@ -356,8 +364,8 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
                       {type.omeroId}
                     </div>
                     <DivIcon>
-                      <IconButton onClick={() => handleOpenInNewTab(type.omeroId)} >
-                        <Launch style={{ fontSize: 16 }} />
+                      <IconButton onClick={() => handleOpenInNewTab(type.omeroId)}>
+                        <Launch style={{fontSize: 16}} />
                       </IconButton>
                     </DivIcon>
                   </div>
@@ -366,12 +374,11 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
               />
             ))}
           </Tabs>
-
           <TabPanel value={expandedTab} index="dataset">
             {(expandedTab === 'dataset') && (
               taskToPipeline.map((type) => (
-                <div key={type.id} style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ marginRight: 10 }}> id:{type.id}/{type.name}
+                <div key={type.id} style={{display: 'flex', flexDirection: 'column'}}>
+                  <span style={{marginRight: 10 }}> id:{type.id}/{type.name}
                     <div style={{ display: 'flex', alignItems: 'center' }}>
                       <Button
                         size="small"
@@ -399,11 +406,13 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
                       </Button>
                     </div>
                   </span>
-                  <Vitessce
-                    config={tasksVitessceConfigs[type.id]}
-                    height={800}
-                    theme="light"
-                  />
+                  <div style={{ height: '100vh', width: '100vw' }}>
+                    <Vitessce
+                      config={tasksVitessceConfigs[type.id]}
+                      height={800}
+                      theme="light"
+                    />
+                  </div>
                 </div>
               )))}
           </TabPanel>
@@ -450,7 +459,7 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
               )}
             </TabPanel>
           ))}
-        </div>
+        </Fragment>
       </TasksBlock>
       {errorMessage && <Message message={errorMessage} />}
       <div style={{ height: 200, width: '100%', position: 'absolute', left: '-9999px' }}>
@@ -468,6 +477,7 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
     </Fragment>
   );
 };
+
 
 Results.propTypes = {
   // eslint-disable-next-line react/require-default-props
