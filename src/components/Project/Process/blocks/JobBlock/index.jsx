@@ -49,6 +49,14 @@ const JobBlock = (props) => {
 
   return (
     <Fragment>
+      <style>
+        {`
+          .react-flow__node.selected {
+            outline: 1px solid black;
+            font-size: 15px;
+          }
+        `}
+      </style>
       <Container>
         <Name>
           {data.name && <span>{data.name}</span>}

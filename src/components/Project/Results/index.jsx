@@ -263,7 +263,7 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
     if (clusterList.length !== taskToPipeline.length) {
       setTasksToPipeline(clusterList);
     }
-  }, [jobs_data, taskToPanels, pipelines, taskToPanels]);
+  }, [jobs_data, taskToPanels.length, pipelines, taskToPipeline.length]);
 
   const handleDeleteTaskData = useCallback((taskId) => {
     dispatch(tasksActions.deleteTaskData(taskId));
@@ -319,8 +319,11 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
 
   const handleOpenInNewTab = (value) => {
     const tabLink = `/projects/${projectId}/processes/${matchPipelinePath.params.id}/review/${value}`;
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
     window.open(tabLink, '_blank');
   };
+
+
 
   const DivIcon = styled.div`
       position: absolute;
@@ -365,7 +368,7 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
                     </div>
                     <DivIcon>
                       <IconButton onClick={() => handleOpenInNewTab(type.omeroId)}>
-                        <Launch style={{fontSize: 16}} />
+                        <Launch style={{ fontSize: 16 }} />
                       </IconButton>
                     </DivIcon>
                   </div>
@@ -377,8 +380,8 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
           <TabPanel value={expandedTab} index="dataset">
             {(expandedTab === 'dataset') && (
               taskToPipeline.map((type) => (
-                <div key={type.id} style={{display: 'flex', flexDirection: 'column'}}>
-                  <span style={{marginRight: 10 }}> id:{type.id}/{type.name}
+                <div key={type.id} style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ marginRight: 10 }}> id:{type.id}/{type.name}
                     <div style={{ display: 'flex', alignItems: 'center' }}>
                       <Button
                         size="small"

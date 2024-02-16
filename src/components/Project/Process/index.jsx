@@ -186,6 +186,7 @@ const Process = ( { sidebarWidth } ) => {
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
   const [actionWithBlock, setActionWithBlock] = useState(null);
   const [selectedBlock, setSelectedBlock] = useState(null);
+  // eslint-disable-next-line no-unused-vars
   const [currImages, setCurrImages] = useState({});
   const [availableBlocks, setAvailableBlocks] = useState({});
   const images_visualization = useSelector(tasksSelectors.getTaskVisualizations || {});
@@ -753,8 +754,6 @@ const Process = ( { sidebarWidth } ) => {
   useEffect(() => {
     dispatch(pipelineActions.setSelectedOption('settings'));
   }, [dispatch ,selectedBlock]);
-
-
 
   return (
     <ReactFlowProvider>
