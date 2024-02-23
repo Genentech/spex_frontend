@@ -243,27 +243,27 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
   );
 
   useEffect(() => {
-    if (pipelines === undefined) {
-      return [];
-    }
-    let taskList = [];
-    let clusterList = [];
-    if (Object.keys(pipelines).length !== 0) {
-      jobs_data.forEach(function (o) {
-        if (o.name !== 'phenograph_cluster') {
-          taskList = [...taskList, ...o.tasks];
-        } else {
-          clusterList = [...o.tasks];
-        }
-      });
-    }
-    if (taskList.length !== taskToPanels.length) {
-      setTasksToPanels(taskList);
-    }
-    if (clusterList.length !== taskToPipeline.length) {
-      setTasksToPipeline(clusterList);
-    }
-  }, [jobs_data, taskToPanels.length, pipelines, taskToPipeline.length]);
+      if (pipelines === undefined) {
+        return [];
+      }
+      let taskList = [];
+      let clusterList = [];
+      if (Object.keys(pipelines).length !== 0) {
+        jobs_data.forEach(function (o) {
+          if (o.name !== 'phenograph_cluster') {
+            taskList = [...taskList, ...o.tasks];
+          } else {
+            clusterList = [...o.tasks];
+          }
+        });
+      }
+      if (taskList.length !== taskToPanels.length) {
+        setTasksToPanels(taskList);
+      }
+      if (clusterList.length !== taskToPipeline.length) {
+        setTasksToPipeline(clusterList);
+      }
+    }, [jobs_data, pipelines, taskToPanels.length, taskToPipeline.length]);
 
   const handleDeleteTaskData = useCallback((taskId) => {
     dispatch(tasksActions.deleteTaskData(taskId));
@@ -322,8 +322,6 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
     // eslint-disable-next-line security/detect-non-literal-fs-filename
     window.open(tabLink, '_blank');
   };
-
-
 
   const DivIcon = styled.div`
       position: absolute;

@@ -321,7 +321,7 @@ const Process = ( { sidebarWidth } ) => {
         setAvailableBlocks({ ...availableBlocks, [selectedBlock.name]: blocks });
       }
     },
-    [selectedBlock, availableBlocks, jobTypes, initialBlocks],
+    [selectedBlock, jobTypes, initialBlocks],
   );
 
   const selectedImagesDetails = useMemo(() => {
@@ -865,9 +865,9 @@ const Process = ( { sidebarWidth } ) => {
                             onClose={onJobCancel}
                           />
                         </BlockSettingsFormWrapper>
-                        ) : (
-                          <NoData>Select block</NoData>
-                        )}
+                      ) : (
+                        <NoData>Select block</NoData>
+                      )}
                     </div>
                     <div style={{ maxHeight: '70%', overflow: 'auto', display: selectedOption === 'status' ? 'block' : 'none' }}>
                       <BlockStatusForm>
