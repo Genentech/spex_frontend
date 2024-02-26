@@ -427,7 +427,6 @@ const BlockSettingsForm = (props) => {
                 <Button
                   color={ButtonColors.secondary}
                   onClick={(event) => {
-                      form.restart();
                       onDownload(event);
                   }}
                   title="Download"

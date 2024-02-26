@@ -512,6 +512,37 @@ const Process = ( { sidebarWidth } ) => {
     [dispatch, pipelineId, projectId, selectedBlock],
   );
 
+  const onDownload = useCallback(
+    async (_, block) => {
+      if (block.id === 'new') {
+        return;
+      }
+
+      const job = jobs[block.id];
+      if (!job) {
+        return;
+      }
+
+      const fileName = `job_${job.id}.zip`;
+
+      dispatch(jobsActions.downloadJob({ jobId: job.id, fileName }));
+    },
+    [jobs, dispatch],
+  );
+
+  const onJobDownload = useCallback(
+    (_) => {
+      if (selectedBlock.id === 'new') {
+        return;
+      }
+
+      if (selectedBlock.id) {
+        onDownload(_, selectedBlock);
+      }
+    },
+    [selectedBlock, onDownload],
+  );
+
   const onLoad = useCallback(
     (instance) => {
       setReactFlowInstance(instance);
@@ -863,6 +894,7 @@ const Process = ( { sidebarWidth } ) => {
                             onRestart={onJobRestart}
                             onSubmit={onJobSubmit}
                             onClose={onJobCancel}
+                            onDownload={onJobDownload}
                           />
                         </BlockSettingsFormWrapper>
                       ) : (

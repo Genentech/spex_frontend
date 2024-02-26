@@ -375,7 +375,7 @@ const slice = createSlice({
         initApi();
 
         try {
-          const url = `${baseUrl}/merged_result/${jobId}`;
+          const url = `${baseUrl}/anndata_result/${jobId}`;
           const { data } = yield call(api.get, url, { responseType: 'blob' });
 
           const downloadUrl = window.URL.createObjectURL(new Blob([data]));
