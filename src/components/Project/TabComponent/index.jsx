@@ -36,7 +36,7 @@ const TabContainer = ({ sidebarWidth, activeTab, projectId, processId, processRe
 
     return (
       <Fragment>
-        <Tabs value={tabMappings[activeTab]} onChange={handleChange}>
+        <Tabs value={activeTab === 'build' ? 0 : 1} onChange={handleChange}>
           <Tab label="Build" />
           <Tab label="Review" />
         </Tabs>

@@ -15,8 +15,6 @@ import NoData from '+components/NoData';
 import { ScrollBarMixin } from '+components/ScrollBar';
 import { statusFormatter } from '+utils/statusFormatter';
 
-
-
 const Container = styled.div`
   display: flex;
   flex-direction: column;
@@ -24,7 +22,6 @@ const Container = styled.div`
   width: 100%;
   height: 100%;
   overflow-y: auto;
-  
 
   form {
     width: 100%;
@@ -48,22 +45,16 @@ const Body = styled.div`
   gap: 20px;
 `;
 
-
-
-
 const RightPanel = styled.div`
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  height: 100%;
   gap: 20px;
 
   :only-child {
     width: 100%;
   }
 `;
-
-
 
 const Footer = styled.div`
   align-self: end;
@@ -75,10 +66,6 @@ const Footer = styled.div`
     flex-shrink: 1;
   }
 `;
-
-
-
-
 
 const TextField = styled(Controls.TextField)`
   max-width: 300px;

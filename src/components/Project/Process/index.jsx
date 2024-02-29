@@ -28,7 +28,6 @@ import { statusColor } from '+utils/statusFormatter';
 import JobBlock from './blocks/JobBlock';
 import BlockScrollWrapper from './components/BlockScrollWrapper';
 import BlockSettingsForm from './components/BlockSettingsForm';
-import BlockSettingsFormWrapper from './components/BlockSettingsFormWrapper';
 import BlockStatusForm from './components/BlockStatusForm';
 import Container from './components/Container';
 import FlowWrapper from './components/FlowWrapper';
@@ -58,8 +57,8 @@ const ImageViewerContainer = styled.div`
 
 const BlockTab = styled.div`
     height: auto;
-    min-height: 70%;
-    max-height: 70%;
+    min-height: 65%;
+    max-height: 65%;
     overflow: auto;
     border: 1px solid rgba(0, 0, 0, 0.2);
     border-radius: 4px;
@@ -300,29 +299,30 @@ const Process = ( { sidebarWidth } ) => {
     [images_visualization, selectedBlock, setCurrImages],
   );
 
-  useEffect(
-    () => {
-      if (!selectedBlock || Object.keys(jobTypes).length === 0) {
-        return;
-      }
-      if ( availableBlocks[selectedBlock.script_path] === undefined) {
-        let blocks = [];
-        Object.keys(jobTypes).forEach((jobType) => {
-          jobTypes[jobType]['stages'].forEach((stage) => {
-            stage['scripts'].forEach((block) => {
-              const enabled = block.depends_and_script?.includes(selectedBlock.script_path)
-                || block.depends_or_script?.includes(selectedBlock.script_path);
-              if (enabled) {
-                blocks.push({ ...block, folder: jobType, script: jobType });
-              }
-            });
-          });
+  useEffect(() => {
+    if (!selectedBlock || Object.keys(jobTypes).length === 0 || availableBlocks[selectedBlock.script_path] !== undefined) {
+      return;
+    }
+
+    let blocks = [];
+    Object.keys(jobTypes).forEach((jobType) => {
+      jobTypes[jobType]['stages'].forEach((stage) => {
+        stage['scripts'].forEach((block) => {
+          const enabled = block.depends_and_script?.includes(selectedBlock.script_path)
+            || block.depends_or_script?.includes(selectedBlock.script_path);
+          if (enabled) {
+            blocks.push({ ...block, folder: jobType, script: jobType });
+          }
         });
-        setAvailableBlocks({ ...availableBlocks, [selectedBlock.name]: blocks });
-      }
-    },
-    [selectedBlock, jobTypes, initialBlocks],
-  );
+      });
+    });
+
+    setAvailableBlocks((prevBlocks) => ({
+      ...prevBlocks,
+      [selectedBlock.script_path]: blocks,
+    }));
+  }, [selectedBlock, jobTypes, availableBlocks]);
+
 
   const selectedImagesDetails = useMemo(() => {
     if (selectedBlock?.omeroIds) {
@@ -888,15 +888,13 @@ const Process = ( { sidebarWidth } ) => {
                   <BlockTab>
                     <div style={{ display: selectedOption === 'settings' ? 'block' : 'none' }}>
                       {selectedBlock?.id ? (
-                        <BlockSettingsFormWrapper>
-                          <BlockSettingsForm
-                            block={selectedBlock}
-                            onRestart={onJobRestart}
-                            onSubmit={onJobSubmit}
-                            onClose={onJobCancel}
-                            onDownload={onJobDownload}
-                          />
-                        </BlockSettingsFormWrapper>
+                        <BlockSettingsForm
+                          block={selectedBlock}
+                          onRestart={onJobRestart}
+                          onSubmit={onJobSubmit}
+                          onClose={onJobCancel}
+                          onDownload={onJobDownload}
+                        />
                       ) : (
                         <NoData>Select block</NoData>
                       )}

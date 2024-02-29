@@ -1,8 +1,9 @@
 import React, {
-  Fragment, useState, useMemo, useCallback, useEffect,
+  Fragment, useState, useMemo, useCallback, useEffect, useRef,
 } from 'react';
 import IconButton from '@material-ui/core/IconButton';
 import { Launch } from '@material-ui/icons';
+import ClearIcon from '@material-ui/icons/Clear';
 import DeleteIcon from '@material-ui/icons/Delete';
 import Refresh from '@material-ui/icons/Refresh';
 import classNames from 'classnames';
@@ -180,9 +181,6 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
     [setReactFlowInstance],
   );
 
-
-
-
   useEffect(
     () => {
       if (!(elements && reactFlowInstance)) {
@@ -230,8 +228,6 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
     [dispatch, omeroWeb],
   );
 
-
-
   useEffect(
     () => {
       if (!projectId && !pipelineId) {
@@ -242,28 +238,37 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
     [dispatch, projectId, pipelineId],
   );
 
+  const prevTaskToPanels = useRef([]);
+  const prevTaskToPipeline = useRef([]);
+
   useEffect(() => {
-      if (pipelines === undefined) {
-        return [];
+    if (pipelines === undefined) {
+      return;
+    }
+
+    let taskList = [];
+    let clusterList = [];
+
+    jobs_data.forEach(function (o) {
+      if (o.name !== 'phenograph_cluster') {
+        taskList.push(...o.tasks);
+      } else {
+        clusterList.push(...o.tasks);
       }
-      let taskList = [];
-      let clusterList = [];
-      if (Object.keys(pipelines).length !== 0) {
-        jobs_data.forEach(function (o) {
-          if (o.name !== 'phenograph_cluster') {
-            taskList = [...taskList, ...o.tasks];
-          } else {
-            clusterList = [...o.tasks];
-          }
-        });
-      }
-      if (taskList.length !== taskToPanels.length) {
-        setTasksToPanels(taskList);
-      }
-      if (clusterList.length !== taskToPipeline.length) {
-        setTasksToPipeline(clusterList);
-      }
-    }, [jobs_data, pipelines, taskToPanels.length, taskToPipeline.length]);
+    });
+
+    if (prevTaskToPanels.current.length !== taskList.length) {
+      setTasksToPanels(taskList);
+      prevTaskToPanels.current = taskList;
+    }
+
+    if (prevTaskToPipeline.current.length !== clusterList.length) {
+      setTasksToPipeline(clusterList);
+      prevTaskToPipeline.current = clusterList;
+    }
+  }, [jobs_data, pipelines, setTasksToPanels, setTasksToPipeline]);
+
+
 
   const handleDeleteTaskData = useCallback((taskId) => {
     dispatch(tasksActions.deleteTaskData(taskId));
@@ -282,10 +287,10 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
 
   useEffect(() => {
     taskToPanels.forEach((item) => {
-      dispatch(tasksActions.fetchTaskVitessce(item.id, processReviewTabName)); // передаем processReviewTabName
+      dispatch(tasksActions.fetchTaskVitessce(item.id, processReviewTabName));
     });
     taskToPipeline.forEach((item) => {
-      dispatch(tasksActions.fetchTaskVitessce(item.id, processReviewTabName)); // передаем processReviewTabName
+      dispatch(tasksActions.fetchTaskVitessce(item.id, processReviewTabName));
     });
   }, [dispatch, taskToPanels, taskToPipeline, processReviewTabName]);
 
@@ -329,10 +334,69 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
       right: -10px;
   `;
 
+  const [searchInput, setSearchInput] = useState('');
+  const handleSearchInputChange = (event) => {
+    const { value } = event.target;
+    const onlyDigits = value.replace(/\D/g, '');
+    setSearchInput(onlyDigits);
+  };
+
+  const filteredTaskToPanels = useMemo(() => {
+    if (!searchInput.trim()) {
+      return taskToPanels;
+    }
+    return taskToPanels.filter((type) => type.omeroId.startsWith(searchInput.trim()));
+  }, [searchInput, taskToPanels]);
+
+  const handleClearSearchInput = () => {
+    setSearchInput('');
+  };
+
+  const inputContainerStyle = {
+    position: 'relative',
+    display: 'inline-block',
+  };
+
+  const inputStyle = {
+    paddingRight: '30px',
+    width: '100%',
+    border: '1px solid #ccc',
+    borderRadius: '5px',
+    padding: '5px',
+  };
+
+  const clearIconStyle = {
+    position: 'absolute',
+    top: '50%',
+    right: '10px',
+    transform: 'translateY(-50%)',
+    cursor: 'pointer',
+    color: '#555',
+    fontSize: '18px',
+  };
+
+
   return (
     <Fragment>
       <TasksBlock>
         <Fragment style={{ marginTop: '16px' }}>
+          <div style={{ position: 'relative', width: '300px', marginBottom: '10px' }}>
+            <div style={inputContainerStyle}>
+              <input
+                type="text"
+                value={searchInput}
+                onChange={handleSearchInputChange}
+                placeholder="Search by image number"
+                style={inputStyle}
+              />
+              {searchInput && (
+                <ClearIcon
+                  onClick={handleClearSearchInput}
+                  style={clearIconStyle}
+                />
+              )}
+            </div>
+          </div>
           <Tabs
             value={expandedTab}
             onChange={handleChangeTabe}
@@ -355,7 +419,7 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
               }
               value="dataset"
             />
-            {taskToPanels.map((type) => (
+            {filteredTaskToPanels.map((type) => (
               <Tab
                 iconPosition="start"
                 key={type.id}
@@ -429,8 +493,8 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
                         color="inherit"
                         startIcon={<Refresh />}
                         onClick={(e) => {
-                            e.stopPropagation();
-                            handleUpdateTaskData(type.id);
+                          e.stopPropagation();
+                          handleUpdateTaskData(type.id);
                         }}
                       >
                         create zarr data
@@ -441,8 +505,8 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
                         color="inherit"
                         startIcon={<DeleteIcon />}
                         onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteTaskData(type.id);
+                          e.stopPropagation();
+                          handleDeleteTaskData(type.id);
                         }}
                       >
                         delete zarr data

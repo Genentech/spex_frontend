@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import AppBar from '@material-ui/core/AppBar';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { makeStyles } from '@material-ui/core/styles';
@@ -9,6 +9,7 @@ import { useHistory, useLocation, matchPath } from 'react-router-dom';
 
 import PathNames from '@/models/PathNames';
 
+import { actions as pipelinesActions, selectors as pipelinesSelectors } from '@/redux/modules/pipelines';
 import { actions as projectsActions, selectors as projectsSelectors } from '@/redux/modules/projects';
 import { actions as authActions } from '@/redux/modules/users/auth';
 
@@ -66,10 +67,13 @@ const useStyles = makeStyles((theme) => ({
 
 const Layout = ({ children }) => {
   const classes = useStyles();
-
   const dispatch = useDispatch();
   const history = useHistory();
   const location = useLocation();
+
+  const [selectedProjectId, setSelectedProjectId] = useState(none);
+  const [selectedPipelineId, setSelectedPipelineId] = useState(none);
+
   const matchProjectPath = matchPath(location.pathname, { path: `/${PathNames.projects}/:id` });
   const projectId = matchProjectPath ? matchProjectPath.params.id : none;
 
@@ -77,13 +81,32 @@ const Layout = ({ children }) => {
   const projectsArr = Object.values(projects);
   const isProjectsFetching = useSelector(projectsSelectors.isFetching);
 
+  const pipelines = useSelector(pipelinesSelectors.getPipelinesOfProject(projectId));
+  const pipelinesArr = Object.values(pipelines);
+  const isPipelinesFetching = useSelector(pipelinesSelectors.isFetching);
+
   const onProjectChange = useCallback(
     (event) => {
       const { target: { value: id } } = event;
+      setSelectedPipelineId(none);
       const url = `/${PathNames.projects}${id === none ? '' : `/${id}`}`;
       history.push(url);
     },
     [history],
+  );
+
+  const onPipelineChange = useCallback(
+    (event) => {
+      const { target: { value: id } } = event;
+      setSelectedPipelineId(id);
+      if (id === none) {
+        history.push(`/${PathNames.projects}/${projectId}/${PathNames.processes}`);
+      } else {
+        const url = `/${PathNames.projects}/${projectId}/${PathNames.processes}/${id}`;
+        history.push(url);
+      }
+    },
+    [history, projectId],
   );
 
   const onLogout = useCallback(
@@ -102,6 +125,55 @@ const Layout = ({ children }) => {
     },
     [dispatch],
   );
+
+  useEffect(
+    () => {
+      if (selectedProjectId !== none) {
+        dispatch(pipelinesActions.fetchPipelinesOfProject(selectedProjectId));
+      }
+    },
+    [selectedProjectId, dispatch],
+  );
+
+  useEffect(() => {
+    const matchProject = matchPath(location.pathname, { path: `/${PathNames.projects}/:projectId` });
+    const matchProcess = matchPath(location.pathname, { path: `/${PathNames.projects}/:projectId/${PathNames.processes}` });
+    const match = matchPath(location.pathname, { path: `/${PathNames.projects}/:projectId/${PathNames.processes}/:pipelineId` });
+    if (match) {
+      const { params: { projectId, pipelineId } } = match;
+      setSelectedProjectId(projectId);
+      setSelectedPipelineId(pipelineId);
+    }
+    if (matchProject) {
+      const { params: { projectId } } = matchProject;
+      setSelectedProjectId(projectId);
+
+      if (matchProcess) {
+        const { params: { pipelineId } } = matchProcess;
+        setSelectedPipelineId(pipelineId);
+      } else {
+        setSelectedPipelineId(none);
+      }
+    }
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const match = matchPath(location.pathname, { path: `/${PathNames.projects}/:id` });
+    const projectIdFromUrl = match ? match.params.id : none;
+    setSelectedProjectId(projectIdFromUrl);
+    const pipelineIdFromUrl = matchPath(location.pathname, { path: `/${PathNames.projects}/:projectId/${PathNames.processes}/:pipelineId` });
+    if (pipelineIdFromUrl) {
+      const { params: { projectId, pipelineId } } = pipelineIdFromUrl;
+      setSelectedProjectId(projectId);
+      setSelectedPipelineId(pipelineId);
+    }
+    const matchProject = matchPath(location.pathname, { path: `/${PathNames.projects}/:projectId` });
+    const matchProcess = matchPath(location.pathname, { path: `/${PathNames.projects}/:projectId/${PathNames.processes}` });
+
+    if (matchProject && !matchProcess) {
+      setSelectedPipelineId(none); // Сбрасываем выбранный пайплайн
+    }
+  }, [location.pathname]);
 
   return (
     <Container className={classes.root}>
@@ -123,17 +195,32 @@ const Layout = ({ children }) => {
             </Link>
           </Typography>
 
-          {projectsArr.length > 0 && !isProjectsFetching && (
+          {projectsArr.length > 0 && !isProjectsFetching && !isPipelinesFetching && !isPipelinesFetching && (
             <Select
               className={classes.projectSelect}
               defaultValue={none}
-              value={projectId}
+              value={selectedProjectId}
               onChange={onProjectChange}
+              disabled={isPipelinesFetching}
             >
               <Option value={none}>Select Project</Option>
               {projectsArr.map((item) => (<Option key={item.id} value={item.id}>{item.name}</Option>))}
             </Select>
           )}
+
+          {pipelinesArr.length > 0 && !isPipelinesFetching && (
+            <Select
+              className={classes.projectSelect}
+              defaultValue={none}
+              value={selectedPipelineId}
+              onChange={onPipelineChange}
+              disabled={selectedProjectId === none}
+            >
+              <Option value={none}>Select Process</Option>
+              {pipelinesArr.map((item) => (<Option key={item.id} value={item.id}>{item.name}</Option>))}
+            </Select>
+          )}
+
 
           <Button
             className={classes.logoutButton}
