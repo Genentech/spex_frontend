@@ -136,28 +136,6 @@ const Layout = ({ children }) => {
   );
 
   useEffect(() => {
-    const matchProject = matchPath(location.pathname, { path: `/${PathNames.projects}/:projectId` });
-    const matchProcess = matchPath(location.pathname, { path: `/${PathNames.projects}/:projectId/${PathNames.processes}` });
-    const match = matchPath(location.pathname, { path: `/${PathNames.projects}/:projectId/${PathNames.processes}/:pipelineId` });
-    if (match) {
-      const { params: { projectId, pipelineId } } = match;
-      setSelectedProjectId(projectId);
-      setSelectedPipelineId(pipelineId);
-    }
-    if (matchProject) {
-      const { params: { projectId } } = matchProject;
-      setSelectedProjectId(projectId);
-
-      if (matchProcess) {
-        const { params: { pipelineId } } = matchProcess;
-        setSelectedPipelineId(pipelineId);
-      } else {
-        setSelectedPipelineId(none);
-      }
-    }
-  }, [location.pathname]);
-
-  useEffect(() => {
     const match = matchPath(location.pathname, { path: `/${PathNames.projects}/:id` });
     const projectIdFromUrl = match ? match.params.id : none;
     setSelectedProjectId(projectIdFromUrl);
@@ -171,7 +149,7 @@ const Layout = ({ children }) => {
     const matchProcess = matchPath(location.pathname, { path: `/${PathNames.projects}/:projectId/${PathNames.processes}` });
 
     if (matchProject && !matchProcess) {
-      setSelectedPipelineId(none); // Сбрасываем выбранный пайплайн
+      setSelectedPipelineId(none);
     }
   }, [location.pathname]);
 

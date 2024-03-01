@@ -116,6 +116,7 @@ const slice = createSlice({
           const url = `${baseUrl}s/${projectId}`;
           const { data } = yield call(api.get, url);
           yield put(actions.fetchPipelinesSuccess({ projectId: projectId, data: data.data['pipelines'] }));
+          yield put(actions.fetchPipelinesOfProjectSuccess({ projectId: projectId, data: data.data['pipelines'] }));
         } catch (error) {
           yield put(actions.requestFail(error));
           // eslint-disable-next-line no-console
