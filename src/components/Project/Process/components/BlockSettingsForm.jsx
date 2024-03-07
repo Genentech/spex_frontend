@@ -12,7 +12,6 @@ import { selectors as tasksSelectors, actions as tasksActions } from '@/redux/mo
 import Button, { ButtonColors } from '+components/Button';
 import Form, { Controls, Field, FormRenderer, Validators, Parsers } from '+components/Form';
 import NoData from '+components/NoData';
-import { ScrollBarMixin } from '+components/ScrollBar';
 import { statusFormatter } from '+utils/statusFormatter';
 
 const Container = styled.div`
@@ -25,6 +24,7 @@ const Container = styled.div`
 
   form {
     width: 100%;
+      height: 100%;
   }
 `;
 
@@ -39,17 +39,13 @@ const Header = styled.div`
   }
 `;
 
-const Body = styled.div`
-  height: 100%;
-  ${ScrollBarMixin};
-  gap: 20px;
-`;
-
 const RightPanel = styled.div`
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   gap: 20px;
+  align-content: flex-start;
+  height: 100%;
 
   :only-child {
     width: 100%;
@@ -235,7 +231,6 @@ const BlockSettingsForm = (props) => {
       }));
     }
 
-
     return uniqueImgChannels.map((el) => ({
       value: el.label,
       label: el.label,
@@ -381,35 +376,32 @@ const BlockSettingsForm = (props) => {
             >
               <Header>{header}</Header>
 
-              <Body>
-                <RightPanel>
-                  {Object.keys(fields).length === 0 && (
-                    <NoData>No block params to display</NoData>
+              <RightPanel >
+                {Object.keys(fields).length === 0 && (
+                  <NoData style={{ height: '100px' }}>No block params to display</NoData>
                   )}
-                  {Object.values(fields).map((field, i) => (
-                    <Field
+                {Object.values(fields).map((field, i) => (
+                  <Field
                       // eslint-disable-next-line react/no-array-index-key
-                      key={`${i}-${field.name}`}
-                      id={`${i}-${field.name}`}
-                      name={field.name}
-                      label={field.label}
-                      placeholder={field.placeholder}
-                      component={getFieldComponent(field.type)}
-                      parse={getFieldParser(field.type)}
-                      validate={field.required ? Validators.required : undefined}
-                      {...getFieldAdditionalProps(field.type, block, {
+                    key={`${i}-${field.name}`}
+                    id={`${i}-${field.name}`}
+                    name={field.name}
+                    label={field.label}
+                    placeholder={field.placeholder}
+                    component={getFieldComponent(field.type)}
+                    parse={getFieldParser(field.type)}
+                    validate={field.required ? Validators.required : undefined}
+                    {...getFieldAdditionalProps(field.type, block, {
                         imagesOptions: projectImagesOptions,
                         imagesChannelsOptions: projectImagesChannelsOptions,
                         filesOptions: projectFilesOptions,
                         blockOptions: projectBlockOptions[field.label],
                       })}
-                      disabled={disabled}
-                    />
+                    disabled={disabled}
+                  />
                   ))}
-                </RightPanel>
+              </RightPanel>
 
-              </Body>
-             
               <Footer>
                 <Button
                   color={ButtonColors.secondary}
@@ -439,7 +431,7 @@ const BlockSettingsForm = (props) => {
                   Save
                 </Button>
               </Footer>
-              
+
             </FormRenderer>
 
           </Container>

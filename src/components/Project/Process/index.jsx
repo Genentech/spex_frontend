@@ -56,13 +56,12 @@ const ImageViewerContainer = styled.div`
 `;
 
 const BlockTab = styled.div`
-    height: auto;
-    min-height: 65%;
-    max-height: 65%;
+    width: 100%;
+    height: 100%;
     overflow: auto;
     border: 1px solid rgba(0, 0, 0, 0.2);
     border-radius: 4px;
-    padding: 4px;
+    padding: 6px;
 `;
 
 const addNewVirtualJobToPipeline = (rootId, newJob, node) => {
@@ -166,11 +165,6 @@ const Process = ( { sidebarWidth } ) => {
   const [activeImageIds, setActiveImageIds] = useState(project?.omeroIds || []);
   // eslint-disable-next-line no-unused-vars
   const [activeBlock, setActiveBlock] = useState([]);
-  const [sizes, setSizes] = useState([
-    300,
-    400,
-    'auto',
-  ]);
 
   const matchProcessPath = matchPath(location.pathname, {
     path: `/${PathNames.projects}/${projectId}/${PathNames.processes}/:id`,
@@ -772,13 +766,10 @@ const Process = ( { sidebarWidth } ) => {
     updateElements();
   }, [updateElements]);
 
-
-
   const handleRefresh = () => {
     dispatch(jobsActions.fetchJobsByPipelineId(pipelineId));
     updateElements();
   };
-
 
   const selectedOption = useSelector(pipelineSelectors.getSelectedOption);
 
@@ -786,153 +777,165 @@ const Process = ( { sidebarWidth } ) => {
     dispatch(pipelineActions.setSelectedOption('settings'));
   }, [dispatch ,selectedBlock]);
 
+  const [sizeY, setSizeY] = useState(300);
+  function useWindowSize() {
+    const [windowSize, setWindowSize] = useState({
+      width: window.innerWidth,
+      height: window.innerHeight,
+    });
+
+    useEffect(() => {
+      const handleResize = () => {
+        setWindowSize({
+          width: window.innerWidth,
+          height: window.innerHeight,
+        });
+      };
+
+      window.addEventListener('resize', handleResize);
+
+      return () => {
+        window.removeEventListener('resize', handleResize);
+      };
+    }, []);
+
+    return windowSize;
+  }
+
+  const windowSize = useWindowSize();
+
   return (
     <ReactFlowProvider>
-      <Grid
-        container
-        spacing={2}
-        direction='row'
+      <SplitPane
+        split="vertical"
+        size={700}
+        resizerStyle={verticalResizerStyles}
+        style={{ marginLeft: sidebarWidth }}
       >
-        <SplitPane
-          sizes={sizes}
-          split="vertical"
-          minSize={sidebarWidth}
-          size={700}
-          resizerStyle={verticalResizerStyles}
-          onChange={(size) => setSizes([size, 1000 - size])}
-          style={{ marginLeft: sidebarWidth }}
-        >
-          <div style={{ height: '100%', maxHeight: '100%', flexDirection: 'row' }}>
-            <SplitPane
-              split="horizontal"
-              resizerStyle={horizontalResizerStyles}
-              minSize={200}
-              size={250}
-              style={{ height: '35%' }}
-            >
-              <Grid
-                item
-                container
-                xs={12}
-                style={{ paddingLeft: '6px', height: '100%' }}
-              >
-                <Grid
-                  item
-                  container
-                  xs={12}
-                  style={{ height: '60%' }}
-                >
-                  <FlowWrapper>
-                    <ReactFlow
-                      nodeTypes={nodeTypes}
-                      elements={elements}
-                      onElementClick={onBlockClick}
-                      onPaneClick={onPaneClick}
-                      onLoad={onLoad}
-                      nodesDraggable={false}
-                      nodesConnectable={false}
-                      elementsSelectable={false}
-                      snapToGrid
-                    >
-                      <Controls showInteractive={false} style={{ position: 'absolute', left: 0, display: 'flex' }}>
-                        <ControlButton
-                          style={{
-                            backgroundColor: 'green',
-                            color: 'white',
-                            whiteSpace: 'nowrap',
-                            zIndex: 99,
-                            width: '80%',
-                          }}
-                          onClick={onStartPipeline}
-                        > Start ▶
-                        </ControlButton>
-                        <ControlButton
-                          style={{
-                            backgroundColor: 'blue',
-                            color: 'white',
-                            whiteSpace: 'nowrap',
-                            zIndex: 99,
-                            width: '80%',
-                          }}
-                          onClick={handleRefresh}
-                        > Refresh
-                        </ControlButton>
-                      </Controls>
-                      <Background />
-                    </ReactFlow>
-                  </FlowWrapper>
-                </Grid>
-                <Grid
-                  item
-                  container
-                  direction='column'
-                  xs={12}
-                  style={{ height: '40%' }}
-                >
-                  <BlockScrollWrapper>
-                    <BlocksScroll
-                      items={selectedBlock ? availableBlocks[selectedBlock?.script_path] : availableBlocks['initial']}
-                      onClick={handleBlockClick}
-                    />
-                  </BlockScrollWrapper>
-                </Grid>
-              </Grid>
-              <Grid
-                item
-                container
-                direction='row'
-                xs={12}
-                style={{ padding: '6px 6px 50px 6px', height: '95%' }}
-              >
-                <Grid item xs style={{ width: '100%' }}>
-                  <BlockTab>
-                    <div style={{ display: selectedOption === 'settings' ? 'block' : 'none' }}>
-                      {selectedBlock?.id ? (
-                        <BlockSettingsForm
-                          block={selectedBlock}
-                          onRestart={onJobRestart}
-                          onSubmit={onJobSubmit}
-                          onClose={onJobCancel}
-                          onDownload={onJobDownload}
-                        />
-                      ) : (
-                        <NoData>Select block</NoData>
-                      )}
-                    </div>
-                    <div style={{ maxHeight: '70%', overflow: 'auto', display: selectedOption === 'status' ? 'block' : 'none' }}>
-                      <BlockStatusForm>
-                        <TasksDisplay jobs={jobs} />
-                      </BlockStatusForm>
-                    </div>
-                  </BlockTab>
-                </Grid>
-              </Grid>
 
-            </SplitPane>
-          </div>
-          <div>
-            <Grid
-              item
-              xs={12}
-            >
-              <Container>
-                <ImageViewerContainer>
-                  {selectedImagesDetails[activeImageIds[0]] && (
-                    <ImageViewer
-                      data={projectImagesDetails[activeImageIds[0]]}
-                    />
-                  )}
-                  <ThumbnailsViewer
-                    thumbnails={projectImagesOptions}
-                    active={activeImageIds[0]}
-                    onClick={setActiveImageIds}
+        <Grid
+          item
+          container
+          xs={12}
+          style={{
+            paddingLeft: '6px',
+            height: '100%',
+            border: '1px solid #ccc',
+          }}
+        >
+          <SplitPane
+            split="horizontal"
+            resizerStyle={horizontalResizerStyles}
+            size={300}
+            onChange={(size) => {setSizeY(size);}}
+            style={{ width: '100%', height: '100%' }}
+          >
+            <div style={{ width: '100%', display: 'grid', gridTemplateRows: '60% 40%' }}>
+
+              <FlowWrapper>
+                <ReactFlow
+                  nodeTypes={nodeTypes}
+                  elements={elements}
+                  onElementClick={onBlockClick}
+                  onPaneClick={onPaneClick}
+                  onLoad={onLoad}
+                  nodesDraggable={false}
+                  nodesConnectable={false}
+                  elementsSelectable={false}
+                  snapToGrid
+                >
+                  <Controls showInteractive={false} style={{ position: 'absolute', left: 0, display: 'flex' }}>
+                    <ControlButton
+                      style={{
+                        color: 'white',
+                        whiteSpace: 'nowrap',
+                        zIndex: 99,
+                        width: '80%',
+                      }}
+                      onClick={onStartPipeline}
+                    > Start ▶
+                    </ControlButton>
+                    <ControlButton
+                      style={{
+                        color: 'white',
+                        whiteSpace: 'nowrap',
+                        zIndex: 99,
+                        width: '80%',
+                      }}
+                      onClick={handleRefresh}
+                    > Refresh
+                    </ControlButton>
+                  </Controls>
+                  <Background />
+                </ReactFlow>
+              </FlowWrapper>
+
+              <div>
+                <BlockScrollWrapper>
+                  <BlocksScroll
+                    items={selectedBlock ? availableBlocks[selectedBlock?.script_path] : availableBlocks['initial']}
+                    onClick={handleBlockClick}
                   />
-                </ImageViewerContainer>
-              </Container>
-            </Grid>
-          </div>
-        </SplitPane>
-      </Grid>
+                </BlockScrollWrapper>
+              </div>
+            </div>
+            <div style={{
+              flex: '1 1 0%',
+              position: 'relative',
+              outline: 'none',
+              height: `${windowSize.height - sizeY - 200}px`,
+              paddingRight: '10px',
+            }}
+            >
+              <BlockTab>
+                <div style={{ display: selectedOption === 'settings' ? 'block' : 'none', height: '100%' }}>
+                  {selectedBlock?.id ? (
+                    <BlockSettingsForm
+                      block={selectedBlock}
+                      onRestart={onJobRestart}
+                      onSubmit={onJobSubmit}
+                      onClose={onJobCancel}
+                      onDownload={onJobDownload}
+                    />
+                  ) : (
+                    <NoData >Select block</NoData>
+                  )}
+                </div>
+                <div style={{ overflow: 'auto', display: selectedOption === 'status' ? 'block' : 'none' }}>
+                  <BlockStatusForm>
+                    <TasksDisplay jobs={jobs} />
+                  </BlockStatusForm>
+                </div>
+              </BlockTab>
+            </div>
+          </SplitPane>
+        </Grid>
+        <Grid
+          item
+          container
+          xs={12}
+          style={{
+            width: '100%',
+            height: 'calc(100% - 144px)',
+            border: '1px solid #ccc',
+          }}
+        >
+          <Container>
+            <ImageViewerContainer>
+              {selectedImagesDetails[activeImageIds[0]] && (
+                <ImageViewer
+                  data={projectImagesDetails[activeImageIds[0]]}
+                />
+              )}
+              <ThumbnailsViewer
+                thumbnails={projectImagesOptions}
+                active={activeImageIds[0]}
+                onClick={setActiveImageIds}
+              />
+            </ImageViewerContainer>
+          </Container>
+        </Grid>
+      </SplitPane>
       {actionWithBlock === 'delete' && selectedBlock?.id && (
         <ConfirmModal
           action={ConfirmActions.delete}

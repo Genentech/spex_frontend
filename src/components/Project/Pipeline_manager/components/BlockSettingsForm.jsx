@@ -49,10 +49,8 @@ const Body = styled.div`
 
 const RightPanel = styled.div`
   padding: 20px 0;
-
   width: 40%;
   height: 100%;
-
   display: flex;
   flex-direction: column;
   overflow-x: hidden;

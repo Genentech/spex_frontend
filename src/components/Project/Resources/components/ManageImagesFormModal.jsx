@@ -1,5 +1,6 @@
-/* eslint-disable react/jsx-sort-default-props */
 import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import FolderIcon from '@material-ui/icons/Folder';
+import PermMediaIcon from '@material-ui/icons/PermMedia';
 import intersectionBy from 'lodash/intersectionBy';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
@@ -18,9 +19,24 @@ import Row from '../../components/Row';
 const none = 'none';
 
 const FormModal = styled(FormModalOrigin)`
-  ${Content} {
-    min-width: 60vw;
-  }
+    ${Content} {
+        min-width: 60vw;
+    }
+`;
+
+const Icon = styled.span`
+    display: inline-flex;
+    align-items: center; 
+    margin-right: 5px;
+`;
+
+const DatasetText = styled.span`
+  display: inline-flex;
+  align-items: center;
+`;
+
+const DatasetOptionWithIndent = styled(Option)`
+  padding-left: 20px; 
 `;
 
 const ManageImagesFormModal = styled((props) => {
@@ -74,7 +90,7 @@ const ManageImagesFormModal = styled((props) => {
       }], []);
 
       return [...datasetOptions, ...formOptions];
-      },
+    },
     [datasetImagesThumbnails, formImagesThumbnails, datasetImagesDetails, formImagesDetails],
   );
 
@@ -187,10 +203,20 @@ const ManageImagesFormModal = styled((props) => {
           <Option value={none}>Select Omero Dataset</Option>
           {projects?.reduce((acc, project) => ([
             ...acc,
-            <Group key={`project-${project.id}`}>{project.name}</Group>,
+            <Group key={`project-${project.id}`} style={{ display: 'flex', alignItems: 'center' }}>
+              <Icon><FolderIcon /></Icon>
+              <span style={{ display: 'inline-flex', alignItems: 'center', marginLeft: '5px' }}>{project.name}</span>
+            </Group>,
             ...Object.values(projectDatasets || {})
               .filter((dataset) => dataset.project === project.id)
-              .map((dataset) => (<Option key={`dataset-${dataset.id}`} value={dataset.id}>{dataset.name}</Option>)),
+              .map((dataset) => (
+                <Option key={`dataset-${dataset.id}`} value={dataset.id}>
+                  <DatasetOptionWithIndent key={`dataset-${dataset.id}`} value={dataset.id}>
+                    <Icon><PermMediaIcon /></Icon>
+                    <DatasetText>{dataset.name}</DatasetText>
+                  </DatasetOptionWithIndent>
+                </Option>
+              )),
           ]), [])}
         </Select>
       </Row>
@@ -207,14 +233,14 @@ const ManageImagesFormModal = styled((props) => {
     </FormModal>
   );
 })`
-  ${Row} + ${Row} {
-    margin-top: 20px;
-  }
+    ${Row} + ${Row} {
+        margin-top: 20px;
+    }
 
-  .transfer-list {
-    height: 300px;
-    margin: 0 auto;
-  }
+    .transfer-list {
+        height: 300px;
+        margin: 0 auto;
+    }
 `;
 
 ManageImagesFormModal.propTypes = {

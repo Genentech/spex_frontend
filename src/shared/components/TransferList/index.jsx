@@ -194,7 +194,6 @@ const TransferList = styled((props) => {
       spacing={3}
       justify="center"
       alignItems="center"
-      // wrap="nowrap"
       container
     >
       <Grid className={classNames('list', 'list-left')} item>
@@ -236,6 +235,7 @@ const TransferList = styled((props) => {
   );
 })`
   width: 100%;
+  height: 100%;
   overflow: hidden;
 
   .list-left {
