@@ -847,6 +847,7 @@ const Process = ( { sidebarWidth } ) => {
                   <Controls showInteractive={false} style={{ position: 'absolute', left: 0, display: 'flex' }}>
                     <ControlButton
                       style={{
+                        background: 'green',
                         color: 'white',
                         whiteSpace: 'nowrap',
                         zIndex: 99,
@@ -857,6 +858,7 @@ const Process = ( { sidebarWidth } ) => {
                     </ControlButton>
                     <ControlButton
                       style={{
+                        background: 'blue',
                         color: 'white',
                         whiteSpace: 'nowrap',
                         zIndex: 99,

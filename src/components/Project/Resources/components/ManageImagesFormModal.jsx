@@ -228,6 +228,7 @@ const ManageImagesFormModal = styled((props) => {
           component={Controls.TransferList}
           options={options}
           parse={Parsers.omeroIds}
+          isOmeroFetching={isOmeroFetching}
         />
       </Row>
     </FormModal>

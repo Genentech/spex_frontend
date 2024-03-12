@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-sort-default-props */
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import Card from '@material-ui/core/Card';
 import CardHeader from '@material-ui/core/CardHeader';
 import Divider from '@material-ui/core/Divider';
@@ -42,13 +42,21 @@ const TransferList = styled((props) => {
     leftTitle,
     rightTitle,
     meta,
+    isOmeroFetching,
   } = props;
 
   const invalid = meta.error && meta.touched;
   const value = input?.value || props.value;
   const onChange = input.onChange || props.onChange;
 
+  const [isDisabledLeft, setIsDisabledLeft] = useState(true);
+  const [isDisabledRight, setIsDisabledRight] = useState(true);
+
   const [checked, setChecked] = useState([]);
+
+  useEffect(() => {
+    setChecked([]);
+  }, [isOmeroFetching ]);
 
   const fixedValue = useMemo(
     () => {
@@ -134,6 +142,11 @@ const TransferList = styled((props) => {
     [checked, numberOfChecked],
   );
 
+  useEffect(() => {
+    setIsDisabledLeft(isOmeroFetching || fixedOptions.length === 0);
+    setIsDisabledRight(isOmeroFetching || fixedValue.length === 0);
+  }, [fixedOptions, isOmeroFetching, fixedValue]);
+
   const customList = useCallback(
     (title, items) => (
       <Card>
@@ -143,7 +156,7 @@ const TransferList = styled((props) => {
               onClick={onToggleAll(items)}
               checked={numberOfChecked(items) === items.length && items.length !== 0}
               indeterminate={numberOfChecked(items) !== items.length && numberOfChecked(items) !== 0}
-              disabled={items.length === 0}
+              disabled={title === 'Choices' ? isDisabledLeft : isDisabledRight}
               inputProps={{ 'aria-label': 'all items selected' }}
             />
           }
@@ -159,7 +172,7 @@ const TransferList = styled((props) => {
               role="listitem"
               button
               onClick={onToggle(item)}
-              disabled={item.disabled}
+              disabled={item?.disabled || title === 'Choices' ? isDisabledLeft : isDisabledRight}
             >
               <ListItemIcon>
                 <Checkbox
@@ -185,7 +198,7 @@ const TransferList = styled((props) => {
         </List>
       </Card>
     ),
-    [checked, numberOfChecked, onToggle, onToggleAll],
+    [checked, numberOfChecked, onToggle, onToggleAll, isDisabledLeft, isDisabledRight],
   );
 
   return (

@@ -1,7 +1,6 @@
-import React, { useMemo, useCallback, useState } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import IconButton from '@material-ui/core/IconButton';
 import TextField from '@material-ui/core/TextField';
-import ShowAllIcon from '@material-ui/icons/ExpandMore';
 import SelectAllIcon from '@material-ui/icons/SelectAll';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import PropTypes from 'prop-types';
@@ -37,10 +36,6 @@ const SelectNew = (props) => {
   const showError = ((meta.submitError && !meta.dirtySinceLastSubmit) || meta.error) && meta.touched;
   const onChange = input.onChange || props.onChange;
 
-  // eslint-disable-next-line no-unused-vars
-  const [selectedChannels, setSelectedChannels] = useState([]);
-  const [showAll, setShowAll] = useState(false);
-
   const fixedValue = useMemo(
     () => {
       let value = options.length ? input?.value ?? props.value : [];
@@ -54,7 +49,6 @@ const SelectNew = (props) => {
   const doChange = useCallback(
     (_, val) => {
       onChange?.(onlyOneValue ? val?.value : val?.map((el) => el.value));
-      setSelectedChannels(val);
       if (typeof onSelectedChannelsChange === 'function') {
         onSelectedChannelsChange(val);
       }
@@ -66,32 +60,31 @@ const SelectNew = (props) => {
     if (!onlyOneValue) {
       const allValues = options.map((option) => option.value);
       onChange(allValues);
-      setSelectedChannels(allValues);
     }
   }, [onChange, onlyOneValue, options]);
 
-  const handleShowAllToggle = useCallback(() => {
-    setShowAll((prevShowAll) => !prevShowAll);
-  }, []);
-
-  const displayedOptions = showAll ? options : options.slice(0, 3);
-
   const renderInput = useCallback(
-    (params) => (
-      <TextField
+    (params) => {
+      return (<TextField
         {...params}
         InputProps={{
           ...params.InputProps,
           endAdornment: (
             <React.Fragment>
               {!onlyOneValue && (
-                <IconButton onClick={handleSelectAll} size="small">
+                <IconButton
+                  onClick={handleSelectAll}
+                  size="small" 
+                  style={{ 
+                              position: 'absolute', 
+                              top: '50%',
+                              right: '45px',
+                              transform: 'translate(-50%, -50%)',
+                  }}
+                >
                   <SelectAllIcon />
                 </IconButton>
               )}
-              <IconButton onClick={handleShowAllToggle} size="small">
-                <ShowAllIcon />
-              </IconButton>
               {params.InputProps.endAdornment}
             </React.Fragment>
           ),
@@ -100,9 +93,10 @@ const SelectNew = (props) => {
         error={showError}
         label={tail.label || ''}
         variant="outlined"
-      />
-    ),
-    [tail.label, showError, meta.error, meta.submitError, onlyOneValue, handleSelectAll, handleShowAllToggle],
+              />
+      );
+    },
+    [tail.label, showError, meta.error, meta.submitError, onlyOneValue, handleSelectAll],
   );
 
   return (
@@ -112,7 +106,7 @@ const SelectNew = (props) => {
       renderInput={renderInput}
       getOptionLabel={getOptionLabel}
       renderOption={renderOption}
-      options={displayedOptions}
+      options={options}
       disableCloseOnSelect
       value={fixedValue}
       onChange={doChange}

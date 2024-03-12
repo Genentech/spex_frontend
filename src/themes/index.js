@@ -44,8 +44,11 @@ const GlobalStyle = createGlobalStyle`
   .dragging {
     cursor: grabbing;
   }
-`;
 
+  .MuiAutocomplete-option[aria-selected='true'] {
+      background-color: rgba(0, 0, 0, 0.20);
+  }
+`;
 export const getTheme = (name) => {
   const theme = createMuiTheme(themes[name] || themes.light);
 
