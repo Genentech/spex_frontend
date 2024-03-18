@@ -924,16 +924,20 @@ const Process = ( { sidebarWidth } ) => {
         >
           <Container>
             <ImageViewerContainer>
-              {selectedImagesDetails[activeImageIds[0]] && (
-                <ImageViewer
-                  data={projectImagesDetails[activeImageIds[0]]}
-                />
+              {selectedBlock?.id && (
+                <React.Fragment>
+                  {selectedImagesDetails[activeImageIds[0]] && (
+                    <ImageViewer
+                      data={projectImagesDetails[activeImageIds[0]]}
+                    />
+                  )}
+                  <ThumbnailsViewer
+                    thumbnails={projectImagesOptions}
+                    active={activeImageIds[0]}
+                    onClick={setActiveImageIds}
+                  />
+                </React.Fragment>
               )}
-              <ThumbnailsViewer
-                thumbnails={projectImagesOptions}
-                active={activeImageIds[0]}
-                onClick={setActiveImageIds}
-              />
             </ImageViewerContainer>
           </Container>
         </Grid>

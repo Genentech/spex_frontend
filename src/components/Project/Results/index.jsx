@@ -1,7 +1,6 @@
 import React, {
   Fragment, useState, useMemo, useCallback, useEffect, useRef,
 } from 'react';
-import IconButton from '@material-ui/core/IconButton';
 import { Launch } from '@material-ui/icons';
 import ClearIcon from '@material-ui/icons/Clear';
 import DeleteIcon from '@material-ui/icons/Delete';
@@ -35,11 +34,6 @@ const nodeHeight = 36;
 const nodeTypes = {
   job: JobBlock,
 };
-
-const TasksBlock = styled.div`
-    max-width: 100%;
-`;
-
 const addNewVirtualJobToPipeline = (rootId, newJob, node) => {
   if (node.id === rootId) {
     if (!node.jobs) {
@@ -126,6 +120,15 @@ const createGraphLayout = (elements, direction = 'LR') => {
   });
 };
 
+const TasksBlock = styled.div`
+    max-width: 100%;
+`;
+
+const DivIcon = styled.div`
+      position: absolute;
+      top: 2px;
+      right: 2px;
+  `;
 
 const Results = ( { sidebarWidth, processReviewTabName } ) => {
   const dispatch = useDispatch();
@@ -270,6 +273,7 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
 
 
 
+
   const handleDeleteTaskData = useCallback((taskId) => {
     dispatch(tasksActions.deleteTaskData(taskId));
   }, [dispatch]);
@@ -301,13 +305,11 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
     }
   }, [taskToPipeline]);
 
-  const [expandedTab, setExpandedTab] = useState(processReviewTabName || 'dataset');
 
-  useEffect(() => {
-    if (processReviewTabName) {
-      setExpandedTab(processReviewTabName);
-    }
-  }, [processReviewTabName]);
+  const [expandedTab, setExpandedTab] = useState( 'dataset');
+
+
+
 
   const history = useHistory();
   const handleChangeTabe = (event, newValue) => {
@@ -328,11 +330,6 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
     window.open(tabLink, '_blank');
   };
 
-  const DivIcon = styled.div`
-      position: absolute;
-      top: -10px;
-      right: -10px;
-  `;
 
   const [searchInput, setSearchInput] = useState('');
   const handleSearchInputChange = (event) => {
@@ -375,11 +372,18 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
     fontSize: '18px',
   };
 
+  useEffect(() => {
+    if (processReviewTabName && filteredTaskToPanels.length>0) {
+      setExpandedTab(processReviewTabName);
+    } else {
+      setExpandedTab('dataset');
+    }
+  }, [processReviewTabName, filteredTaskToPanels]);
 
   return (
     <Fragment>
       <TasksBlock>
-        <Fragment style={{ marginTop: '16px' }}>
+        <Fragment>
           <div style={{ position: 'relative', width: '300px', marginBottom: '10px' }}>
             <div style={inputContainerStyle}>
               <input
@@ -404,34 +408,29 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
             scrollButtons="auto"
           >
             <Tab
-              iconPosition="start"
               label={
                 <div>
                   <div>
                     Dataset
                   </div>
-                  <DivIcon>
-                    <IconButton onClick={() => handleOpenInNewTab('dataset')}>
-                      <Launch style={{ fontSize: 16 }} />
-                    </IconButton>
+                  <DivIcon onClick={() => handleOpenInNewTab('dataset')}>
+                    <Launch style={{ fontSize: 16 }} />
                   </DivIcon>
                 </div>
               }
               value="dataset"
             />
-            {filteredTaskToPanels.map((type) => (
+
+            {filteredTaskToPanels.length !== 0 && filteredTaskToPanels.map((type) => (
               <Tab
-                iconPosition="start"
                 key={type.id}
                 label={
                   <div>
                     <div>
                       {type.omeroId}
                     </div>
-                    <DivIcon>
-                      <IconButton onClick={() => handleOpenInNewTab(type.omeroId)}>
-                        <Launch style={{ fontSize: 16 }} />
-                      </IconButton>
+                    <DivIcon onClick={() => handleOpenInNewTab(type.omeroId)}>
+                      <Launch style={{ fontSize: 16 }} />
                     </DivIcon>
                   </div>
                 }
@@ -456,7 +455,7 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
                         }}
                       >
                         create zarr data
-                      </Button>
+                      </Button >
                       <Button
                         size="small"
                         variant="contained"
@@ -468,7 +467,7 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
                         }}
                       >
                         delete zarr data
-                      </Button>
+                      </Button >
                     </div>
                   </span>
                   <div style={{ height: '100vh', width: '100vw' }}>
@@ -481,49 +480,54 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
                 </div>
               )))}
           </TabPanel>
-          {taskToPanels.map((type) => (
-            <TabPanel key={type.id} value={expandedTab} index={type.omeroId}>
-              {(type.omeroId === expandedTab) && (
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ marginRight: 10 }}> id:{type.id}/{type.name}
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <Button
-                        size="small"
-                        variant="contained"
-                        color="inherit"
-                        startIcon={<Refresh />}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleUpdateTaskData(type.id);
-                        }}
-                      >
-                        create zarr data
-                      </Button>
-                      <Button
-                        size="small"
-                        variant="contained"
-                        color="inherit"
-                        startIcon={<DeleteIcon />}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteTaskData(type.id);
-                        }}
-                      >
-                        delete zarr data
-                      </Button>
-                    </div>
-                  </span>
-                  <div style={{ height: '100vh', width: '100vw' }} id={type.id}>
-                    <Vitessce
-                      config={tasksVitessceConfigs[type.id]}
-                      height={800}
-                      theme="light"
-                    />
-                  </div>
-                </div>
-              )}
-            </TabPanel>
-          ))}
+          { taskToPanels.length !== 0 && taskToPanels.map((type) => {
+              return (
+                <TabPanel key={type.id} value={expandedTab} index={type.omeroId}>
+                  {
+                    (type.omeroId === expandedTab) && (
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ marginRight: 10 }}> id:{type.id}/{type.name}
+                          <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <Button
+                              size="small"
+                              variant="contained"
+                              color="inherit"
+                              startIcon={<Refresh />}
+                              onClick={(e) => {
+                              e.stopPropagation();
+                              handleUpdateTaskData(type.id);
+                              }}
+                            >
+                              create zarr data
+                            </Button >
+                            <Button
+                              size="small"
+                              variant="contained"
+                              color="inherit"
+                              startIcon={<DeleteIcon />}
+                              onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteTaskData(type.id);
+                              }}
+                            >
+                              delete zarr data
+                            </Button >
+                          </div>
+                        </span>
+                        <div style={{ height: '100vh', width: '100vw' }} id={type.id}>
+                          <Vitessce
+                            config={tasksVitessceConfigs[type.id]}
+                            height={800}
+                            theme="light"
+                          />
+                        </div>
+                      </div>
+                    )
+                  }
+                </TabPanel>
+              );
+            },
+          )}
         </Fragment>
       </TasksBlock>
       {errorMessage && <Message message={errorMessage} />}

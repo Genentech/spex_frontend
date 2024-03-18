@@ -35,7 +35,7 @@ const DatasetText = styled.span`
   align-items: center;
 `;
 
-const DatasetOptionWithIndent = styled(Option)`
+const Dataset = styled.div`
   padding-left: 20px; 
 `;
 
@@ -211,10 +211,10 @@ const ManageImagesFormModal = styled((props) => {
               .filter((dataset) => dataset.project === project.id)
               .map((dataset) => (
                 <Option key={`dataset-${dataset.id}`} value={dataset.id}>
-                  <DatasetOptionWithIndent key={`dataset-${dataset.id}`} value={dataset.id}>
+                  <Dataset key={`dataset-${dataset.id}`} value={dataset.id}>
                     <Icon><PermMediaIcon /></Icon>
                     <DatasetText>{dataset.name}</DatasetText>
-                  </DatasetOptionWithIndent>
+                  </Dataset>
                 </Option>
               )),
           ]), [])}

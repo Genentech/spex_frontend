@@ -138,7 +138,6 @@ const slice = createSlice({
     fetchTaskKeys: startFetching,
     fetchTaskVitessce: startFetching,
     fetchTaskResult: startFetching,
-    fetchTaskChannels: startFetching,
     fetchTaskResultOnImage: startFetching,
     fetchTaskVisualize: startFetching,
     createTask: startFetching,
@@ -161,11 +160,6 @@ const slice = createSlice({
     fetchTaskVitessceSuccess: (state, { payload: { id, config } }) => {
       stopFetching(state);
       state.vt_config[id] = config;
-    },
-
-    fetchTaskChannelsSuccess: (state, { payload: { id, channel_names } }) => {
-      stopFetching(state);
-      state.cluster_channels[id] = channel_names;
     },
 
     fetchTaskKeysSuccess: (state, { payload: task }) => {
@@ -286,25 +280,6 @@ const slice = createSlice({
           const url = `${baseUrl}/vitessce/${id}`;
           const { data } = yield call(api.get, url);
           yield put(actions.fetchTaskVitessceSuccess({ id, config: replaceURLRootInObject(data) }));
-        } catch (error) {
-          yield put(actions.requestFail(error));
-          // eslint-disable-next-line no-console
-          console.error(error.message);
-        }
-      },
-    },
-
-    [actions.fetchTaskChannels]: {
-      * saga({ payload: id }) {
-        initApi();
-
-        try {
-          const url = `${baseUrl}/get_result_data/${id}`;
-          const { data: { data: { all_channels, channel_list } } } = yield call(api.post, url, { fields: ['all_channels', 'channel_list'] });
-
-          const channel_names = channel_list.map(( index ) => all_channels[index]);
-
-          yield put(actions.fetchTaskChannelsSuccess({ id, channel_names }));
         } catch (error) {
           yield put(actions.requestFail(error));
           // eslint-disable-next-line no-console

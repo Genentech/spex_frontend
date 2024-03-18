@@ -8,7 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { actions as omeroActions, selectors as omeroSelectors } from '@/redux/modules/omero';
 import { selectors as projectsSelectors } from '@/redux/modules/projects';
-import { selectors as tasksSelectors, actions as tasksActions } from '@/redux/modules/tasks';
+import { selectors as tasksSelectors } from '@/redux/modules/tasks';
 import Button, { ButtonColors } from '+components/Button';
 import Form, { Controls, Field, FormRenderer, Validators, Parsers } from '+components/Form';
 import NoData from '+components/NoData';
@@ -309,16 +309,6 @@ const BlockSettingsForm = (props) => {
 
   useEffect(
     () => {
-      if (!block?.rootId) {
-        return;
-      }
-      dispatch(tasksActions.fetchTaskChannels(block?.rootId));
-    },
-    [dispatch, block?.rootId],
-  );
-
-  useEffect(
-    () => {
       if (!project?.omeroIds.length) {
         return;
       }
@@ -361,7 +351,6 @@ const BlockSettingsForm = (props) => {
       {...tail}
       initialValues={initialValues}
       render={({ form, handleSubmit, submitting }) => {
-        // const disabled = initialValues.id !== 'new';
         const disabled = false;
         if (onForm) {
           onForm(form);

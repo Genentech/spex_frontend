@@ -63,7 +63,7 @@ const slice = createSlice({
 
     fetchPipelinesForVisSuccess: (state, { payload: { data } }) => {
       stopFetching(state);
-      if (data[0].jobs.length > 0) {
+      if (data?.length > 0 && data[0].jobs?.length > 0) {
         state.visPipelines[data[0].id] = data[0];
       }
     },
