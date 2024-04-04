@@ -96,6 +96,8 @@ const getFieldComponent = (type) => {
       return Controls.TextField;
     case 'enum':
       return Controls.SelectEnum;
+    case 'dataGrid':
+      return Controls.SelectGrid;
     default:
       return TextField;
   }
@@ -137,6 +139,8 @@ const getFieldAdditionalProps = (type, block, { imagesOptions, imagesChannelsOpt
         options: blockOptions,
         value: '123',
       };
+    case 'dataGrid':
+      return {};
     default:
       return {};
   }
@@ -364,7 +368,6 @@ const BlockSettingsForm = (props) => {
               }}
             >
               <Header>{header}</Header>
-
               <RightPanel >
                 {Object.keys(fields).length === 0 && (
                   <NoData style={{ height: '100px' }}>No block params to display</NoData>

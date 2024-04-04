@@ -7,6 +7,8 @@
 /coverage
 /tests
 
+/.idea
+
 # builds
 /build
 /dist
@@ -15,6 +17,7 @@
 
 # misc
 package-lock.json
+yarn.lock
 .DS_Store
 .env.local
 .env.development.local

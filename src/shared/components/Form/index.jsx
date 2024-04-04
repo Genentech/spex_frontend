@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/order
 import { FormControlLabel as Label } from '@material-ui/core';
 import { TextField as TextFieldOrigin, Checkbox, Radio, Select } from 'final-form-material-ui';
 import { Form, Field, FormSpy } from 'react-final-form';
@@ -7,6 +8,7 @@ import ImagePicker from '+components/ImagePicker';
 import { Option as SelectOption } from '+components/Select';
 import SelectEnum from '+components/SelectEnum';
 import SelectFile from '+components/SelectFile';
+import SelectGrid from '+components/SelectGrid';
 import SelectJobs from '+components/SelectJobs';
 import SelectJobsPipeline from '+components/SelectJobsInPipeline';
 import SelectNew from '+components/SelectNew';
@@ -43,6 +45,7 @@ const Controls = {
   SelectNew,
   SelectFile,
   SelectEnum,
+  SelectGrid,
   Slider,
   SingleTransferList,
   TransferList,

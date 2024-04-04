@@ -24,13 +24,14 @@ import ImageViewer from '+components/ImageViewer';
 import NoData from '+components/NoData';
 import ThumbnailsViewer from '+components/ThumbnailsViewer';
 
-import { statusColor } from '+utils/statusFormatter';
+import { statusColor, statusFormatter } from '+utils/statusFormatter';
 import JobBlock from './blocks/JobBlock';
 import BlockScrollWrapper from './components/BlockScrollWrapper';
 import BlockSettingsForm from './components/BlockSettingsForm';
 import BlockStatusForm from './components/BlockStatusForm';
 import Container from './components/Container';
 import FlowWrapper from './components/FlowWrapper';
+import TaskInfoModal from './components/TaskInfoModal';
 import TasksDisplay from './components/TasksDisplay';
 
 const jobRefreshInterval = 6e4; // 1 minute
@@ -196,9 +197,9 @@ const Process = ( { sidebarWidth } ) => {
       position: { x: 0, y: 0 },
       data: {
         direction: flowDirection,
-        onAdd: () => setActionWithBlock('add'),
         onDelete: () => setActionWithBlock('delete'),
         onRestart: () => setActionWithBlock('restart'),
+        onInfo: () => setActionWithBlock('info'),
       },
     };
 
@@ -748,9 +749,9 @@ const Process = ( { sidebarWidth } ) => {
       position: { x: 0, y: 0 },
       data: {
         direction: flowDirection,
-        onAdd: () => setActionWithBlock('add'),
         onDelete: () => setActionWithBlock('delete'),
         onRestart: () => setActionWithBlock('restart'),
+        onInfo: () => setActionWithBlock('info'),
       },
     };
 
@@ -804,6 +805,19 @@ const Process = ( { sidebarWidth } ) => {
 
   const windowSize = useWindowSize();
 
+  const jobData = useSelector(jobsSelectors.getJobData);
+
+  useEffect(() => {
+    if (selectedBlock && selectedBlock.name === 'feature_extraction') {
+      if (!jobData[selectedBlock.id]) {
+        dispatch(jobsActions.fetchJobData(selectedBlock.id));
+      }
+    }
+  }, [selectedBlock, jobData, dispatch]);
+
+
+
+
   return (
     <ReactFlowProvider>
       <SplitPane
@@ -827,7 +841,9 @@ const Process = ( { sidebarWidth } ) => {
             split="horizontal"
             resizerStyle={horizontalResizerStyles}
             size={300}
-            onChange={(size) => {setSizeY(size);}}
+            onChange={(size) => {
+              setSizeY(size);
+            }}
             style={{ width: '100%', height: '100%' }}
           >
             <div style={{ width: '100%', display: 'grid', gridTemplateRows: '60% 40%' }}>
@@ -900,7 +916,7 @@ const Process = ( { sidebarWidth } ) => {
                       onDownload={onJobDownload}
                     />
                   ) : (
-                    <NoData >Select block</NoData>
+                    <NoData>Select block</NoData>
                   )}
                 </div>
                 <div style={{ overflow: 'auto', display: selectedOption === 'status' ? 'block' : 'none' }}>
@@ -948,6 +964,18 @@ const Process = ( { sidebarWidth } ) => {
           item={selectedBlock.name}
           onClose={() => setActionWithBlock(null)}
           onSubmit={onBlockDelete}
+          open
+        />
+      )}
+      {actionWithBlock === 'info' && selectedBlock?.id && (
+        <TaskInfoModal
+          header={(selectedBlock.name !== 'feature_extraction') ? 'Task Error' :
+              `Job ${Object.values(jobs).findIndex((job) => job.name === 'feature_extraction') + 1}: ${selectedBlock.name}. Status: ${statusFormatter(selectedBlock.status)}`}
+          infoText={(selectedBlock.name !== 'feature_extraction') ? (selectedBlock.errors && selectedBlock.errors[0]?.error) :
+              jobData[selectedBlock.id] !== undefined && (
+                <pre>{JSON.stringify(jobData[selectedBlock.id], null, 2)}</pre>
+          )}
+          onClose={() => setActionWithBlock(null)}
           open
         />
       )}

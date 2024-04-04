@@ -12,6 +12,8 @@ in ubuntu 18.04
 ```
 set NODE_OPTIONS=--max-old-space-size=4096 && yarn build
 ``` 
+[in Apple Silicon](readme_Apple.md)
+
 in windows
 ```
 just install x64 version of nodejs

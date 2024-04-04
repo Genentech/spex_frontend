@@ -3,6 +3,7 @@ import React, { Fragment, memo } from 'react';
 import IconButton from '@material-ui/core/IconButton';
 import DeleteIcon from '@material-ui/icons/Delete';
 import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
+import InfoIcon from '@material-ui/icons/Info';
 import PlayArrowIcon from '@material-ui/icons/PlayCircleOutline';
 import PropTypes from 'prop-types';
 import { Handle } from 'react-flow-renderer';
@@ -28,15 +29,18 @@ const StatusIcon = styled(FiberManualRecordIcon)`
 const Container = styled.div`
   position: relative;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
   justify-content: space-between;
 `;
 
 const ButtonGroup = styled.div`
+    margin-top: 5px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
+  justify-content: flex-end;
+  width: 100%;
 `;
 
 const JobBlock = (props) => {
@@ -63,6 +67,27 @@ const JobBlock = (props) => {
           <StatusIcon statuscolor={data.color} />
         </Name>
         <ButtonGroup>
+
+          {data.status === -3 && (
+            <IconButton
+              style={iconButtonStyle}
+              disabled={data.id === 'new'}
+              onClick={() => data.onInfo(data)}
+            >
+              <InfoIcon fontSize="small" />
+            </IconButton>
+          )}
+
+          {data.name === 'feature_extraction' && (
+            <IconButton
+              style={iconButtonStyle}
+              disabled={data.id === 'new'}
+              onClick={() => data.onInfo(data)}
+            >
+              <InfoIcon fontSize="small" />
+            </IconButton>
+          )}
+
           {data.onDelete && (
             <IconButton
               style={iconButtonStyle}
@@ -108,9 +133,9 @@ JobBlock.propTypes = {
     status: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     value: PropTypes.string,
     direction: PropTypes.string,
-    onAdd: PropTypes.func,
     onDelete: PropTypes.func,
     onRestart: PropTypes.func,
+    onInfo: PropTypes.func,
     color: PropTypes.string,
   }).isRequired,
   isConnectable: PropTypes.bool.isRequired,
