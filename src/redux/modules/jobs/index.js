@@ -1,9 +1,9 @@
 import { all, call, put } from 'redux-saga/effects';
+import hash from '+utils/hash';
 import backendClient from '@/middleware/backendClient';
-import { actions as pipelineActions } from '@/redux/modules/pipelines';
+import { actions as processActions } from '@/redux/modules/processes';
 import { createSlice, createSelector, startFetching, stopFetching } from '@/redux/utils';
 
-import hash from '+utils/hash';
 
 const initialState = {
   isFetching: false,
@@ -12,7 +12,7 @@ const initialState = {
   jobTypes: {},
   jobsFeatureExtraction: {},
   jobs_zscore: {},
-  pipeline_jobs: {},
+  process_jobs: {},
   jobData: {},
 };
 
@@ -67,17 +67,17 @@ const slice = createSlice({
     },
 
     fetchJobZscore: startFetching,
-    fetchJobZScoreSuccess: (state, { payload: { jobs, pipelineId } }) => {
+    fetchJobZScoreSuccess: (state, { payload: { jobs, processId } }) => {
       stopFetching(state);
       const normalizedJobs = jobs.map(normalizeJob);
-      state.jobs_zscore[pipelineId] = hash(normalizedJobs || [], 'id');
+      state.jobs_zscore[processId] = hash(normalizedJobs || [], 'id');
     },
 
-    fetchJobsByPipelineId: startFetching,
-    fetchJobsByPipelineIdSuccess: (state, { payload: { jobs, pipelineId } }) => {
+    fetchJobsByProcessId: startFetching,
+    fetchJobsByProcessIdSuccess: (state, { payload: { jobs, processId } }) => {
       stopFetching(state);
       const normalizedJobs = jobs.map(normalizeJob);
-      state.pipeline_jobs[pipelineId] = hash(normalizedJobs || [], 'id');
+      state.process_jobs[processId] = hash(normalizedJobs || [], 'id');
     },
 
 
@@ -114,7 +114,7 @@ const slice = createSlice({
       delete state.jobs[id];
     },
 
-    startPipeline: startFetching,
+    startProcess: startFetching,
 
     downloadJob: startFetching,
     downloadJobSuccess: stopFetching,
@@ -218,15 +218,15 @@ const slice = createSlice({
     },
 
     [actions.fetchJobZscore]: {
-      * saga({ payload: pipelineId }) {
+      * saga({ payload: processId }) {
         initApi();
 
         try {
-          const url = `${baseUrl}/find/?pipeline_id=${pipelineId}&name=zscore&name=transformation&status=100`;
+          const url = `${baseUrl}/find/?pipeline_id=${processId}&name=zscore&name=transformation&status=100`;
           const { data } = yield call(api.get, url);
           const result = (Array.isArray(data.data) ? data.data : [])
             .filter((job) => job.tasks.length > 0);
-          yield put(actions.fetchJobZScoreSuccess( { pipelineId, jobs: result } ));
+          yield put(actions.fetchJobZScoreSuccess( { processId, jobs: result } ));
         } catch (error) {
           yield put(actions.requestFail(error));
           // eslint-disable-next-line no-console
@@ -235,20 +235,20 @@ const slice = createSlice({
       },
     },
 
-    [actions.fetchJobsByPipelineId]: {
-      * saga({ payload: pipelineId }) {
+    [actions.fetchJobsByProcessId]: {
+      * saga({ payload: processId }) {
         initApi();
 
         try {
-          const url = `${baseUrl}/find/?pipeline_id=${pipelineId}`;
+          const url = `${baseUrl}/find/?pipeline_id=${processId}`;
           const { data } = yield call(api.get, url);
           const result = (Array.isArray(data.data) ? data.data : [])
               .filter((job) => job.tasks.length > 0);
-          yield put(actions.fetchJobsByPipelineIdSuccess( { pipelineId, jobs: result } ));
+          yield put(actions.fetchJobsByProcessIdSuccess( { processId, jobs: result } ));
 
-          const url2 = `/pipeline/${pipelineId}`;
+          const url2 = `/pipeline/${processId}`;
           const data2 = yield call(api.get, url2);
-          yield put(pipelineActions.fetchPipelinesSuccess({
+          yield put(processActions.fetchProcessesSuccess({
             projectId: '', data: data2['data']['data']['pipelines'],
           }));
         } catch (error) {
@@ -259,20 +259,20 @@ const slice = createSlice({
       },
     },
 
-    [actions.startPipeline]: {
-      * saga({ payload: pipelineId }) {
+    [actions.startProcess]: {
+      * saga({ payload: processId }) {
         initApi();
 
         try {
-          const url = `${baseUrl}/find/?pipeline_id=${pipelineId}`;
+          const url = `${baseUrl}/find/?pipeline_id=${processId}`;
           const { data } = yield call(api.put, url, { status: 0 });
           const result = (Array.isArray(data.data) ? data.data : [])
             .filter((job) => job.tasks.length > 0);
-          yield put(actions.fetchJobsByPipelineIdSuccess({ pipelineId, jobs: result } ));
+          yield put(actions.fetchJobsByProcessIdSuccess({ processId, jobs: result } ));
 
-          const url2 = `/pipeline/${pipelineId}`;
+          const url2 = `/pipeline/${processId}`;
           const data2 = yield call(api.get, url2);
-          yield put(pipelineActions.fetchPipelinesSuccess({
+          yield put(processActions.fetchProcessesSuccess({
             projectId: '', data: data2['data']['data']['pipelines'],
           }));
         } catch (error) {
@@ -422,14 +422,14 @@ const slice = createSlice({
       (state) => state.jobsFeatureExtraction,
     ),
 
-    getJobsByPipeline: (pipelineId) => createSelector(
+    getJobsByProcess: (processId) => createSelector(
       [getState],
-      (state) => state.jobs_zscore[pipelineId] || {},
+      (state) => state.jobs_zscore[processId] || {},
     ),
 
-    getJobsByPipelineId: (pipelineId) => createSelector(
+    getJobsByProcessId: (processId) => createSelector(
         [getState],
-        (state) => state.pipeline_jobs[pipelineId] || {},
+        (state) => state.process_jobs[processId] || {},
     ),
 
     getJob: (id) => createSelector(

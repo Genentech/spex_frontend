@@ -7,8 +7,8 @@ import DownloadIcon from '@mui/icons-material/Download';
 import PropTypes from 'prop-types';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { useDispatch, useSelector } from 'react-redux';
-import { actions as jobsActions, selectors as jobsSelectors } from '@/redux/modules/jobs';
 import { statusFormatter } from '+utils/statusFormatter';
+import { actions as jobsActions, selectors as jobsSelectors } from '@/redux/modules/jobs';
 import Container from './ContainerJob';
 
 const JobsData = ({ jobs }) => {
@@ -51,8 +51,10 @@ const JobsData = ({ jobs }) => {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <span style={{ marginRight: 10 }}>{`Job ${i + 1}: ${job.name}`}</span>
+
               <span style={{ fontWeight: 'bold' }}>{`Status: ${statusFormatter(job.status)}`}</span>
             </div>
+
             <div>
               <Button
                 size="small"
@@ -63,7 +65,9 @@ const JobsData = ({ jobs }) => {
               >
                 Log
               </Button>
+
               <span style={{ marginRight: 10 }} />
+
               <Button
                 size="small"
                 variant="contained"
@@ -75,6 +79,7 @@ const JobsData = ({ jobs }) => {
               </Button>
             </div>
           </div>
+
           <Dialog
             open={openDialog}
             onClose={handleClose}
@@ -84,14 +89,17 @@ const JobsData = ({ jobs }) => {
             <DialogTitle id="alert-dialog-title">
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 <span style={{ marginRight: 10 }}>{`Job ${i + 1}: ${job.name}`}</span>
+
                 <span style={{ fontWeight: 'bold' }}>{`Status: ${statusFormatter(job.status)}`}</span>
               </div>
             </DialogTitle>
+
             <DialogContent>
               <DialogContentText id="alert-dialog-description">
-                {jobData[job.id] && <pre>{JSON.stringify(jobData[job.id], null, 2)}</pre>}
+                {jobData[job.id] ? <pre>{JSON.stringify(jobData[job.id], null, 2)}</pre> : null}
               </DialogContentText>
             </DialogContent>
+
             <DialogActions>
               <CopyToClipboard text={JSON.stringify(jobData[job.id])}>
                 <Button onClick={handleClose} color="primary" autoFocus>

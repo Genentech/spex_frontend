@@ -2,11 +2,11 @@ import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
-import { actions as filesActions, selectors as filesSelectors } from '@/redux/modules/files';
 
 import Button, { ButtonColors } from '+components/Button';
 import Modal, { ModalHeader, ModalBody, ModalFooter } from '+components/Modal';
 import Table from '+components/Table';
+import { actions as filesActions, selectors as filesSelectors } from '@/redux/modules/files';
 
 const ManageFilesModal = styled((props) => {
   const {
@@ -87,6 +87,7 @@ const ManageFilesModal = styled((props) => {
       onClose={onClose}
     >
       <ModalHeader>{header}</ModalHeader>
+
       <ModalBody>
         <Table
           columns={columns}
@@ -97,6 +98,7 @@ const ManageFilesModal = styled((props) => {
           initialSelectedRowIds={project?.file_names}
         />
       </ModalBody>
+
       <ModalFooter>
         <Button
           color={ButtonColors.secondary}
@@ -104,6 +106,7 @@ const ManageFilesModal = styled((props) => {
         >
           Cancel
         </Button>
+
         <Button
           color={ButtonColors.primary}
           onClick={emitSubmit}

@@ -11,10 +11,10 @@ import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { actions as omeroActions, selectors as omeroSelectors } from '@/redux/modules/omero';
 import ImageViewer from '+components/ImageViewer';
 import NoData from '+components/NoData';
 import { ScrollBarMixin } from '+components/ScrollBar';
+import { actions as omeroActions, selectors as omeroSelectors } from '@/redux/modules/omero';
 
 const onNoop = () => {};
 
@@ -73,10 +73,12 @@ const ImagePicker = styled((props) => {
                 onClick={() => onChange([el])}
                 button
               >
-                {el.img && <ListItemIcon><img src={el.img} alt={el.title || 'Image'} /></ListItemIcon>}
-                {el.title && <ListItemText id={`image-picker-item-${el.id}-label`} primary={el.title} />}
+                {el.img ? <ListItemIcon><img src={el.img} alt={el.title || 'Image'} /></ListItemIcon> : null}
+
+                {el.title ? <ListItemText id={`image-picker-item-${el.id}-label`} primary={el.title} /> : null}
               </ListItem>
             ))}
+
             <ListItem />
           </List>
         </Card>
@@ -84,21 +86,18 @@ const ImagePicker = styled((props) => {
 
       <Grid className="image" item>
         {!imageDetails && <NoData>No image to display</NoData>}
-        {imageDetails && (
-          <ImageViewer
-            data={imageDetails}
-            value={area}
-            editable={editable}
-            onChange={onAreaChange}
-          />
-        )}
+
+        {imageDetails ? <ImageViewer
+          data={imageDetails}
+          value={area}
+          editable={editable}
+          onChange={onAreaChange}
+                        /> : null}
       </Grid>
 
-      {meta.error && meta.touched && (
-        <Grid className="error" xs={12} item>
-          <p className="MuiFormHelperText-root MuiFormHelperText-contained Mui-error">{meta.error}</p>
-        </Grid>
-      )}
+      {meta.error && meta.touched ? <Grid className="error" xs={12} item>
+        <p className="MuiFormHelperText-root MuiFormHelperText-contained Mui-error">{meta.error}</p>
+      </Grid> : null}
     </Grid>
   );
 })`

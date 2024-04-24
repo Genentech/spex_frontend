@@ -1,9 +1,7 @@
 import React, { Fragment, useState, useMemo, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import PathNames from '@/models/PathNames';
 
-import { actions as projectsActions, selectors as projectsSelectors } from '@/redux/modules/projects';
 
 import Button, { ButtonSizes, ButtonColors } from '+components/Button';
 import ConfirmModal, { ConfirmActions } from '+components/ConfirmModal';
@@ -11,6 +9,8 @@ import { Field, Controls, Validators } from '+components/Form';
 import FormModal from '+components/FormModal';
 import Link from '+components/Link';
 import Table, { ButtonsCell } from '+components/Table';
+import PathNames from '@/models/PathNames';
+import { actions as projectsActions, selectors as projectsSelectors } from '@/redux/modules/projects';
 
 import ButtonsContainer from './components/ButtonsContainer';
 
@@ -98,6 +98,7 @@ const Projects = () => {
             >
               Delete
             </Button>
+
             <Button
               size={ButtonSizes.small}
               color={ButtonColors.secondary}
@@ -127,41 +128,37 @@ const Projects = () => {
         data={Object.values(projects)}
       />
 
-      {projectToManage && (
-        <FormModal
-          header={`${projectToManage.id ? 'Edit' : 'Add'} Project`}
-          initialValues={projectToManage}
-          onClose={onManageProjectModalClose}
-          onSubmit={onManageProjectModalSubmit}
-          open
-        >
-          <Field
-            name="name"
-            label="Name"
-            component={Controls.TextField}
-            validate={Validators.required}
-            required
-          />
-
-          <Field
-            name="description"
-            label="Description"
-            component={Controls.TextField}
-            multiline
-            rows={6}
-          />
-        </FormModal>
-      )}
-
-      {projectToDelete && (
-        <ConfirmModal
-          action={ConfirmActions.delete}
-          item={projectToDelete.name}
-          onClose={onDeleteProjectModalClose}
-          onSubmit={onDeleteProjectModalSubmit}
-          open
+      {projectToManage ? <FormModal
+        header={`${projectToManage.id ? 'Edit' : 'Add'} Project`}
+        initialValues={projectToManage}
+        onClose={onManageProjectModalClose}
+        onSubmit={onManageProjectModalSubmit}
+        open
+                         >
+        <Field
+          name="name"
+          label="Name"
+          component={Controls.TextField}
+          validate={Validators.required}
+          required
         />
-      )}
+
+        <Field
+          name="description"
+          label="Description"
+          component={Controls.TextField}
+          multiline
+          rows={6}
+        />
+      </FormModal> : null}
+
+      {projectToDelete ? <ConfirmModal
+        action={ConfirmActions.delete}
+        item={projectToDelete.name}
+        onClose={onDeleteProjectModalClose}
+        onSubmit={onDeleteProjectModalSubmit}
+        open
+                         /> : null}
     </Fragment>
   );
 };

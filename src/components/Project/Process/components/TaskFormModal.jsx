@@ -4,11 +4,11 @@ import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
+import FormModal from '+components/FormModal';
+import ImageViewer from '+components/ImageViewer';
 import { actions as omeroActions, selectors as omeroSelectors } from '@/redux/modules/omero';
 import { actions as tasksActions, selectors as tasksSelectors } from '@/redux/modules/tasks';
 
-import FormModal from '+components/FormModal';
-import ImageViewer from '+components/ImageViewer';
 
 const TaskFormModal = styled((props) => {
   const {

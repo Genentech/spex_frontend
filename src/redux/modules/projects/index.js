@@ -1,10 +1,10 @@
 import { push } from 'connected-react-router';
 import { call, put } from 'redux-saga/effects';
+import hash from '+utils/hash';
 import backendClient from '@/middleware/backendClient';
 import { actions as authActions } from '@/redux/modules/users/auth';
 import { createSlice, createSelector, startFetching, stopFetching } from '@/redux/utils';
 
-import hash from '+utils/hash';
 
 const initialState = {
   isFetching: false,

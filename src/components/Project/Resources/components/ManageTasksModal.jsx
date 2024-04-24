@@ -4,16 +4,16 @@ import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { actions as jobsActions, selectors as jobsSelectors } from '@/redux/modules/jobs';
-import { actions as tasksActions, selectors as tasksSelectors } from '@/redux/modules/tasks';
-
 import Button, { ButtonColors } from '+components/Button';
 import Modal, { ModalHeader, ModalBody, ModalFooter } from '+components/Modal';
 import Table from '+components/Table';
+import { actions as jobsActions, selectors as jobsSelectors } from '@/redux/modules/jobs';
+import { actions as tasksActions, selectors as tasksSelectors } from '@/redux/modules/tasks';
 
+
+import SubComponent from './SubComponent';
 import Col from '../../components/Col';
 import Row from '../../components/Row';
-import SubComponent from './SubComponent';
 
 const ManageTasksModal = styled((props) => {
   const {
@@ -187,6 +187,7 @@ const ManageTasksModal = styled((props) => {
       onClose={onClose}
     >
       <ModalHeader>{header}</ModalHeader>
+
       <ModalBody>
         <Row>
           <Col>
@@ -203,6 +204,7 @@ const ManageTasksModal = styled((props) => {
           </Col>
         </Row>
       </ModalBody>
+
       <ModalFooter>
         <Button
           color={ButtonColors.secondary}
@@ -210,6 +212,7 @@ const ManageTasksModal = styled((props) => {
         >
           {closeButtonText}
         </Button>
+
         <Button
           color={ButtonColors.primary}
           onClick={emitSubmit}

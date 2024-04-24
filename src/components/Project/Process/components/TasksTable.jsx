@@ -86,16 +86,14 @@ const TasksTable = styled((props) => {
         data={tasks || []}
       />
 
-      {taskToManage && (
-        <TaskFormModal
-          header="Task Results"
-          initialValues={taskToManage}
-          closeButtonText="Close"
-          onClose={onManageTaskModalClose}
-          onSubmit={onManageTaskModalClose}
-          open
-        />
-      )}
+      {taskToManage ? <TaskFormModal
+        header="Task Results"
+        initialValues={taskToManage}
+        closeButtonText="Close"
+        onClose={onManageTaskModalClose}
+        onSubmit={onManageTaskModalClose}
+        open
+                      /> : null}
     </Fragment>
   );
 })`

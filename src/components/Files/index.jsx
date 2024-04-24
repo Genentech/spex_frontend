@@ -2,14 +2,14 @@ import React, { useMemo, useCallback, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { matchPath, useLocation } from 'react-router-dom';
-import PathNames from '@/models/PathNames';
-import { actions as filesActions, selectors as filesSelectors } from '@/redux/modules/files';
-import { selectors as projectsSelectors } from '@/redux/modules/projects';
 import Button, { ButtonSizes, ButtonColors } from '+components/Button';
 import ConfirmModal, { ConfirmActions } from '+components/ConfirmModal';
 import ErrorMessage from '+components/ErrorMessage';
 import FilePicker from '+components/SelectFile';
 import Table, { ButtonsCell } from '+components/Table';
+import PathNames from '@/models/PathNames';
+import { actions as filesActions, selectors as filesSelectors } from '@/redux/modules/files';
+import { selectors as projectsSelectors } from '@/redux/modules/projects';
 
 const Files = ({ hideUploadButton = false }) => {
   const dispatch = useDispatch();
@@ -124,6 +124,7 @@ const Files = ({ hideUploadButton = false }) => {
                 >
                   Check
                 </Button>
+
                 <Button
                   size={ButtonSizes.small}
                   color={ButtonColors.secondary}
@@ -143,7 +144,7 @@ const Files = ({ hideUploadButton = false }) => {
         Cell: ({ row: { original } }) =>
           useMemo(
             () => (
-              <div>{fileKeys[original.name] && fileKeys[original.name].join(', ')}</div>
+              <div>{fileKeys[original.name] ? fileKeys[original.name].join(', ') : null}</div>
             ),
             [original],
           ),
@@ -154,21 +155,22 @@ const Files = ({ hideUploadButton = false }) => {
 
   return (
     <React.Fragment>
-      {error && <ErrorMessage message={error} />}
+      {error ? <ErrorMessage message={error} /> : null}
+
       {!hideUploadButton && <FilePicker onFileChange={onFileChange} />}
+
       <Table
         columns={columns}
         data={files}
       />
-      {fileToDelete && (
-        <ConfirmModal
-          action={ConfirmActions.delete}
-          item={fileToDelete.name}
-          onClose={onDeleteFileModalClose}
-          onSubmit={onDeleteFileModalSubmit}
-          open
-        />
-      )}
+
+      {fileToDelete ? <ConfirmModal
+        action={ConfirmActions.delete}
+        item={fileToDelete.name}
+        onClose={onDeleteFileModalClose}
+        onSubmit={onDeleteFileModalSubmit}
+        open
+                      /> : null}
     </React.Fragment>
   );
 };

@@ -2,15 +2,15 @@ import React, { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Redirect } from 'react-router-dom';
 
-import { actions as authActions, selectors as authSelectors } from '@/redux/modules/users/auth';
 
 import Button, { ButtonColors } from '+components/Button';
 import Form, { Field, FormRenderer, Controls, Validators } from '+components/Form';
 import Progress from '+components/Progress';
+import { actions as authActions, selectors as authSelectors } from '@/redux/modules/users/auth';
 
 import Alert from './components/Alert';
 import Container from './components/Container';
-import spex from './components/spex.png';
+import spex from './components/spex_logo_big.svg';
 
 const Auth = () => {
   const dispatch = useDispatch();
@@ -37,7 +37,11 @@ const Auth = () => {
           </Alert>
         )}
 
-        <img src={spex} alt="spex" />
+        <img
+          src={spex}
+          alt="spex"
+          style={{ marginBottom: '20px' }}
+        />
 
         <Field
           name="username"
@@ -76,6 +80,7 @@ const Auth = () => {
   return (
     <Container>
       <Progress />
+
       <Form
         onSubmit={onLogin}
         render={render}

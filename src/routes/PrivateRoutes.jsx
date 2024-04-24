@@ -33,12 +33,15 @@ const PrivateRoutes = () => {
           path={[ '/' ]}
           component={ProjectFiles}
         />
+
         <Route
           exact
           path={[ `/${PathNames.projects}` ]}
           component={ProjectFiles}
         />
+
         <Route exact path={`/${PathNames.files}`} component={Files} />
+
         <Route
           exact
           path={[
@@ -54,6 +57,7 @@ const PrivateRoutes = () => {
           ]}
           component={Project}
         />
+
         <Route hidden component={NotFound404} />
       </Switch>
     </Layout>

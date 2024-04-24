@@ -16,10 +16,10 @@ const renderOption = (option) => (
   </div>
 );
 
-const SelectJobsPipeline = (props) => {
+const SelectJobsProcess = (props) => {
   let {
     projectId,
-    pipelineId,
+    processId,
     input,
     meta,
     ...tail
@@ -34,24 +34,24 @@ const SelectJobsPipeline = (props) => {
   const matchProjectPath = matchPath(location.pathname, { path: `/${PathNames.projects}/:id` });
   projectId = matchProjectPath ? matchProjectPath.params.id : undefined;
 
-  const matchPipelinePath = matchPath(location.pathname, {
+  const matchProcessPath = matchPath(location.pathname, {
     path: `/${PathNames.projects}/${projectId}/${PathNames.pipelines}/:id`,
   });
-  pipelineId = matchPipelinePath ? matchPipelinePath.params.id : undefined;
+  processId = matchProcessPath ? matchProcessPath.params.id : undefined;
 
   useEffect(
     () => {
-      dispatch(jobsActions.fetchJobZscore( pipelineId ));
+      dispatch(jobsActions.fetchJobZscore( processId ));
 
       return () => {
         dispatch(jobsActions.cancel());
         dispatch(jobsActions.clearJobZScore());
       };
     },
-    [dispatch, pipelineId],
+    [dispatch, processId],
   );
 
-  const jobs = useSelector(jobsSelectors.getJobsByPipeline(pipelineId));
+  const jobs = useSelector(jobsSelectors.getJobsByProcess(processId));
   const onlyOneValue = true;
 
   const options = useMemo(
@@ -110,9 +110,9 @@ const SelectJobsPipeline = (props) => {
   );
 };
 
-SelectJobsPipeline.propTypes = {
+SelectJobsProcess.propTypes = {
   projectId: PropTypes.string,
-  pipelineId: PropTypes.string,
+  processId: PropTypes.string,
   input: PropTypes.shape({
     value: PropTypes.oneOfType([
       PropTypes.number,
@@ -137,13 +137,13 @@ SelectJobsPipeline.propTypes = {
   onChange: PropTypes.func,
 };
 
-SelectJobsPipeline.defaultProps = {
+SelectJobsProcess.defaultProps = {
   projectId: '',
-  pipelineId: '',
+  processId: '',
   input: {},
   meta: {},
   value: null,
   onChange: null,
 };
 
-export default SelectJobsPipeline;
+export default SelectJobsProcess;

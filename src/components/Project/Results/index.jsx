@@ -16,16 +16,25 @@ import { useHistory } from 'react-router-dom';
 import styled from 'styled-components';
 import { Vitessce } from 'vitessce';
 
+import Button from '+components/Button';
+import Message from '+components/Message';
+import Tabs, { Tab, TabPanel } from '+components/TabsImages';
 import JobBlock from '@/components/Project/Process/blocks/JobBlock';
 import PathNames from '@/models/PathNames';
 
 import { actions as omeroActions, selectors as omeroSelectors } from '@/redux/modules/omero';
-import { actions as pipelineActions, selectors as pipelineSelectors } from '@/redux/modules/pipelines';
+import { actions as processActions, selectors as processSelectors } from '@/redux/modules/processes';
 import { actions as tasksActions, selectors as tasksSelectors } from '@/redux/modules/tasks';
 
-import Button from '+components/Button';
-import Message from '+components/Message';
-import Tabs, { Tab, TabPanel } from '+components/TabsImages';
+const StyledTabLabel = styled.div`
+  white-space: normal;
+  overflow: hidden;
+  max-width: 100px;
+  word-wrap: break-word;
+  font-size: 11px;
+  line-height: 1;
+  padding: 0 5px;
+`;
 
 const flowDirection = 'LR';
 const nodeWidth = 172;
@@ -34,19 +43,7 @@ const nodeHeight = 36;
 const nodeTypes = {
   job: JobBlock,
 };
-const addNewVirtualJobToPipeline = (rootId, newJob, node) => {
-  if (node.id === rootId) {
-    if (!node.jobs) {
-      node.jobs = [];
-    }
-    node.jobs.push(newJob);
-  } else {
-    for (let i = 0; i < (node.jobs || []).length; i++) {
-      // eslint-disable-next-line no-unused-vars
-      addNewVirtualJobToPipeline(rootId, newJob, node.jobs[i]);
-    }
-  }
-};
+
 
 const createElements = (inputData, result, options = {}, selectedBlock) => {
   const { jobs } = inputData;
@@ -126,8 +123,8 @@ const TasksBlock = styled.div`
 
 const DivIcon = styled.div`
       position: absolute;
-      top: 2px;
-      right: 2px;
+      top: 0;
+      right: 0;
   `;
 
 const Results = ( { sidebarWidth, processReviewTabName } ) => {
@@ -136,27 +133,27 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
 
   const matchProjectPath = matchPath(location.pathname, { path: `/${PathNames.projects}/:id` });
   const projectId = matchProjectPath ? matchProjectPath.params.id : undefined;
-  const matchPipelinePath = matchPath(location.pathname, {
+  const matchProcessPath = matchPath(location.pathname, {
     path: `/${PathNames.projects}/${projectId}/${PathNames.processes}/:id`,
   });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const pipelineId = matchPipelinePath ? matchPipelinePath.params.id : undefined;
-  const pipelines = useSelector(pipelineSelectors.getPipelinesWithTasksForVis(pipelineId) || {});
+  const processId = matchProcessPath ? matchProcessPath.params.id : undefined;
+  const processes = useSelector(processSelectors.getProcessesWithTasksForVis(processId) || {});
   const tasksVitessceConfigs = useSelector(tasksSelectors.getTaskVitessceConfigs || {});
   const [taskToPanels, setTasksToPanels] = useState([]);
-  const [taskToPipeline, setTasksToPipeline] = useState([]);
+  const [taskToProcess, setTasksToProcess] = useState([]);
   const omeroWeb = useSelector(omeroSelectors.getOmeroWeb);
   // eslint-disable-next-line no-unused-vars
   const [selectedBlock, setSelectedBlock] = useState(null);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
-  const pipeline = useSelector(pipelineSelectors.getPipeline(projectId, pipelineId));
+  const process = useSelector(processSelectors.getProcess(projectId, processId));
   const error = useSelector(tasksSelectors.getDataMessage);
 
   const elements = useMemo(
     () => {
       let _elements = [];
 
-      if (!pipeline) {
+      if (!process) {
         return _elements;
       }
 
@@ -167,15 +164,15 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
         },
       };
 
-      const pipelineClone = cloneDeep(pipeline);
+      const processClone = cloneDeep(process);
 
-      _elements = createElements(pipelineClone, _elements, options, selectedBlock);
+      _elements = createElements(processClone, _elements, options, selectedBlock);
       if (_elements.length > 1) {
         _elements.splice(1, 1);
       }
       return createGraphLayout(_elements, flowDirection);
     },
-    [pipeline, selectedBlock],
+    [process, selectedBlock],
   );
   const onLoad = useCallback(
     (instance) => {
@@ -205,18 +202,18 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
 
   const jobs_data = useMemo(
     () => {
-      if (pipelines === undefined) {
+      if (processes === undefined) {
         return [];
       }
-      if (pipelines.length === 0 || Object.keys(pipelines).length === 0) {
+      if (processes.length === 0 || Object.keys(processes).length === 0) {
         return [];
       }
-      if (pipelines && pipelines.id === pipelineId) {
-        return pipelines['jobs'];
+      if (processes && processes.id === processId) {
+        return processes['jobs'];
       }
       return [];
     },
-    [pipelines, pipelineId],
+    [processes, processId],
   );
 
 
@@ -233,19 +230,19 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
 
   useEffect(
     () => {
-      if (!projectId && !pipelineId) {
+      if (!projectId && !processId) {
         return;
       }
-      dispatch(pipelineActions.fetchPipelinesForVis( { projectId, pipelineId } ));
+      dispatch(processActions.fetchProcessesForVis( { projectId, processId } ));
     },
-    [dispatch, projectId, pipelineId],
+    [dispatch, projectId, processId],
   );
 
   const prevTaskToPanels = useRef([]);
-  const prevTaskToPipeline = useRef([]);
+  const prevTaskToProcess = useRef([]);
 
   useEffect(() => {
-    if (pipelines === undefined) {
+    if (processes === undefined) {
       return;
     }
 
@@ -265,11 +262,11 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
       prevTaskToPanels.current = taskList;
     }
 
-    if (prevTaskToPipeline.current.length !== clusterList.length) {
-      setTasksToPipeline(clusterList);
-      prevTaskToPipeline.current = clusterList;
+    if (prevTaskToProcess.current.length !== clusterList.length) {
+      setTasksToProcess(clusterList);
+      prevTaskToProcess.current = clusterList;
     }
-  }, [jobs_data, pipelines, setTasksToPanels, setTasksToPipeline]);
+  }, [jobs_data, processes, setTasksToPanels, setTasksToProcess]);
 
 
 
@@ -293,17 +290,17 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
     taskToPanels.forEach((item) => {
       dispatch(tasksActions.fetchTaskVitessce(item.id, processReviewTabName));
     });
-    taskToPipeline.forEach((item) => {
+    taskToProcess.forEach((item) => {
       dispatch(tasksActions.fetchTaskVitessce(item.id, processReviewTabName));
     });
-  }, [dispatch, taskToPanels, taskToPipeline, processReviewTabName]);
+  }, [dispatch, taskToPanels, taskToProcess, processReviewTabName]);
 
 
   useEffect(() => {
-    if (taskToPipeline.length > 1) {
-      setTasksToPipeline(taskToPipeline.slice(0, 1));
+    if (taskToProcess.length > 1) {
+      setTasksToProcess(taskToProcess.slice(0, 1));
     }
-  }, [taskToPipeline]);
+  }, [taskToProcess]);
 
 
   const [expandedTab, setExpandedTab] = useState( 'dataset');
@@ -314,18 +311,18 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
   const history = useHistory();
   const handleChangeTabe = (event, newValue) => {
     setExpandedTab(newValue);
-    const matchPipelinePath = matchPath(location.pathname, {
+    const matchProcessPath = matchPath(location.pathname, {
       path: `/${PathNames.projects}/${projectId}/${PathNames.processes}/:id`,
     });
 
-    if (matchPipelinePath) {
-      const newUrl = `/projects/${projectId}/processes/${matchPipelinePath.params.id}/review/${newValue}`;
+    if (matchProcessPath) {
+      const newUrl = `/projects/${projectId}/processes/${matchProcessPath.params.id}/review/${newValue}`;
       history.push(newUrl);
     }
   };
 
   const handleOpenInNewTab = (value) => {
-    const tabLink = `/projects/${projectId}/processes/${matchPipelinePath.params.id}/review/${value}`;
+    const tabLink = `/projects/${projectId}/processes/${matchProcessPath.params.id}/review/${value}`;
     // eslint-disable-next-line security/detect-non-literal-fs-filename
     window.open(tabLink, '_blank');
   };
@@ -334,16 +331,25 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
   const [searchInput, setSearchInput] = useState('');
   const handleSearchInputChange = (event) => {
     const { value } = event.target;
-    const onlyDigits = value.replace(/\D/g, '');
-    setSearchInput(onlyDigits);
+    // const onlyDigits = value.replace(/\D/g, '');
+    setSearchInput(value);
   };
 
   const filteredTaskToPanels = useMemo(() => {
     if (!searchInput.trim()) {
       return taskToPanels;
     }
-    return taskToPanels.filter((type) => type.omeroId.startsWith(searchInput.trim()));
+    const searchQuery = searchInput.trim().toLowerCase(); // Приводим к нижнему регистру для регистронезависимого поиска
+    return taskToPanels.filter((type) => {
+      if (type.omeroId === '') {
+        return (`id:${type.id}/${type.name}`).toLowerCase().includes(searchQuery);
+      } else {
+        return type.omeroId.toLowerCase().includes(searchQuery);
+      }
+    });
   }, [searchInput, taskToPanels]);
+
+
 
   const handleClearSearchInput = () => {
     setSearchInput('');
@@ -390,17 +396,17 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
                 type="text"
                 value={searchInput}
                 onChange={handleSearchInputChange}
-                placeholder="Search by image number"
+                placeholder="Search"
                 style={inputStyle}
               />
-              {searchInput && (
-                <ClearIcon
-                  onClick={handleClearSearchInput}
-                  style={clearIconStyle}
-                />
-              )}
+
+              {searchInput ? <ClearIcon
+                onClick={handleClearSearchInput}
+                style={clearIconStyle}
+                             /> : null}
             </div>
           </div>
+
           <Tabs
             value={expandedTab}
             onChange={handleChangeTabe}
@@ -410,9 +416,10 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
             <Tab
               label={
                 <div>
-                  <div>
+                  <StyledTabLabel>
                     Dataset
-                  </div>
+                  </StyledTabLabel>
+
                   <DivIcon onClick={() => handleOpenInNewTab('dataset')}>
                     <Launch style={{ fontSize: 16 }} />
                   </DivIcon>
@@ -427,8 +434,12 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
                 label={
                   <div>
                     <div>
-                      {type.omeroId}
+                      <StyledTabLabel>
+                        {type.omeroId === '' ? `id:${type.id}/${type.name}` : type.omeroId}
+                      </StyledTabLabel>
+
                     </div>
+
                     <DivIcon onClick={() => handleOpenInNewTab(type.omeroId)}>
                       <Launch style={{ fontSize: 16 }} />
                     </DivIcon>
@@ -438,11 +449,13 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
               />
             ))}
           </Tabs>
+
           <TabPanel value={expandedTab} index="dataset">
             {(expandedTab === 'dataset') && (
-              taskToPipeline.map((type) => (
+              taskToProcess.map((type) => (
                 <div key={type.id} style={{ display: 'flex', flexDirection: 'column' }}>
                   <span style={{ marginRight: 10 }}> id:{type.id}/{type.name}
+
                     <div style={{ display: 'flex', alignItems: 'center' }}>
                       <Button
                         size="small"
@@ -456,6 +469,7 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
                       >
                         create zarr data
                       </Button >
+
                       <Button
                         size="small"
                         variant="contained"
@@ -470,6 +484,7 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
                       </Button >
                     </div>
                   </span>
+
                   <div style={{ height: '100vh', width: '100vw' }}>
                     <Vitessce
                       config={tasksVitessceConfigs[type.id]}
@@ -480,6 +495,7 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
                 </div>
               )))}
           </TabPanel>
+
           { taskToPanels.length !== 0 && taskToPanels.map((type) => {
               return (
                 <TabPanel key={type.id} value={expandedTab} index={type.omeroId}>
@@ -487,6 +503,7 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
                     (type.omeroId === expandedTab) && (
                       <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <span style={{ marginRight: 10 }}> id:{type.id}/{type.name}
+
                           <div style={{ display: 'flex', alignItems: 'center' }}>
                             <Button
                               size="small"
@@ -500,6 +517,7 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
                             >
                               create zarr data
                             </Button >
+
                             <Button
                               size="small"
                               variant="contained"
@@ -514,6 +532,7 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
                             </Button >
                           </div>
                         </span>
+
                         <div style={{ height: '100vh', width: '100vw' }} id={type.id}>
                           <Vitessce
                             config={tasksVitessceConfigs[type.id]}
@@ -530,7 +549,9 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
           )}
         </Fragment>
       </TasksBlock>
-      {errorMessage && <Message message={errorMessage} />}
+
+      {errorMessage ? <Message message={errorMessage} /> : null}
+
       <div style={{ height: 200, width: '100%', position: 'absolute', left: '-9999px' }}>
         <ReactFlow
           id='react-flow__pane_2'

@@ -5,8 +5,8 @@ import TextField from '@material-ui/core/TextField';
 import FolderOpenIcon from '@material-ui/icons/FolderOpen';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
-import { actions as fileActions } from '@/redux/modules/files';
 import Button, { ButtonSizes, ButtonColors } from '+components/Button';
+import { actions as fileActions } from '@/redux/modules/files';
 
 const FilePicker = ({ input, meta, onFileChange, ...tail }) => {
   const dispatch = useDispatch();
@@ -51,6 +51,7 @@ const FilePicker = ({ input, meta, onFileChange, ...tail }) => {
           accept=".h5ad, *"
           style={{ display: 'none' }}
         />
+
         <label
           htmlFor="file-picker-input"
           style={{ position: 'relative', cursor: 'pointer' }}
@@ -88,6 +89,7 @@ const FilePicker = ({ input, meta, onFileChange, ...tail }) => {
     <div>
       <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
         {renderInput()}
+
         <Button
           size={ButtonSizes.medium}
           color={ButtonColors.primary}

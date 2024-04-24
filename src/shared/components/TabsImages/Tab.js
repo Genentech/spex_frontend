@@ -5,7 +5,7 @@ import styled from 'styled-components';
 
 const useStyles = makeStyles({
   customTabRoot: {
-    minWidth: '110px',
+    minWidth: '85px',
     minHeight: '20px',
   },
 });

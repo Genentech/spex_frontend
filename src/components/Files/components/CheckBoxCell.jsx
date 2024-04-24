@@ -1,6 +1,6 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import Checkbox from '@material-ui/core/Checkbox';
+import PropTypes from 'prop-types';
 
 const CheckboxCell = ({ value, onFileSelect, selectedFiles }) => {
   return (
@@ -15,7 +15,7 @@ CheckboxCell.propTypes = {
   value: PropTypes.string.isRequired,
   onFileSelect: PropTypes.func.isRequired,
   selectedFiles: PropTypes.shape({
-    [PropTypes.string]: PropTypes.bool
+    [PropTypes.string]: PropTypes.bool,
   }).isRequired,
 };
 

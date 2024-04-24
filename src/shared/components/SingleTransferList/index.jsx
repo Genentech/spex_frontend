@@ -92,7 +92,9 @@ const SingleTransferList = styled((props) => {
         <CardHeader
           title={title}
         />
+
         <Divider />
+
         <List dense component="div" role="list">
           {items.map((item) => (
             <ListItem
@@ -109,19 +111,18 @@ const SingleTransferList = styled((props) => {
                   disableRipple
                 />
               </ListItemIcon>
-              {item.img && (
-                <ListItemIcon>
-                  <img src={item.img} alt={item.title || 'Image'} />
-                </ListItemIcon>
-              )}
-              {(item.title || item.description) && (
-                <ListItemText
-                  primary={item.title}
-                  secondary={item.description}
-                />
-              )}
+
+              {item.img ? <ListItemIcon>
+                <img src={item.img} alt={item.title || 'Image'} />
+              </ListItemIcon> : null}
+
+              {(item.title || item.description) ? <ListItemText
+                primary={item.title}
+                secondary={item.description}
+                                                  /> : null}
             </ListItem>
           ))}
+
           <ListItem />
         </List>
       </Card>
@@ -161,7 +162,8 @@ const SingleTransferList = styled((props) => {
 
       <Grid className={classNames('list', 'list-right')} item>
         {customList(rightTitle, fixedValue)}
-        {invalid && <p className="MuiFormHelperText-root MuiFormHelperText-contained Mui-error">{meta.error}</p>}
+
+        {invalid ? <p className="MuiFormHelperText-root MuiFormHelperText-contained Mui-error">{meta.error}</p> : null}
       </Grid>
     </Grid>
   );

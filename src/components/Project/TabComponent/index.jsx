@@ -1,10 +1,10 @@
 import React, { useMemo, Fragment, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
+import Tabs, { Tab, TabPanel } from '+components/Tabs';
 import PathNames from '@/models/PathNames';
 import Process from 'components/Project/Process';
 import Results from 'components/Project/Results';
-import Tabs, { Tab, TabPanel } from '+components/Tabs';
 
 const tabMappings = {
     'build': 0,
@@ -38,13 +38,16 @@ const TabContainer = ({ sidebarWidth, activeTab, projectId, processId, processRe
       <Fragment>
         <Tabs value={activeTab === 'build' ? 0 : 1} onChange={handleChange}>
           <Tab label="Build" />
+
           <Tab label="Review" />
         </Tabs>
+
         {tabMappings[activeTab] === 0 && (
           <TabPanel value={tabMappings[activeTab]} index={0}>
             {processComponent}
           </TabPanel>
             )}
+
         {tabMappings[activeTab] === 1 && (
           <TabPanel value={tabMappings[activeTab]} index={1}>
             {processResultComponent}

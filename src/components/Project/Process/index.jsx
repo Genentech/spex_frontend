@@ -10,21 +10,21 @@ import { matchPath, useLocation } from 'react-router-dom';
 import SplitPane from 'react-split-pane';
 import styled from 'styled-components';
 
-import PathNames from '@/models/PathNames';
-import { actions as jobsActions, selectors as jobsSelectors } from '@/redux/modules/jobs';
-import { actions as omeroActions, selectors as omeroSelectors } from '@/redux/modules/omero';
-import { actions as pipelineActions, selectors as pipelineSelectors } from '@/redux/modules/pipelines';
-
-import { selectors as projectsSelectors } from '@/redux/modules/projects';
-import { actions as tasksActions, selectors as tasksSelectors } from '@/redux/modules/tasks';
-
 import BlocksScroll from '+components/BlocksScroll';
 import ConfirmModal, { ConfirmActions } from '+components/ConfirmModal';
 import ImageViewer from '+components/ImageViewer';
 import NoData from '+components/NoData';
 import ThumbnailsViewer from '+components/ThumbnailsViewer';
-
 import { statusColor, statusFormatter } from '+utils/statusFormatter';
+import PathNames from '@/models/PathNames';
+import { actions as jobsActions, selectors as jobsSelectors } from '@/redux/modules/jobs';
+import { actions as omeroActions, selectors as omeroSelectors } from '@/redux/modules/omero';
+import { actions as processActions, selectors as processSelectors } from '@/redux/modules/processes';
+
+import { selectors as projectsSelectors } from '@/redux/modules/projects';
+import { actions as tasksActions, selectors as tasksSelectors } from '@/redux/modules/tasks';
+
+
 import JobBlock from './blocks/JobBlock';
 import BlockScrollWrapper from './components/BlockScrollWrapper';
 import BlockSettingsForm from './components/BlockSettingsForm';
@@ -64,20 +64,6 @@ const BlockTab = styled.div`
     border-radius: 4px;
     padding: 6px;
 `;
-
-const addNewVirtualJobToPipeline = (rootId, newJob, node) => {
-  if (node.id === rootId) {
-    if (!node.jobs) {
-      node.jobs = [];
-    }
-    node.jobs.push(newJob);
-  } else {
-    for (let i = 0; i < (node.jobs || []).length; i++) {
-      // eslint-disable-next-line no-unused-vars
-      addNewVirtualJobToPipeline(rootId, newJob, node.jobs[i]);
-    }
-  }
-};
 
 const createElements = (inputData, result, options = {}, selectedBlock) => {
   const { jobs } = inputData;
@@ -170,9 +156,9 @@ const Process = ( { sidebarWidth } ) => {
   const matchProcessPath = matchPath(location.pathname, {
     path: `/${PathNames.projects}/${projectId}/${PathNames.processes}/:id`,
   });
-  const pipelineId = matchProcessPath ? matchProcessPath.params.id : undefined;
-  const pipeline = useSelector(pipelineSelectors.getPipeline(projectId, pipelineId));
-  const jobs = useSelector(jobsSelectors.getJobsByPipelineId(pipelineId));
+  const processId = matchProcessPath ? matchProcessPath.params.id : undefined;
+  const process = useSelector(processSelectors.getProcess(projectId, processId));
+  const jobs = useSelector(jobsSelectors.getJobsByProcessId(processId));
   const projectImagesThumbnails = useSelector(omeroSelectors.getImagesThumbnails(project?.omeroIds || []));
   const jobTypes = useSelector(jobsSelectors.getJobTypes);
 
@@ -189,7 +175,7 @@ const Process = ( { sidebarWidth } ) => {
   useMemo(() => {
     let _elements = [];
 
-    if (!pipeline) {
+    if (!process) {
       return _elements;
     }
 
@@ -203,13 +189,13 @@ const Process = ( { sidebarWidth } ) => {
       },
     };
 
-    const pipelineClone = cloneDeep(pipeline);
-    _elements = createElements(pipelineClone, _elements, options, selectedBlock);
+    const processClone = cloneDeep(process);
+    _elements = createElements(processClone, _elements, options, selectedBlock);
     if (_elements.length > 1) {
       _elements.splice(1, 1);
     }
     setElements(createGraphLayout(_elements, flowDirection));
-  }, [pipeline, selectedBlock, setActionWithBlock]);
+  }, [process, selectedBlock, setActionWithBlock]);
 
 
   const initialBlocks = useMemo(() => {
@@ -412,20 +398,20 @@ const Process = ( { sidebarWidth } ) => {
           normalizedValues.status = -2;
         }
 
-        dispatch(pipelineActions.updateJob(normalizedValues));
+        dispatch(processActions.updateJob(normalizedValues));
         return;
       }
 
       const [rootId] = normalizedValues.params?.job || [];
       if (rootId != null) {
-        dispatch(pipelineActions.createConn(normalizedValues));
+        dispatch(processActions.createConn(normalizedValues));
         normalizedValues.rootId = rootId;
       }
 
-      dispatch(pipelineActions.createJob(normalizedValues));
-      dispatch(jobsActions.fetchJobsByPipelineId(pipelineId));
+      dispatch(processActions.createJob(normalizedValues));
+      dispatch(jobsActions.fetchJobsByProcessId(processId));
     },
-    [dispatch, jobs, pipelineId],
+    [dispatch, jobs, processId],
   );
 
   const onPaneClick = useCallback(
@@ -441,14 +427,14 @@ const Process = ( { sidebarWidth } ) => {
       if (block.id === 'new') {
         return;
       }
-      await dispatch(jobsActions.fetchJobsByPipelineId(pipelineId));
+      await dispatch(jobsActions.fetchJobsByProcessId(processId));
 
       const job = jobs[block.id];
       if (!job) {
         const par = block.data.params;
         setSelectedBlock({
           projectId,
-          pipelineId: pipelineId,
+          processId: processId,
           omeroIds: block.omeroIds,
           ...block.data,
           folder: par.folder,
@@ -476,7 +462,7 @@ const Process = ( { sidebarWidth } ) => {
       setSelectedBlock({
         ...jobType,
         projectId,
-        pipelineId: pipelineId,
+        processId: processId,
         errors,
         id: job.id,
         name: job.name,
@@ -490,21 +476,21 @@ const Process = ( { sidebarWidth } ) => {
         tasks: jobTasks,
       });
     },
-    [jobTypes, jobs, pipelineId, projectId, dispatch],
+    [jobTypes, jobs, processId, projectId, dispatch],
   );
 
   const onBlockDelete = useCallback(
     () => {
-      dispatch(pipelineActions.deleteJob({
+      dispatch(processActions.deleteJob({
         projectId,
-        pipelineId,
+        processId,
         jobId: selectedBlock.id,
       }));
 
       setActionWithBlock(null);
       setSelectedBlock(null);
     },
-    [dispatch, pipelineId, projectId, selectedBlock],
+    [dispatch, processId, projectId, selectedBlock],
   );
 
   const onDownload = useCallback(
@@ -560,7 +546,7 @@ const Process = ( { sidebarWidth } ) => {
           setAvailableBlocks( { });
           return {
             projectId,
-            pipelineId: pipelineId,
+            processId: processId,
             rootId: undefined,
             id: 'new',
             status: 0,
@@ -572,7 +558,7 @@ const Process = ( { sidebarWidth } ) => {
           setActiveBlock(newActive);
           return {
             projectId,
-            pipelineId: pipelineId,
+            processId: processId,
             rootId: prevValue?.id,
             id: 'new',
             status: 0,
@@ -589,12 +575,12 @@ const Process = ( { sidebarWidth } ) => {
 
   useEffect(
     () => {
-      if (pipeline || !projectId || !pipelineId) {
+      if (process || !projectId || !processId) {
         return;
       }
-      dispatch(pipelineActions.fetchPipeline({ projectId, pipelineId }));
+      dispatch(processActions.fetchProcess({ projectId, processId }));
     },
-    [dispatch, pipeline, projectId, pipelineId],
+    [dispatch, process, projectId, processId],
   );
 
   useEffect(() => {
@@ -624,7 +610,7 @@ const Process = ( { sidebarWidth } ) => {
         const { description, params_meta } = jobTypeBlocks.find((el) => el.script_path === params.part) || {};
         setSelectedBlock({
           projectId,
-          pipelineId: pipelineId,
+          processId: processId,
           id: job.id,
           name: job.name,
           status: job.status,
@@ -640,7 +626,7 @@ const Process = ( { sidebarWidth } ) => {
         });
       }
     },
-    [selectedBlock, jobs, projectId, pipelineId, jobTypes],
+    [selectedBlock, jobs, projectId, processId, jobTypes],
   );
 
   useEffect(
@@ -660,12 +646,12 @@ const Process = ( { sidebarWidth } ) => {
 
   useEffect(
     () => {
-      dispatch(jobsActions.fetchJobsByPipelineId(pipelineId));
+      dispatch(jobsActions.fetchJobsByProcessId(processId));
       return () => {
         dispatch(jobsActions.clearJobs());
       };
     },
-    [dispatch, refresher, pipelineId],
+    [dispatch, refresher, processId],
   );
 
   useEffect(
@@ -730,17 +716,17 @@ const Process = ( { sidebarWidth } ) => {
     background: 'linear-gradient(to bottom, transparent 1px, #ccc 1px, #ccc 2px, transparent 1px)',
   };
 
-  const onStartPipeline = useCallback(
+  const onStartProcess = useCallback(
     () => {
-      dispatch(jobsActions.startPipeline(pipelineId));
+      dispatch(jobsActions.startProcess(processId));
     },
-    [dispatch, pipelineId],
+    [dispatch, processId],
   );
 
   const updateElements = useCallback(() => {
     let _elements = [];
     setElements(_elements);
-    if (!pipeline) {
+    if (!process) {
       setElements(_elements);
       return;
     }
@@ -755,27 +741,27 @@ const Process = ( { sidebarWidth } ) => {
       },
     };
 
-    const pipelineClone = cloneDeep(pipeline);
-    _elements = createElements(pipelineClone, _elements, options, selectedBlock);
+    const processClone = cloneDeep(process);
+    _elements = createElements(processClone, _elements, options, selectedBlock);
     if (_elements.length > 1) {
       _elements.splice(1, 1);
     }
     setElements(createGraphLayout(_elements, flowDirection));
-  }, [pipeline, selectedBlock, setActionWithBlock]);
+  }, [process, selectedBlock, setActionWithBlock]);
 
   useEffect(() => {
     updateElements();
   }, [updateElements]);
 
   const handleRefresh = () => {
-    dispatch(jobsActions.fetchJobsByPipelineId(pipelineId));
+    dispatch(jobsActions.fetchJobsByProcessId(processId));
     updateElements();
   };
 
-  const selectedOption = useSelector(pipelineSelectors.getSelectedOption);
+  const selectedOption = useSelector(processSelectors.getSelectedOption);
 
   useEffect(() => {
-    dispatch(pipelineActions.setSelectedOption('settings'));
+    dispatch(processActions.setSelectedOption('settings'));
   }, [dispatch ,selectedBlock]);
 
   const [sizeY, setSizeY] = useState(300);
@@ -869,9 +855,10 @@ const Process = ( { sidebarWidth } ) => {
                         zIndex: 99,
                         width: '80%',
                       }}
-                      onClick={onStartPipeline}
+                      onClick={onStartProcess}
                     > Start ▶
                     </ControlButton>
+
                     <ControlButton
                       style={{
                         background: 'blue',
@@ -884,6 +871,7 @@ const Process = ( { sidebarWidth } ) => {
                     > Refresh
                     </ControlButton>
                   </Controls>
+
                   <Background />
                 </ReactFlow>
               </FlowWrapper>
@@ -897,6 +885,7 @@ const Process = ( { sidebarWidth } ) => {
                 </BlockScrollWrapper>
               </div>
             </div>
+
             <div style={{
               flex: '1 1 0%',
               position: 'relative',
@@ -919,6 +908,7 @@ const Process = ( { sidebarWidth } ) => {
                     <NoData>Select block</NoData>
                   )}
                 </div>
+
                 <div style={{ overflow: 'auto', display: selectedOption === 'status' ? 'block' : 'none' }}>
                   <BlockStatusForm>
                     <TasksDisplay jobs={jobs} />
@@ -928,6 +918,7 @@ const Process = ( { sidebarWidth } ) => {
             </div>
           </SplitPane>
         </Grid>
+
         <Grid
           item
           container
@@ -940,45 +931,40 @@ const Process = ( { sidebarWidth } ) => {
         >
           <Container>
             <ImageViewerContainer>
-              {selectedBlock?.id && (
-                <React.Fragment>
-                  {selectedImagesDetails[activeImageIds[0]] && (
-                    <ImageViewer
-                      data={projectImagesDetails[activeImageIds[0]]}
-                    />
-                  )}
-                  <ThumbnailsViewer
-                    thumbnails={projectImagesOptions}
-                    active={activeImageIds[0]}
-                    onClick={setActiveImageIds}
-                  />
-                </React.Fragment>
-              )}
+              {selectedBlock?.id ? <React.Fragment>
+                {selectedImagesDetails[activeImageIds[0]] ? <ImageViewer
+                  data={projectImagesDetails[activeImageIds[0]]}
+                                                            /> : null}
+
+                <ThumbnailsViewer
+                  thumbnails={projectImagesOptions}
+                  active={activeImageIds[0]}
+                  onClick={setActiveImageIds}
+                />
+              </React.Fragment> : null}
             </ImageViewerContainer>
           </Container>
         </Grid>
       </SplitPane>
-      {actionWithBlock === 'delete' && selectedBlock?.id && (
-        <ConfirmModal
-          action={ConfirmActions.delete}
-          item={selectedBlock.name}
-          onClose={() => setActionWithBlock(null)}
-          onSubmit={onBlockDelete}
-          open
-        />
-      )}
-      {actionWithBlock === 'info' && selectedBlock?.id && (
-        <TaskInfoModal
-          header={(selectedBlock.name !== 'feature_extraction') ? 'Task Error' :
+
+      {actionWithBlock === 'delete' && selectedBlock?.id ? <ConfirmModal
+        action={ConfirmActions.delete}
+        item={selectedBlock.name}
+        onClose={() => setActionWithBlock(null)}
+        onSubmit={onBlockDelete}
+        open
+                                                           /> : null}
+
+      {actionWithBlock === 'info' && selectedBlock?.id ? <TaskInfoModal
+        header={(selectedBlock.name !== 'feature_extraction') ? 'Task Error' :
               `Job ${Object.values(jobs).findIndex((job) => job.name === 'feature_extraction') + 1}: ${selectedBlock.name}. Status: ${statusFormatter(selectedBlock.status)}`}
-          infoText={(selectedBlock.name !== 'feature_extraction') ? (selectedBlock.errors && selectedBlock.errors[0]?.error) :
+        infoText={(selectedBlock.name !== 'feature_extraction') ? (selectedBlock.errors && selectedBlock.errors[0]?.error) :
               jobData[selectedBlock.id] !== undefined && (
                 <pre>{JSON.stringify(jobData[selectedBlock.id], null, 2)}</pre>
-          )}
-          onClose={() => setActionWithBlock(null)}
-          open
-        />
-      )}
+        )}
+        onClose={() => setActionWithBlock(null)}
+        open
+                                                         /> : null}
     </ReactFlowProvider>
   );
 };

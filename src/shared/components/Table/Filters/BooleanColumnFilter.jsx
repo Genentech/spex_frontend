@@ -24,7 +24,9 @@ const BooleanColumnFilter = (labels) => {
           >
             {/* eslint-disable-next-line react/jsx-no-literals */}
             <option value='all' aria-label='All'>All</option>
+
             <option value='true'>{trueLabel}</option>
+
             <option value='false'>{falseLabel}</option>
           </select>
         );

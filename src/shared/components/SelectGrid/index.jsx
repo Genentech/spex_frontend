@@ -10,7 +10,7 @@ const Container = styled.div`
     height: 100%;
     width: 100%;
     display: grid;
-    grid-template-rows: 50px 1fr;
+    grid-template-rows: 30px 1fr;
 `;
 
 const ButtonRow = styled.div`
@@ -100,10 +100,12 @@ const SelectGrid = () => {
           <Button size="small" color="default" onClick={handleDeleteSelectedRows} disabled={selectedRowsIds.length === 0}>
             Delete Selected Rows
           </Button>
+
           <Button size="small" color="default" onClick={handleAddRow}>
             Add Row
           </Button>
         </ButtonRow>
+
         <DataGrid
           disableSelectionOnClick
           checkboxSelection

@@ -34,6 +34,7 @@ const SelectEnum = (props) => {
   return (
     <FormControl variant="outlined">
       <InputLabel htmlFor={label}>{label}</InputLabel>
+
       <Select
         value={fixedValue}
         onChange={doChange}

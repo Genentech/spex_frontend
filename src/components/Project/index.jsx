@@ -8,18 +8,16 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import classNames from 'classnames';
 import { useDispatch, useSelector } from 'react-redux';
 import { matchPath, useHistory, useLocation } from 'react-router-dom';
+import List, { ListItem, ListItemIcon, ListItemText } from '+components/List';
+import { getFromStorage, saveToStorage } from '+utils/localStorage';
 import PathNames from '@/models/PathNames';
-import { actions as pipelineActions, selectors as pipelineSelectors } from '@/redux/modules/pipelines';
+import { actions as processActions, selectors as processSelectors } from '@/redux/modules/processes';
 
 import ProjectIcon from '@/shared/components/Icons/ProjectIcon';
 import WorkFlowIcon from '@/shared/components/Icons/WorkFlowIcon';
 
-import List, { ListItem, ListItemIcon, ListItemText } from '+components/List';
-import { getFromStorage, saveToStorage } from '+utils/localStorage';
 
 import Container from './components/Container';
-import Pipeline from './Pipeline';
-import Pipelines from './Pipelines';
 import Processes from './Processes';
 import Resources from './Resources';
 import Results from './Results';
@@ -96,14 +94,14 @@ const Project = () => {
 
 
   const dispatch = useDispatch();
-  const selectedOption = useSelector(pipelineSelectors.getSelectedOption);
+  const selectedOption = useSelector(processSelectors.getSelectedOption);
 
   const handleSettingsClick = () => {
-    dispatch(pipelineActions.setSelectedOption('settings'));
+    dispatch(processActions.setSelectedOption('settings'));
   };
 
   const handleStatusClick = () => {
-    dispatch(pipelineActions.setSelectedOption('status'));
+    dispatch(processActions.setSelectedOption('status'));
   };
 
   const classes = useStyles();
@@ -124,19 +122,12 @@ const Project = () => {
   const processReviewTabName = matchWithReviewTab ? matchWithReviewTab.params.tabReview : undefined;
   const ShowProcessReviewTab = !!matchPath(location.pathname, { path: pathMatchOptionsWithReviewTab.path, exact: true });
 
-  const mathcPipelinePath = matchPath(location.pathname, { path: `/${PathNames.projects}/${projectId}/${PathNames.pipelines}/:id` });
-  const pipelineId = mathcPipelinePath ? mathcPipelinePath.params.id : undefined;
-
   const resourcesUrl = `/${PathNames.projects}/${projectId}`;
   const resultsUrl = `/${PathNames.projects}/${projectId}/${PathNames.results}`;
   const processesUrl = `/${PathNames.projects}/${projectId}/${PathNames.processes}`;
-  const pipelinesUrl = `/${PathNames.projects}/${projectId}/${PathNames.pipelines}`;
-  const pipelineUrl = `/${PathNames.projects}/${projectId}/${PathNames.pipelines}/${pipelineId}`;
 
   const showResources = !!matchPath(location.pathname, { path: resourcesUrl, exact: true });
   const ShowProcesses = !!matchPath(location.pathname, { path: processesUrl, exact: true });
-  const ShowPipelines = !!matchPath(location.pathname, { path: pipelinesUrl, exact: true });
-  const ShowPipeline = !!matchPath(location.pathname, { path: pipelineUrl, exact: true });
   const showResults = !!matchPath(location.pathname, { path: resultsUrl });
 
   const [sidebarOpened, setSidebarOpened] = useState(getFromStorage('sidebarOpened') === 'true');
@@ -191,6 +182,7 @@ const Project = () => {
               className={classNames({ [classes.arrowIconOpen]: sidebarOpened })}
                           />
             </ListItemIcon>
+
             <ListItemText primary="Collapse" />
           </ListItem>
 
@@ -203,6 +195,7 @@ const Project = () => {
             button
           >
             <ListItemIcon><ProjectIcon fontSize="large" /></ListItemIcon>
+
             <ListItemText primary="Resources" />
           </ListItem>
 
@@ -213,10 +206,12 @@ const Project = () => {
             button
           >
             <ListItemIcon><WorkFlowIcon fontSize="large" /></ListItemIcon>
+
             <ListItemText primary="Analysis" />
           </ListItem>
 
           <Divider className={classes.divider} style={{ marginTop: '140px' }} />
+
           <ListItem
             className={classes.listItem} // Применяем стили элемента списка
             selected={selectedOption === 'settings'}
@@ -225,12 +220,14 @@ const Project = () => {
             style={{ display: currentUrl.includes('/processes/') && currentUrl.includes('/build') ? 'block' : 'none' }}
           >
             <ListItemIcon><SettingsIcon fontSize="medium" />
+
               <ListItemText
                 primary="Settings"
                 style={{ marginLeft: '25px' }} // Добавляем отступ слева от текста
               />
             </ListItemIcon>
           </ListItem>
+
           <ListItem
             className={classes.listItem}
             selected={selectedOption === 'status'}
@@ -239,6 +236,7 @@ const Project = () => {
             style={{ display: currentUrl.includes('/processes/') && currentUrl.includes('/build') ? 'block' : 'none' }}
           >
             <ListItemIcon><ResultsIcon fontSize="medium" />
+
               <ListItemText
                 primary="Status"
                 style={{ marginLeft: '25px' }}
@@ -248,20 +246,19 @@ const Project = () => {
         </List>
       </Drawer>
 
-      {showResources && <Resources />}
-      {ShowProcesses && <Processes />}
-      {(ShowProcess || ShowProcessReviewTab) && (
-        <TabContainer
-          sidebarWidth={sidebarWidth}
-          activeTab={processTabName}
-          projectId={projectId}
-          processId={processId}
-          processReviewTabName={processReviewTabName}
-        />
-      )}
-      {ShowPipelines && <Pipelines />}
-      {ShowPipeline && <Pipeline />}
-      {showResults && <Results />}
+      {showResources ? <Resources /> : null}
+
+      {ShowProcesses ? <Processes /> : null}
+
+      {(ShowProcess || ShowProcessReviewTab) ? <TabContainer
+        sidebarWidth={sidebarWidth}
+        activeTab={processTabName}
+        projectId={projectId}
+        processId={processId}
+        processReviewTabName={processReviewTabName}
+                                               /> : null}
+
+      {showResults ? <Results /> : null}
     </Container>
   );
 };

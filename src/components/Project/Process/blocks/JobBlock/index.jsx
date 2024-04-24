@@ -61,11 +61,14 @@ const JobBlock = (props) => {
           }
         `}
       </style>
+
       <Container>
         <Name>
-          {data.name && <span>{data.name}</span>}
+          {data.name ? <span>{data.name}</span> : null}
+
           <StatusIcon statuscolor={data.color} />
         </Name>
+
         <ButtonGroup>
 
           {data.status === -3 && (
@@ -88,25 +91,21 @@ const JobBlock = (props) => {
             </IconButton>
           )}
 
-          {data.onDelete && (
-            <IconButton
-              style={iconButtonStyle}
-              disabled={data.id === 'new'}
-              onClick={() => data.onDelete(data)}
-            >
-              <DeleteIcon fontSize="small" />
-            </IconButton>
-          )}
+          {data.onDelete ? <IconButton
+            style={iconButtonStyle}
+            disabled={data.id === 'new'}
+            onClick={() => data.onDelete(data)}
+                           >
+            <DeleteIcon fontSize="small" />
+          </IconButton> : null}
 
-          {data.onRestart && (
-            <IconButton
-              style={iconButtonStyle}
-              disabled={data.id === 'new'}
-              onClick={() => data.onRestart(data)}
-            >
-              <PlayArrowIcon fontSize="small" />
-            </IconButton>
-          )}
+          {data.onRestart ? <IconButton
+            style={iconButtonStyle}
+            disabled={data.id === 'new'}
+            onClick={() => data.onRestart(data)}
+                            >
+            <PlayArrowIcon fontSize="small" />
+          </IconButton> : null}
 
         </ButtonGroup>
       </Container>

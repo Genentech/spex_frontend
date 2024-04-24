@@ -17,9 +17,9 @@ import DownloadIcon from '@mui/icons-material/Download';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
+import { statusFormatter } from '+utils/statusFormatter';
 import TaskInfoModal from '@/components/Project/Process/components/TaskInfoModal';
 import { actions as jobsActions, selectors as jobsSelectors } from '@/redux/modules/jobs';
-import { statusFormatter } from '+utils/statusFormatter';
 
 
 const StyledAccordionDetails = styled(AccordionDetails)`
@@ -111,13 +111,13 @@ const TasksDisplay = ({ jobs }) => {
   return (
     <ScrollableTasksContainer height={containerHeight}>
       <React.Fragment>
-        {contentModalInfo.header && contentModalInfo.infoText && showModalInfo &&
-          <TaskInfoModal
-            header={contentModalInfo.header}
-            infoText={contentModalInfo.infoText}
-            open={showModalInfo}
-            onClose={handleClose}
-          />}
+        {contentModalInfo.header && contentModalInfo.infoText && showModalInfo ? <TaskInfoModal
+          header={contentModalInfo.header}
+          infoText={contentModalInfo.infoText}
+          open={showModalInfo}
+          onClose={handleClose}
+                                                                                 /> : null}
+
         {Object.entries(jobsByStatus).map(([status, jobs]) => (
           <Accordion key={status}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -125,15 +125,17 @@ const TasksDisplay = ({ jobs }) => {
                 primary={`Status: ${statusFormatter(status)}`}
               />
             </AccordionSummary>
+
             <StyledAccordionDetails>
               <FullWidthList component="div">
-                {jobs && jobs.map((job, i) => (
+                {jobs ? jobs.map((job, i) => (
                   <Accordion key={job.id}>
                     <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                       <ListItemText
                         primary={`Job ${i + 1}: ${job.name}`}
                         secondary={`Status: ${statusFormatter(job.status)}`}
                       />
+
                       {job.name === 'feature_extraction' && (
                         <div>
                           <Button
@@ -145,7 +147,9 @@ const TasksDisplay = ({ jobs }) => {
                           >
                             Info
                           </Button>
+
                           <span style={{ marginRight: 10 }} />
+
                           <Button
                             size="small"
                             variant="contained"
@@ -158,44 +162,48 @@ const TasksDisplay = ({ jobs }) => {
                         </div>
                       )}
                     </AccordionSummary>
+
                     <StyledAccordionDetails>
                       <FullWidthList component="div">
-                        {job && job.tasks?.map((task, j) => (
+                        {job ? job.tasks?.map((task, j) => (
                           <Accordion key={task.id}>
                             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                               <ListItemText primary={`Task ${j + 1}: ${task.name}`} />
                             </AccordionSummary>
+
                             <StyledAccordionDetails>
                               <FullWidthList>
                                 <ListItem style={{ display: 'flex', justifyContent: 'space-between' }}>
                                   <ListItemText
                                     primary={`Task ID: ${task.id}, image id: ${task.omeroId} Status: ${statusFormatter(task.status)}`}
                                   />
-                                  {task.error && (
-                                    <Button
-                                      size="small"
-                                      variant="contained"
-                                      color="secondary"
-                                      startIcon={<ErrorIcon />}
-                                      onClick={() => openModalInfoTaskError(task.error)}
-                                    >
-                                      Info
-                                    </Button>
-                                  )}
+
+                                  {task.error ? <Button
+                                    size="small"
+                                    variant="contained"
+                                    color="secondary"
+                                    startIcon={<ErrorIcon />}
+                                    onClick={() => openModalInfoTaskError(task.error)}
+                                                >
+                                    Info
+                                  </Button> : null}
                                 </ListItem>
+
                                 <ListItem>
                                   {task.status === 'pending' && <CircularProgress />}
+
                                   {task.status === 'error' && <ErrorIcon color="secondary" />}
+
                                   {task.status === 'success' && <CheckCircleOutlineIcon color="primary" />}
                                 </ListItem>
                               </FullWidthList>
                             </StyledAccordionDetails>
                           </Accordion>
-                        ))}
+                        )) : null}
                       </FullWidthList>
                     </StyledAccordionDetails>
                   </Accordion>
-                ))}
+                )) : null}
               </FullWidthList>
             </StyledAccordionDetails>
           </Accordion>

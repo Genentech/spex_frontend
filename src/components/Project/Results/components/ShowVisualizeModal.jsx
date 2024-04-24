@@ -8,11 +8,11 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import WallpaperIcon from '@material-ui/icons/Wallpaper';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
-import { actions as tasksActions, selectors as tasksSelectors } from '@/redux/modules/tasks';
 import Button from '+components/Button';
 import FormModal from '+components/FormModal';
 import { Box } from '+components/Tabs';
 import Container from '@/components/Project/components/Container';
+import { actions as tasksActions, selectors as tasksSelectors } from '@/redux/modules/tasks';
 
 const ShowVisualizeModal = (props) => {
   const {
@@ -73,6 +73,7 @@ const ShowVisualizeModal = (props) => {
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           <DynamicFeedOutlinedIcon /> Tasks
         </AccordionSummary>
+
         <AccordionDetails>
           {Object.values(images_visualization).map((children) => (
             Object.keys(children).map((key) => (
@@ -88,6 +89,7 @@ const ShowVisualizeModal = (props) => {
           ))}
         </AccordionDetails>
       </Accordion>
+
       <Button
         size="small"
         variant="outlined"

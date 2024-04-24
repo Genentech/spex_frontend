@@ -27,11 +27,13 @@ const TaskInfoModal = (props) => {
       aria-describedby="alert-dialog-description"
     >
       <DialogTitle id="alert-dialog-title">{header}</DialogTitle>
+
       <DialogContent>
         <div id="alert-dialog-description">
           {infoText}
         </div>
       </DialogContent>
+
       <DialogActions>
         <CopyToClipboard text={infoText}>
           <Button onClick={onClose} color="primary" autoFocus>

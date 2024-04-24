@@ -15,6 +15,7 @@ const defaultHeaderTemplate = (action, item) => (<Fragment>{action} {item}</Frag
 const defaultBodyTemplate = (action, item) => (
   <Fragment>
     <div>Do you really want to <span>{action}</span> <span>{item ?? 'this item'}</span>? </div>
+
     <div>This process cannot be undone.</div>
   </Fragment>
 );
@@ -52,7 +53,9 @@ const ConfirmModal = (props) => {
       onClose={onClose}
     >
       <ModalHeader>{header}</ModalHeader>
+
       <ModalBody>{body}</ModalBody>
+
       <ModalFooter>
         <Button
           color={ButtonColors.secondary}
@@ -60,6 +63,7 @@ const ConfirmModal = (props) => {
         >
           {closeButtonText}
         </Button>
+
         <Button
           color={ButtonColors.danger}
           onClick={onSubmit}

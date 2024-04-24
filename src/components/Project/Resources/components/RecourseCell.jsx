@@ -7,10 +7,13 @@ const RecourseCell = styled(({ className, name, omeroIds }) => (
   <div className={classNames(className, 'recourse-cell')}>
     <div className="recourse-name">
       <span className="recourse-name__label">Name:</span>
+
       <span className="recourse-name__value">{name}</span>
     </div>
+
     <div className="recourse-omeroIds">
       <span className="recourse-omeroIds__label">Omero Image IDs:</span>
+
       <span className="recourse-omeroIds__value">{omeroIds}</span>
     </div>
   </div>

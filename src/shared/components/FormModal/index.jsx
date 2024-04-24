@@ -50,7 +50,9 @@ const FormModal = styled((props) => {
             }}
           >
             <ModalHeader>{header}</ModalHeader>
+
             <ModalBody>{children}</ModalBody>
+
             <ModalFooter>
               <Button
                 color={ButtonColors.secondary}
@@ -61,6 +63,7 @@ const FormModal = styled((props) => {
               >
                 {closeButtonText}
               </Button>
+
               {!hideSubmitButton && (
                 <Button
                   type="submit"

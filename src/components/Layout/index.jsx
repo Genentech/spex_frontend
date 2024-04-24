@@ -7,21 +7,21 @@ import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory, useLocation, matchPath } from 'react-router-dom';
 
-import PathNames from '@/models/PathNames';
 
-import { actions as pipelinesActions, selectors as pipelinesSelectors } from '@/redux/modules/pipelines';
-import { actions as projectsActions, selectors as projectsSelectors } from '@/redux/modules/projects';
-import { actions as authActions } from '@/redux/modules/users/auth';
 
 import Button, { ButtonColors } from '+components/Button';
 import Link from '+components/Link';
 import Progress from '+components/Progress';
 import Select, { Option } from '+components/Select';
 import Typography from '+components/Typography';
+import PathNames from '@/models/PathNames';
+import { actions as processesActions, selectors as processesSelectors } from '@/redux/modules/processes';
+import { actions as projectsActions, selectors as projectsSelectors } from '@/redux/modules/projects';
+import { actions as authActions } from '@/redux/modules/users/auth';
 
-import spex_banner from './components/banner_50.png';
 import Body from './components/Body';
 import Container from './components/Container';
+import spex_banner from './components/spex_logo_small.svg';
 
 const none = 'none';
 
@@ -72,7 +72,7 @@ const Layout = ({ children }) => {
   const location = useLocation();
 
   const [selectedProjectId, setSelectedProjectId] = useState(none);
-  const [selectedPipelineId, setSelectedPipelineId] = useState(none);
+  const [selectedProcessId, setSelectedProcessId] = useState(none);
 
   const matchProjectPath = matchPath(location.pathname, { path: `/${PathNames.projects}/:id` });
   const projectId = matchProjectPath ? matchProjectPath.params.id : none;
@@ -81,24 +81,24 @@ const Layout = ({ children }) => {
   const projectsArr = Object.values(projects);
   const isProjectsFetching = useSelector(projectsSelectors.isFetching);
 
-  const pipelines = useSelector(pipelinesSelectors.getPipelinesOfProject(projectId));
-  const pipelinesArr = Object.values(pipelines);
-  const isPipelinesFetching = useSelector(pipelinesSelectors.isFetching);
+  const processes = useSelector(processesSelectors.getProcessesOfProject(projectId));
+  const processesArr = Object.values(processes);
+  const isProcessesFetching = useSelector(processesSelectors.isFetching);
 
   const onProjectChange = useCallback(
     (event) => {
       const { target: { value: id } } = event;
-      setSelectedPipelineId(none);
+      setSelectedProcessId(none);
       const url = `/${PathNames.projects}${id === none ? '' : `/${id}`}`;
       history.push(url);
     },
     [history],
   );
 
-  const onPipelineChange = useCallback(
+  const onProcessChange = useCallback(
     (event) => {
       const { target: { value: id } } = event;
-      setSelectedPipelineId(id);
+      setSelectedProcessId(id);
       if (id === none) {
         history.push(`/${PathNames.projects}/${projectId}/${PathNames.processes}`);
       } else {
@@ -129,7 +129,7 @@ const Layout = ({ children }) => {
   useEffect(
     () => {
       if (selectedProjectId !== none) {
-        dispatch(pipelinesActions.fetchPipelinesOfProject(selectedProjectId));
+        dispatch(processesActions.fetchProcessesOfProject(selectedProjectId));
       }
     },
     [selectedProjectId, dispatch],
@@ -139,23 +139,24 @@ const Layout = ({ children }) => {
     const match = matchPath(location.pathname, { path: `/${PathNames.projects}/:id` });
     const projectIdFromUrl = match ? match.params.id : none;
     setSelectedProjectId(projectIdFromUrl);
-    const pipelineIdFromUrl = matchPath(location.pathname, { path: `/${PathNames.projects}/:projectId/${PathNames.processes}/:pipelineId` });
-    if (pipelineIdFromUrl) {
-      const { params: { projectId, pipelineId } } = pipelineIdFromUrl;
+    const processIdFromUrl = matchPath(location.pathname, { path: `/${PathNames.projects}/:projectId/${PathNames.processes}/:processId` });
+    if (processIdFromUrl) {
+      const { params: { projectId, processId } } = processIdFromUrl;
       setSelectedProjectId(projectId);
-      setSelectedPipelineId(pipelineId);
+      setSelectedProcessId(processId);
     }
     const matchProject = matchPath(location.pathname, { path: `/${PathNames.projects}/:projectId` });
     const matchProcess = matchPath(location.pathname, { path: `/${PathNames.projects}/:projectId/${PathNames.processes}` });
 
     if (matchProject && !matchProcess) {
-      setSelectedPipelineId(none);
+      setSelectedProcessId(none);
     }
   }, [location.pathname]);
 
   return (
     <Container className={classes.root}>
       <CssBaseline />
+
       <Progress />
 
       <AppBar
@@ -167,35 +168,37 @@ const Layout = ({ children }) => {
             <Link to="/">
               <img
                 src={spex_banner}
-                alt='spex_banner'
-                style={{ maxHeight: '80%', objectFit: 'contain' }}
+                alt='spex_logo'
+                style={{ width: 150, marginRight: '44px', maxHeight: '80%', objectFit: 'contain' }}
               />
             </Link>
           </Typography>
 
-          {projectsArr.length > 0 && !isProjectsFetching && !isPipelinesFetching && !isPipelinesFetching && (
+          {projectsArr.length > 0 && !isProjectsFetching && !isProcessesFetching && !isProcessesFetching && (
             <Select
               className={classes.projectSelect}
               defaultValue={none}
               value={selectedProjectId}
               onChange={onProjectChange}
-              disabled={isPipelinesFetching}
+              disabled={isProcessesFetching}
             >
               <Option value={none}>Select Project</Option>
+
               {projectsArr.map((item) => (<Option key={item.id} value={item.id}>{item.name}</Option>))}
             </Select>
           )}
 
-          {pipelinesArr.length > 0 && !isPipelinesFetching && (
+          {processesArr.length > 0 && !isProcessesFetching && (
             <Select
               className={classes.projectSelect}
               defaultValue={none}
-              value={selectedPipelineId}
-              onChange={onPipelineChange}
+              value={selectedProcessId}
+              onChange={onProcessChange}
               disabled={selectedProjectId === none}
             >
               <Option value={none}>Select Process</Option>
-              {pipelinesArr.map((item) => (<Option key={item.id} value={item.id}>{item.name}</Option>))}
+
+              {processesArr.map((item) => (<Option key={item.id} value={item.id}>{item.name}</Option>))}
             </Select>
           )}
 

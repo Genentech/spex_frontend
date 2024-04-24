@@ -4,11 +4,11 @@ import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { actions as resourcesActions, selectors as resourcesSelectors } from '@/redux/modules/resources';
 
 import Button, { ButtonColors } from '+components/Button';
 import Modal, { ModalHeader, ModalBody, ModalFooter } from '+components/Modal';
 import Table from '+components/Table';
+import { actions as resourcesActions, selectors as resourcesSelectors } from '@/redux/modules/resources';
 import Row from '../../components/Row';
 
 
@@ -83,6 +83,7 @@ const ManageResourcesModal = styled((props) => {
       onClose={onClose}
     >
       <ModalHeader>{header}</ModalHeader>
+
       <ModalBody>
         <Row>
           <Table
@@ -94,6 +95,7 @@ const ManageResourcesModal = styled((props) => {
           />
         </Row>
       </ModalBody>
+
       <ModalFooter>
         <Button
           color={ButtonColors.secondary}
@@ -101,6 +103,7 @@ const ManageResourcesModal = styled((props) => {
         >
           {closeButtonText}
         </Button>
+
         <Button
           color={ButtonColors.primary}
           onClick={emitSubmit}

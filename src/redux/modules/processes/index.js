@@ -1,15 +1,15 @@
 import { call, put } from 'redux-saga/effects';
+import hash from '+utils/hash';
 import backendClient from '@/middleware/backendClient';
 import { actions as jobsActions } from '@/redux/modules/jobs';
 import { createSlice, createSelector, startFetching, stopFetching } from '@/redux/utils';
-import hash from '+utils/hash';
 
 const initialState = {
   isFetching: false,
   error: '',
-  pipelines: [],
-  pipelinesOfProject: [],
-  visPipelines: {},
+  processes: [],
+  processesOfProject: [],
+  visProcesses: {},
 };
 
 let api;
@@ -23,16 +23,16 @@ const initApi = () => {
 const baseUrl = '/pipeline';
 
 const slice = createSlice({
-  name: 'pipelines',
+  name: 'processes',
   initialState,
   reducers: {
-    fetchPipelines: startFetching,
-    fetchPipelinesOfProject: startFetching,
-    fetchPipelinesForVis: startFetching,
-    fetchPipeline: startFetching,
-    createPipeline: startFetching,
-    updatePipeline: startFetching,
-    deletePipeline: startFetching,
+    fetchProcesses: startFetching,
+    fetchProcessesOfProject: startFetching,
+    fetchProcessesForVis: startFetching,
+    fetchProcess: startFetching,
+    createProcess: startFetching,
+    updateProcess: startFetching,
+    deleteProcess: startFetching,
     createConn: startFetching,
 
     createJob: startFetching,
@@ -43,47 +43,47 @@ const slice = createSlice({
       state.selectedOption = payload || 'settings';
     },
 
-    fetchPipelinesSuccess: (state, { payload: { projectId, data } }) => {
+    fetchProcessesSuccess: (state, { payload: { projectId, data } }) => {
       stopFetching(state);
-      let hashedPipelines = hash(data || [], 'id');
+      let hashedProcesses = hash(data || [], 'id');
 
-      if (Object.keys(hashedPipelines).length > 0) {
-        state.pipelines = hashedPipelines;
+      if (Object.keys(hashedProcesses).length > 0) {
+        state.processes = hashedProcesses;
       }
     },
 
-    fetchPipelinesOfProjectSuccess: (state, { payload: { projectId, data } }) => {
+    fetchProcessesOfProjectSuccess: (state, { payload: { projectId, data } }) => {
       stopFetching(state);
-      let hashedPipelinesOfProject = hash(data || [], 'id');
+      let hashedProcessesOfProject = hash(data || [], 'id');
 
-      if (Object.keys(hashedPipelinesOfProject).length > 0) {
-        state.pipelinesOfProject = hashedPipelinesOfProject;
+      if (Object.keys(hashedProcessesOfProject).length > 0) {
+        state.processesOfProject = hashedProcessesOfProject;
       }
     },
 
-    fetchPipelinesForVisSuccess: (state, { payload: { data } }) => {
+    fetchProcessesForVisSuccess: (state, { payload: { data } }) => {
       stopFetching(state);
       if (data?.length > 0 && data[0].jobs?.length > 0) {
-        state.visPipelines[data[0].id] = data[0];
+        state.visProcesses[data[0].id] = data[0];
       }
     },
 
-    createPipelineSuccess: (state, { payload: pipeline }) => {
+    createProcessSuccess: (state, { payload: process }) => {
       stopFetching(state);
-      state.pipelines[pipeline.id] = pipeline;
+      state.processes[process.id] = process;
     },
 
-    updatePipelineSuccess: (state, { payload: pipeline }) => {
+    updateProcessSuccess: (state, { payload: process }) => {
       stopFetching(state);
-      state.pipelines[pipeline.id] = pipeline;
+      state.processes[process.id] = process;
     },
 
-    deletePipelineSuccess(state, { payload: [pipelineId] }) {
+    deleteProcessSuccess(state, { payload: [processId] }) {
       stopFetching(state);
-      delete state.pipelines[pipelineId];
+      delete state.processes[processId];
     },
 
-    createJobSuccess: (state, { payload: { jobs, pipelineId } }) => {
+    createJobSuccess: (state, { payload: { jobs, processId } }) => {
       stopFetching(state);
     },
 
@@ -95,8 +95,8 @@ const slice = createSlice({
       stopFetching(state);
     },
 
-    clearPipelines: (state) => {
-      state.pipelines = {};
+    clearProcesses: (state) => {
+      state.processes = {};
     },
 
     requestFail(state, { payload: { message } }) {
@@ -108,15 +108,15 @@ const slice = createSlice({
   },
 
   sagas: (actions) => ({
-    [actions.fetchPipelines]: {
+    [actions.fetchProcesses]: {
       * saga({ payload: projectId }) {
         initApi();
 
         try {
           const url = `${baseUrl}s/${projectId}`;
           const { data } = yield call(api.get, url);
-          yield put(actions.fetchPipelinesSuccess({ projectId: projectId, data: data.data['pipelines'] }));
-          yield put(actions.fetchPipelinesOfProjectSuccess({ projectId: projectId, data: data.data['pipelines'] }));
+          yield put(actions.fetchProcessesSuccess({ projectId: projectId, data: data.data['pipelines'] }));
+          yield put(actions.fetchProcessesOfProjectSuccess({ projectId: projectId, data: data.data['pipelines'] }));
         } catch (error) {
           yield put(actions.requestFail(error));
           // eslint-disable-next-line no-console
@@ -125,14 +125,14 @@ const slice = createSlice({
       },
     },
 
-    [actions.fetchPipelinesOfProject]: {
+    [actions.fetchProcessesOfProject]: {
       * saga({ payload: projectId }) {
         initApi();
 
         try {
           const url = `${baseUrl}s/${projectId}`;
           const { data } = yield call(api.get, url);
-          yield put(actions.fetchPipelinesOfProjectSuccess({ projectId: projectId, data: data.data['pipelines'] }));
+          yield put(actions.fetchProcessesOfProjectSuccess({ projectId: projectId, data: data.data['pipelines'] }));
         } catch (error) {
           yield put(actions.requestFail(error));
           // eslint-disable-next-line no-console
@@ -141,16 +141,16 @@ const slice = createSlice({
       },
     },
 
-    [actions.fetchPipelinesForVis]: {
-      * saga({ payload: { projectId, pipelineId } }) {
+    [actions.fetchProcessesForVis]: {
+      * saga({ payload: { projectId, processId } }) {
         initApi();
         try {
           let url = `projects/${projectId}/list`;
-          if (pipelineId) {
-            url += `?pipeline_id=${pipelineId}`;
+          if (processId) {
+            url += `?pipeline_id=${processId}`;
           }
           const { data } = yield call(api.get, url);
-          yield put(actions.fetchPipelinesForVisSuccess({ data: data['data'] }));
+          yield put(actions.fetchProcessesForVisSuccess({ data: data['data'] }));
         } catch (error) {
           yield put(actions.requestFail(error));
           // eslint-disable-next-line no-console
@@ -159,14 +159,14 @@ const slice = createSlice({
       },
     },
 
-    [actions.fetchPipeline]: {
-      * saga({ payload: { projectId, pipelineId } }) {
+    [actions.fetchProcess]: {
+      * saga({ payload: { projectId, processId } }) {
         initApi();
 
         try {
-          const url = `${baseUrl}/${pipelineId}`;
+          const url = `${baseUrl}/${processId}`;
           const { data } = yield call(api.get, url);
-          yield put(actions.fetchPipelinesSuccess({ projectId, data: data.data['pipelines'] }));
+          yield put(actions.fetchProcessesSuccess({ projectId, data: data.data['pipelines'] }));
         } catch (error) {
           yield put(actions.requestFail(error));
           // eslint-disable-next-line no-console
@@ -175,15 +175,15 @@ const slice = createSlice({
       },
     },
 
-    [actions.createPipeline]: {
-      * saga({ payload: pipeline }) {
+    [actions.createProcess]: {
+      * saga({ payload: process }) {
         initApi();
 
         try {
-          const url = `${baseUrl}s/${pipeline.project}`;
-          const { data } = yield call(api.post, url, pipeline);
-          yield put(actions.createPipelineSuccess(data.data));
-          yield put(actions.fetchPipelines(pipeline.project));
+          const url = `${baseUrl}s/${process.project}`;
+          const { data } = yield call(api.post, url, process);
+          yield put(actions.createProcessSuccess(data.data));
+          yield put(actions.fetchProcesses(process.project));
         } catch (error) {
           yield put(actions.requestFail(error));
           // eslint-disable-next-line no-console
@@ -192,15 +192,15 @@ const slice = createSlice({
       },
     },
 
-    [actions.updatePipeline]: {
-      * saga({ payload: pipeline }) {
+    [actions.updateProcess]: {
+      * saga({ payload: process }) {
         initApi();
 
         try {
-          const url = `${baseUrl}/${pipeline.id}`;
-          const { data } = yield call(api.put, url, pipeline);
-          yield put(actions.updatePipelineSuccess(data.data));
-          yield put(actions.fetchPipelines(pipeline.project));
+          const url = `${baseUrl}/${process.id}`;
+          const { data } = yield call(api.put, url, process);
+          yield put(actions.updateProcessSuccess(data.data));
+          yield put(actions.fetchProcesses(process.project));
         } catch (error) {
           yield put(actions.requestFail(error));
           // eslint-disable-next-line no-console
@@ -209,14 +209,14 @@ const slice = createSlice({
       },
     },
 
-    [actions.deletePipeline]: {
-      * saga({ payload: [projectId, pipelineId] }) {
+    [actions.deleteProcess]: {
+      * saga({ payload: [projectId, processId] }) {
         initApi();
         try {
-          const url = `${baseUrl}/${pipelineId}`;
+          const url = `${baseUrl}/${processId}`;
           yield call(api.delete, url);
-          yield put(actions.deletePipelineSuccess([projectId, pipelineId]));
-          yield put(actions.fetchPipelines(projectId));
+          yield put(actions.deleteProcessSuccess([projectId, processId]));
+          yield put(actions.fetchProcesses(projectId));
         } catch (error) {
           yield put(actions.requestFail(error));
           // eslint-disable-next-line no-console
@@ -235,12 +235,12 @@ const slice = createSlice({
             throw new Error('Job cannot be empty');
           }
 
-          const pipelineUrl = `${baseUrl}/link/${job.rootId ?? job.pipelineId}/${job_id}/${job.pipelineId}`;
-          yield call(api.post, pipelineUrl);
+          const processUrl = `${baseUrl}/link/${job.rootId ?? job.processId}/${job_id}/${job.processId}`;
+          yield call(api.post, processUrl);
 
-          yield put(actions.fetchPipeline({
+          yield put(actions.fetchProcess({
             projectId: job.projectId,
-            pipelineId: job.pipelineId,
+            processId: job.processId,
           }));
         } catch (error) {
           yield put(actions.requestFail(error));
@@ -266,21 +266,21 @@ const slice = createSlice({
           const { data } = yield call(api.post, jobUrl, createParams);
           yield put(jobsActions.createJobSuccess(data.data));
 
-          const pipelineUrl = `${baseUrl}/link/${job.rootId ?? job.pipelineId}/${data.data.id}/${job.pipelineId}`;
-          yield call(api.post, pipelineUrl);
+          const processUrl = `${baseUrl}/link/${job.rootId ?? job.processId}/${data.data.id}/${job.processId}`;
+          yield call(api.post, processUrl);
 
-          yield put(actions.fetchPipeline({
+          yield put(actions.fetchProcess({
             projectId: job.projectId,
-            pipelineId: job.pipelineId,
+            processId: job.processId,
           }));
 
-          yield put(actions.createJobSuccess( { jobs: [job], pipelineId: job.pipelineId } ));
-          yield put(actions.fetchPipeline({
+          yield put(actions.createJobSuccess( { jobs: [job], processId: job.processId } ));
+          yield put(actions.fetchProcess({
             projectId: job.projectId,
-            pipelineId: job.pipelineId,
+            processId: job.processId,
           }));
 
-          yield put(jobsActions.fetchJobsByPipelineId(job.pipelineId));
+          yield put(jobsActions.fetchJobsByProcessId(job.processId));
         } catch (error) {
           yield put(actions.requestFail(error));
           // eslint-disable-next-line no-console
@@ -307,12 +307,12 @@ const slice = createSlice({
           const { data } = yield call(api.put, jobUrl, updateParams);
           yield put(jobsActions.updateJobSuccess(data.data));
 
-          yield put(actions.fetchPipeline({
+          yield put(actions.fetchProcess({
             projectId: job.projectId,
-            pipelineId: job.pipelineId,
+            processId: job.processId,
           }));
 
-          yield put(jobsActions.fetchJobsByPipelineId(job.pipelineId));
+          yield put(jobsActions.fetchJobsByProcessId(job.processId));
 
           yield put(actions.updateJobSuccess());
         } catch (error) {
@@ -324,17 +324,17 @@ const slice = createSlice({
     },
 
     [actions.deleteJob]: {
-      * saga({ payload: { projectId, pipelineId, jobId } }) {
+      * saga({ payload: { projectId, processId, jobId } }) {
         initApi();
         try {
-          const pipelineUrl = `${baseUrl}/link/${pipelineId}/${jobId}`;
-          yield call(api.delete, pipelineUrl);
+          const processUrl = `${baseUrl}/link/${processId}/${jobId}`;
+          yield call(api.delete, processUrl);
 
           const jobUrl = `/jobs/${jobId}`;
 
           yield call(api.delete, jobUrl);
           yield put(jobsActions.deleteJobSuccess(jobId));
-          yield put(actions.fetchPipeline({ projectId, pipelineId }));
+          yield put(actions.fetchProcess({ projectId, processId }));
 
           yield put(actions.deleteJobSuccess());
         } catch (error) {
@@ -352,24 +352,24 @@ const slice = createSlice({
       (state) => state?.isFetching,
     ),
 
-    getPipelines: (projectId) => createSelector(
+    getProcesses: (projectId) => createSelector(
       [getState],
-      (state) => state?.pipelines,
+      (state) => state?.processes,
     ),
 
-    getPipelinesOfProject: () => createSelector(
+    getProcessesOfProject: () => createSelector(
       [getState],
-      (state) => state?.pipelinesOfProject,
+      (state) => state?.processesOfProject,
     ),
 
-    getPipelinesWithTasksForVis: (pipelineId) => createSelector(
+    getProcessesWithTasksForVis: (processId) => createSelector(
       [getState],
-      (state) => state?.visPipelines[pipelineId],
+      (state) => state?.visProcesses[processId],
     ),
 
-    getPipeline: (projectId, pipelineId) => createSelector(
+    getProcess: (projectId, processId) => createSelector(
       [getState],
-      (state) => state?.pipelines[pipelineId],
+      (state) => state?.processes[processId],
     ),
 
     getSelectedOption: createSelector(

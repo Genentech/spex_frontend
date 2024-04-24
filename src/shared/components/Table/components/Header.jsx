@@ -52,7 +52,8 @@ const Header = (props) => {
                                     >
                                       {column.render('Header')}
                                     </div>
-                                    {canResize && <div className='rt-resizer' {...column.getResizerProps()} />}
+
+                                    {canResize ? <div className='rt-resizer' {...column.getResizerProps()} /> : null}
                                   </div>
                                 );
                             })}
@@ -60,24 +61,23 @@ const Header = (props) => {
                   </div>
                 );
             })}
-        {hasFilters && (
-          <div className='rt-thead -filters'>
-            <div className='rt-tr' {...lastHeaderGroup.getHeaderGroupProps()}>
-              {lastHeaderGroup.headers.map((column) => (
+
+        {hasFilters ? <div className='rt-thead -filters'>
+          <div className='rt-tr' {...lastHeaderGroup.getHeaderGroupProps()}>
+            {lastHeaderGroup.headers.map((column) => (
                             // eslint-disable-next-line react/jsx-key
-                <div
-                  {...column.getHeaderProps(getProps([
+              <div
+                {...column.getHeaderProps(getProps([
                                     { className: 'rt-th' },
                                     getHeaderProps,
                                     column.getProps,
                                 ]))}
-                >
-                  {column.canFilter && column.render('Filter')}
-                </div>
+              >
+                {column.canFilter ? column.render('Filter') : null}
+              </div>
                         ))}
-            </div>
           </div>
-            )}
+        </div> : null}
       </Fragment>
     );
 };

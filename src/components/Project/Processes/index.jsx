@@ -2,18 +2,18 @@ import React, { Fragment, useState, useMemo, useCallback, useEffect } from 'reac
 import { useDispatch, useSelector } from 'react-redux';
 import { matchPath, useLocation } from 'react-router-dom';
 
-import PathNames from '@/models/PathNames';
-import { actions as pipelineActions, selectors as pipelineSelectors } from '@/redux/modules/pipelines';
 
 import Button, { ButtonSizes, ButtonColors } from '+components/Button';
 import ConfirmModal, { ConfirmActions } from '+components/ConfirmModal';
 import Link from '+components/Link';
 import Table, { ButtonsCell } from '+components/Table';
+import PathNames from '@/models/PathNames';
+import { actions as processActions, selectors as processSelectors } from '@/redux/modules/processes';
 
 import ButtonsContainer from './components/ButtonsContainer';
-import PipelineFormModal from './components/PipelineFormModal';
+import ProcessFormModal from './components/ProcessFormModal';
 
-const defaultPipeline = {
+const defaultProcess = {
   name: '',
 };
 
@@ -26,80 +26,80 @@ const Processes = () => {
   const matchProjectPath = matchPath(location.pathname, { path: `/${PathNames.projects}/:id` });
   const projectId = matchProjectPath ? matchProjectPath.params.id : undefined;
 
-  const [pipelineToManage, setPipelineToManage] = useState(null);
-  const [pipelineToDelete, setPipelineToDelete] = useState(null);
+  const [processToManage, setProcessToManage] = useState(null);
+  const [processToDelete, setProcessToDelete] = useState(null);
   const [refresher, setRefresher] = useState(null);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const fetched_pipelines = useSelector(pipelineSelectors.getPipelines(projectId)) || {};
-  let filtered_pipelines = {};
+  const fetched_processes = useSelector(processSelectors.getProcesses(projectId)) || {};
+  let filtered_processes = {};
 
-  filtered_pipelines = useMemo(
+  filtered_processes = useMemo(
     () => {
         let data = {};
-        Object.keys(fetched_pipelines).forEach((key) => {
-            if ( fetched_pipelines[key]['project'] === projectId ) {
+        Object.keys(fetched_processes).forEach((key) => {
+            if ( fetched_processes[key]['project'] === projectId ) {
                 let obj = {};
-                obj[key] = fetched_pipelines[key];
+                obj[key] = fetched_processes[key];
                 data = { ...data, ...obj };
             }
           },
         );
         return data;
     },
-    [fetched_pipelines, projectId],
+    [fetched_processes, projectId],
   );
 
-  const onManagePipelineModalOpen = useCallback(
-    (pipeline) => {
-      setPipelineToManage(pipeline);
+  const onManageProcessModalOpen = useCallback(
+    (process) => {
+      setProcessToManage(process);
     },
     [],
   );
 
-  const onManagePipelineModalClose = useCallback(
+  const onManageProcessModalClose = useCallback(
     () => {
-      setPipelineToManage(null);
+      setProcessToManage(null);
     },
     [],
   );
 
-  const onManagePipelineModalSubmit = useCallback(
+  const onManageProcessModalSubmit = useCallback(
     (values) => {
-      const normalizedPipeline = {
+      const normalizedProcess = {
         ...values,
       };
 
-      if (normalizedPipeline.id) {
-        dispatch(pipelineActions.updatePipeline(normalizedPipeline));
+      if (normalizedProcess.id) {
+        dispatch(processActions.updateProcess(normalizedProcess));
       } else {
-        dispatch(pipelineActions.createPipeline(normalizedPipeline));
+        dispatch(processActions.createProcess(normalizedProcess));
       }
-      setPipelineToManage(null);
+      setProcessToManage(null);
     },
     [dispatch],
   );
 
-  const onDeletePipelineModalOpen = useCallback(
-    (pipeline) => {
-      setPipelineToDelete(pipeline);
+  const onDeleteProcessModalOpen = useCallback(
+    (process) => {
+      setProcessToDelete(process);
     },
     [],
   );
 
-  const onDeletePipelineModalClose = useCallback(
+  const onDeleteProcessModalClose = useCallback(
     () => {
-      setPipelineToDelete(null);
+      setProcessToDelete(null);
     },
     [],
   );
 
-  const onDeletePipelineModalSubmit = useCallback(
+  const onDeleteProcessModalSubmit = useCallback(
     () => {
-      dispatch(pipelineActions.deletePipeline([projectId, pipelineToDelete.id]));
-      setPipelineToDelete(null);
+      dispatch(processActions.deleteProcess([projectId, processToDelete.id]));
+      setProcessToDelete(null);
     },
-    [dispatch, pipelineToDelete, projectId],
+    [dispatch, processToDelete, projectId],
   );
 
   const columns = useMemo(
@@ -180,25 +180,27 @@ const Processes = () => {
               size={ButtonSizes.small}
               color={ButtonColors.secondary}
               variant="outlined"
-              onClick={() => onDeletePipelineModalOpen(original)}
+              onClick={() => onDeleteProcessModalOpen(original)}
             >
               Delete
             </Button>
+
             <Button
               size={ButtonSizes.small}
               color={ButtonColors.secondary}
               variant="outlined"
-              onClick={() => onManagePipelineModalOpen(original)}
+              onClick={() => onManageProcessModalOpen(original)}
             >
               Edit
             </Button>
+
             <Button
               size={ButtonSizes.small}
               color={ButtonColors.secondary}
               variant="outlined"
               onClick={() => {
                 const { id, ...copy } = original;
-                onManagePipelineModalOpen(copy);
+                onManageProcessModalOpen(copy);
               }}
             >
               Copy
@@ -208,7 +210,7 @@ const Processes = () => {
         [original],
       ),
     }]),
-    [onDeletePipelineModalOpen, onManagePipelineModalOpen, projectId],
+    [onDeleteProcessModalOpen, onManageProcessModalOpen, projectId],
   );
 
   useEffect(
@@ -216,7 +218,7 @@ const Processes = () => {
       if (!projectId) {
         return;
       }
-      dispatch(pipelineActions.fetchPipelines(projectId));
+      dispatch(processActions.fetchProcesses(projectId));
     },
     [dispatch, projectId, refresher],
   );
@@ -237,38 +239,34 @@ const Processes = () => {
     <Fragment>
       <ButtonsContainer>
         <Button onClick={() => {
-          const newProject = { ...defaultPipeline, project: `${projectId}` };
-          onManagePipelineModalOpen(newProject);
+          const newProject = { ...defaultProcess, project: `${projectId}` };
+          onManageProcessModalOpen(newProject);
         }}
         >
-          Add Pipeline
+          Add Process
         </Button>
       </ButtonsContainer>
 
       <Table
         columns={columns}
-        data={Object.values(filtered_pipelines)}
+        data={Object.values(filtered_processes)}
       />
 
-      {pipelineToManage && (
-        <PipelineFormModal
-          header={`${pipelineToManage.id ? 'Edit' : 'Add'} Pipeline`}
-          initialValues={pipelineToManage}
-          onClose={onManagePipelineModalClose}
-          onSubmit={onManagePipelineModalSubmit}
-          open
-        />
-      )}
+      {processToManage ? <ProcessFormModal
+        header={`${processToManage.id ? 'Edit' : 'Add'} Process`}
+        initialValues={processToManage}
+        onClose={onManageProcessModalClose}
+        onSubmit={onManageProcessModalSubmit}
+        open
+                         /> : null}
 
-      {pipelineToDelete && (
-        <ConfirmModal
-          action={ConfirmActions.delete}
-          item={pipelineToDelete.name}
-          onClose={onDeletePipelineModalClose}
-          onSubmit={onDeletePipelineModalSubmit}
-          open
-        />
-      )}
+      {processToDelete ? <ConfirmModal
+        action={ConfirmActions.delete}
+        item={processToDelete.name}
+        onClose={onDeleteProcessModalClose}
+        onSubmit={onDeleteProcessModalSubmit}
+        open
+                         /> : null}
     </Fragment>
   );
 };

@@ -98,6 +98,12 @@
       }
     }],
     "react/forbid-component-props": [0],
+
+    "react/jsx-closing-tag-location": "off",
+    "react/jsx-newline": "off",
+    "react/sort-default-props": "off",
+    "react/prop-types": "off",
+    "react/hook-use-state": "off",
     "quotes": ["error", "single", { "avoidEscape": true }]
   }
 }

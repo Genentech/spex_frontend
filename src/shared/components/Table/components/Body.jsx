@@ -2,8 +2,8 @@
 import React from 'react';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
-import { getProps } from '../utils';
 import NoDataContainer from './NoDataContainer';
+import { getProps } from '../utils';
 
 const Body = (props) => {
     const {
@@ -68,10 +68,12 @@ const Body = (props) => {
                                 );
                             })}
                     </div>
+
                     {row.isExpanded && SubComponent ? <SubComponent {...row} /> : null}
                   </div>
                 );
             })}
+
         {fakeRows.map((_, i) => (
           <div className={rowGroupClassName} {...getTableBodyProps()} key={`key_dummyRow_${_}`}>
             <div className={`rt-tr -padRow ${(rows.length + i) % 2 ? '' : '-odd'}`}>
@@ -88,8 +90,8 @@ const Body = (props) => {
             </div>
           </div>
             ))}
-        {noData && !rows?.length
-                && <NoDataContainer className='rt-noData'>{noData}</NoDataContainer>}
+
+        {noData && !rows?.length ? <NoDataContainer className='rt-noData'>{noData}</NoDataContainer> : null}
       </div>
     );
 };

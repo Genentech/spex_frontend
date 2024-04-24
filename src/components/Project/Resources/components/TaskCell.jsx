@@ -9,17 +9,23 @@ const TaskCell = styled(({ className, name, omeroId, csvdata }) => (
   <div className={classNames(className, 'task-cell')}>
     <div className="task-name">
       <span className="task-name__label">Name:</span>
+
       <span className="task-name__value">{name}</span>
     </div>
+
     <div className="task-omeroId">
       <span className="task-omeroId__label">Omero Image ID:</span>
+
       <span className="task-omeroId__value">{omeroId}</span>
     </div>
+
     <div className="task-csvdata">
       <span className="task-csvdata__label">CSV Data:</span>
+
       <span className="task-csvdata__value">
         {/* eslint-disable-next-line react/no-array-index-key */}
         {csvdata.slice(0, maxCsvDataSize).map((row, i) => (<span key={i} className="task-csvdata__row">{i + 1}. {row}</span>))}
+
         {csvdata.length > maxCsvDataSize && (<span className="task-csvdata__row">...</span>)}
       </span>
     </div>

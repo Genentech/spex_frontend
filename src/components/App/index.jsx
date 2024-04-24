@@ -28,7 +28,9 @@ const App = () => {
             <MuiThemeProvider theme={theme}>
               <ThemeProvider theme={theme}>
                 <GlobalStyle />
+
                 <CssBaseline />
+
                 <AppRouter />
               </ThemeProvider>
             </MuiThemeProvider>

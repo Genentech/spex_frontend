@@ -10,7 +10,7 @@ import SelectEnum from '+components/SelectEnum';
 import SelectFile from '+components/SelectFile';
 import SelectGrid from '+components/SelectGrid';
 import SelectJobs from '+components/SelectJobs';
-import SelectJobsPipeline from '+components/SelectJobsInPipeline';
+import SelectJobsProcess from '+components/SelectJobsInProcess';
 import SelectNew from '+components/SelectNew';
 import SingleTransferList from '+components/SingleTransferList';
 import Slider from '+components/Slider';
@@ -41,7 +41,7 @@ const Controls = {
   Select,
   SelectOption,
   SelectJobs,
-  SelectJobsPipeline,
+  SelectJobsProcess,
   SelectNew,
   SelectFile,
   SelectEnum,

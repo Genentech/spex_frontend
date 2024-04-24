@@ -24,11 +24,10 @@ const Overlay = styled.div`
 const Loading = ({ className, loading, ...rest }) => (
   // eslint-disable-next-line react/forbid-component-props
   <Container className={className}>
-    {loading && (
-      <Overlay>
-        <CircularProgress />
-      </Overlay>
-    )}
+    {loading ? <Overlay>
+      <CircularProgress />
+    </Overlay> : null}
+
     <div {...rest} />
   </Container>
 );

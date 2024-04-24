@@ -452,25 +452,26 @@ const Table = (props) => {
       style={style}
     >
       <Caption>{caption}</Caption>
+
       <TableWrapper>
-        {allowRowSelection && selectedRowActions.length > 0 && (
-          <ActionsContainer className="selected-row-actions">
-            {selectedRowActions}
-          </ActionsContainer>
-        )}
+        {allowRowSelection && selectedRowActions.length > 0 ? <ActionsContainer className="selected-row-actions">
+          {selectedRowActions}
+        </ActionsContainer> : null}
+
         <TableContainer
           className="rt-table"
           {...getTableProps(getUserTableProps || {})}
         >
-          {showHeader && <Header {...headerProps} />}
+          {showHeader ? <Header {...headerProps} /> : null}
+
           <Body {...bodyProps} />
-          {showFooter && <Footer {...footerProps} />}
+
+          {showFooter ? <Footer {...footerProps} /> : null}
         </TableContainer>
-        {pageCount > 1 && PaginationComponent && (
-          <PaginationContainer className="pagination-bottom">
-            <PaginationComponent {...paginatorProps} />
-          </PaginationContainer>
-        )}
+
+        {pageCount > 1 && PaginationComponent ? <PaginationContainer className="pagination-bottom">
+          <PaginationComponent {...paginatorProps} />
+        </PaginationContainer> : null}
       </TableWrapper>
     </Container>
   );

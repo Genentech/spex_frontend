@@ -85,6 +85,7 @@ const SelectNew = (props) => {
                   <SelectAllIcon />
                 </IconButton>
               )}
+
               {params.InputProps.endAdornment}
             </React.Fragment>
           ),

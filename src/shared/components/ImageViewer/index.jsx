@@ -243,24 +243,20 @@ const ImageViewer = (props) => {
         zoomControl={false}
         whenCreated={setMap}
       >
-        {data && channels && baseUrl && (
-          <OmeroLayer
-            ref={omeroLayerRef}
-            data={data}
-            options={{
+        {data && channels && baseUrl ? <OmeroLayer
+          ref={omeroLayerRef}
+          data={data}
+          options={{
               baseUrl,
               channels,
-            }}
-          />
-        )}
+          }}
+                                       /> : null}
 
-        {image && imageLatLngBounds && (
-          <ImageOverlay
-            url={image}
-            bounds={imageLatLngBounds}
-            zIndex={10}
-          />
-        )}
+        {image && imageLatLngBounds ? <ImageOverlay
+          url={image}
+          bounds={imageLatLngBounds}
+          zIndex={10}
+                                      /> : null}
 
         {(centroids || []).map((item, i) => (
           <Circle
@@ -292,10 +288,12 @@ const ImageViewer = (props) => {
             onCreated={onPathCreate}
             onDeleted={onPathDeleted}
           />
-          {rectangleBounds && <Rectangle bounds={rectangleBounds} />}
+
+          {rectangleBounds ? <Rectangle bounds={rectangleBounds} /> : null}
         </FeatureGroup>
 
         <ZoomControl position="bottomright" />
+
         <ResetZoomControl position="bottomright" />
       </MapContainer>
 
@@ -322,7 +320,9 @@ const ImageViewer = (props) => {
                 checked={channel.active}
                 onChange={onChannelToggle(index)}
               />
+
               <ChannelLabel>{channel.label}</ChannelLabel>
+
               <Slider
                 $color={`#${channel.color}`}
                 min={channel.window.min}

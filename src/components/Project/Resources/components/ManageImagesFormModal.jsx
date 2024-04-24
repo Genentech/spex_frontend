@@ -6,13 +6,13 @@ import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { actions as omeroActions, selectors as omeroSelectors } from '@/redux/modules/omero';
 
 import { Field, Controls, FormSpy } from '+components/Form';
 import Parsers from '+components/Form/utils/Parsers';
 import FormModalOrigin from '+components/FormModal';
 import Content from '+components/Modal/components/Content';
 import Select, { Group, Option } from '+components/Select';
+import { actions as omeroActions, selectors as omeroSelectors } from '@/redux/modules/omero';
 
 import Row from '../../components/Row';
 
@@ -201,10 +201,12 @@ const ManageImagesFormModal = styled((props) => {
           disabled={isOmeroFetching}
         >
           <Option value={none}>Select Omero Dataset</Option>
+
           {projects?.reduce((acc, project) => ([
             ...acc,
             <Group key={`project-${project.id}`} style={{ display: 'flex', alignItems: 'center' }}>
               <Icon><FolderIcon /></Icon>
+
               <span style={{ display: 'inline-flex', alignItems: 'center', marginLeft: '5px' }}>{project.name}</span>
             </Group>,
             ...Object.values(projectDatasets || {})
@@ -213,6 +215,7 @@ const ManageImagesFormModal = styled((props) => {
                 <Option key={`dataset-${dataset.id}`} value={dataset.id}>
                   <Dataset key={`dataset-${dataset.id}`} value={dataset.id}>
                     <Icon><PermMediaIcon /></Icon>
+
                     <DatasetText>{dataset.name}</DatasetText>
                   </Dataset>
                 </Option>

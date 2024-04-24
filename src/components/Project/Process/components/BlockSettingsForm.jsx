@@ -6,13 +6,13 @@ import createFocusOnFirstFieldDecorator from 'final-form-focus-on-first-field';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
-import { actions as omeroActions, selectors as omeroSelectors } from '@/redux/modules/omero';
-import { selectors as projectsSelectors } from '@/redux/modules/projects';
-import { selectors as tasksSelectors } from '@/redux/modules/tasks';
 import Button, { ButtonColors } from '+components/Button';
 import Form, { Controls, Field, FormRenderer, Validators, Parsers } from '+components/Form';
 import NoData from '+components/NoData';
 import { statusFormatter } from '+utils/statusFormatter';
+import { actions as omeroActions, selectors as omeroSelectors } from '@/redux/modules/omero';
+import { selectors as projectsSelectors } from '@/redux/modules/projects';
+import { selectors as tasksSelectors } from '@/redux/modules/tasks';
 
 const Container = styled.div`
   display: flex;
@@ -81,8 +81,8 @@ const getFieldComponent = (type) => {
       return Controls.TransferList;
     case 'job_id':
       return Controls.SelectJobs;
-    case 'pipeline_job_id':
-      return Controls.SelectJobsPipeline;
+    case 'process_job_id':
+      return Controls.SelectJobsProcess;
     case 'file':
       return Controls.SingleTransferList;
     case 'channel':
@@ -298,7 +298,7 @@ const BlockSettingsForm = (props) => {
       id: block.id,
       name: block.name,
       projectId: block.projectId,
-      pipelineId: block.pipelineId,
+      processId: block.processId,
       rootId: block.rootId,
       file_names: block.file_names,
       params: {
@@ -368,10 +368,12 @@ const BlockSettingsForm = (props) => {
               }}
             >
               <Header>{header}</Header>
+
               <RightPanel >
                 {Object.keys(fields).length === 0 && (
                   <NoData style={{ height: '100px' }}>No block params to display</NoData>
                   )}
+
                 {Object.values(fields).map((field, i) => (
                   <Field
                       // eslint-disable-next-line react/no-array-index-key
@@ -404,6 +406,7 @@ const BlockSettingsForm = (props) => {
                 >
                   <GetAppIcon />
                 </Button>
+
                 <Button
                   color={ButtonColors.secondary}
                   onClick={(event) => {
@@ -415,6 +418,7 @@ const BlockSettingsForm = (props) => {
                   <Refresh />
                   refresh
                 </Button>
+
                 <Button
                   type="submit"
                   color={ButtonColors.primary}
@@ -457,7 +461,7 @@ const propTypes = {
     name: PropTypes.string,
     description: PropTypes.string,
     projectId: PropTypes.string,
-    pipelineId: PropTypes.string,
+    processId: PropTypes.string,
     status: PropTypes.number,
     omeroIds: PropTypes.arrayOf(PropTypes.string),
     file_names: PropTypes.arrayOf(PropTypes.string),

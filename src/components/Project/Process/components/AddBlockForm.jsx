@@ -77,6 +77,7 @@ const AddBlockForm = styled((props) => {
                       {stageIndex === 0 ? 'Start' : stage.name}
                     </div>
                   </Grid>
+
                   {(stage.scripts || []).map((block, blockIndex) => {
                     let enabled = !block.depends_and_script.length && !block.depends_or_script?.length;
                     if (selectedBlock.type !== 'start') {
@@ -103,9 +104,11 @@ const AddBlockForm = styled((props) => {
                           <div className="block__name">
                             {block.name}
                           </div>
+
                           <div className="block__description">
                             {block.description}
                           </div>
+
                           <ul className="block__input">
                             Input:
                             {Object.values(block.params_meta || {})
@@ -116,6 +119,7 @@ const AddBlockForm = styled((props) => {
                                 </li>
                               ))}
                           </ul>
+
                           <ul className="block__output">
                             Output:
                             {Object.values(block.return)

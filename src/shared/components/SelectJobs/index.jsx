@@ -17,7 +17,7 @@ const renderOption = (option) => (
 const SelectJobs = (props) => {
   const {
     projectId,
-    pipelineId,
+    processId,
     input,
     meta,
     ...tail
@@ -96,7 +96,7 @@ const SelectJobs = (props) => {
 
 SelectJobs.propTypes = {
   projectId: PropTypes.string,
-  pipelineId: PropTypes.string,
+  processId: PropTypes.string,
   input: PropTypes.shape({
     value: PropTypes.oneOfType([
       PropTypes.number,
@@ -123,7 +123,7 @@ SelectJobs.propTypes = {
 
 SelectJobs.defaultProps = {
   projectId: '',
-  pipelineId: '',
+  processId: '',
   input: {},
   meta: {},
   value: null,

@@ -3,19 +3,19 @@ import React, { useRef, useState, useCallback, useEffect, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { actions as omeroActions, selectors as omeroSelectors } from '@/redux/modules/omero';
-import { selectors as projectsSelectors } from '@/redux/modules/projects';
 
 import {
   Field, Controls, Validators,
   Parsers, FormSpy, WhenFieldChanges,
 } from '+components/Form';
 import { propTypes, defaultProps } from '+components/FormModal';
+import { actions as omeroActions, selectors as omeroSelectors } from '@/redux/modules/omero';
+import { selectors as projectsSelectors } from '@/redux/modules/projects';
 
-import Form from '../../components/BlockSettingsForm';
 import Col from './components/Col';
 import Group from './components/Group';
 import Row from './components/Row';
+import Form from '../../components/BlockSettingsForm';
 
 const SegmentationForm = styled((props) => {
   const {
@@ -215,18 +215,16 @@ const SegmentationForm = styled((props) => {
             </Field>
           </Row>
 
-          {formValues.single && (
-            <Field
-              name="omeroIds"
-              label="Omero IDs"
-              component={Controls.ImagePicker}
-              editable={formValues?.content?.segment}
-              area={segmentationArea}
-              options={projectImages}
-              validate={Validators.required}
-              onAreaChange={onAreaChange}
-            />
-          )}
+          {formValues.single ? <Field
+            name="omeroIds"
+            label="Omero IDs"
+            component={Controls.ImagePicker}
+            editable={formValues?.content?.segment}
+            area={segmentationArea}
+            options={projectImages}
+            validate={Validators.required}
+            onAreaChange={onAreaChange}
+                               /> : null}
 
           {!formValues.single && (
             <Field

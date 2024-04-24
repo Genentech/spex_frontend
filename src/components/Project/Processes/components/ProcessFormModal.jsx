@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import { Field, Controls, Validators } from '+components/Form';
 import FormModal from '+components/FormModal';
 
-const PipelineFormModal = (props) => {
+const ProcessFormModal = (props) => {
   const {
     className,
     header,
@@ -40,7 +40,7 @@ const PipelineFormModal = (props) => {
   );
 };
 
-PipelineFormModal.propTypes = {
+ProcessFormModal.propTypes = {
   /**
    * Override or extend the styles applied to the component.
    */
@@ -75,7 +75,7 @@ PipelineFormModal.propTypes = {
   onSubmit: PropTypes.func,
 };
 
-PipelineFormModal.defaultProps = {
+ProcessFormModal.defaultProps = {
   className: '',
   header: '',
   initialValues: null,
@@ -86,4 +86,4 @@ PipelineFormModal.defaultProps = {
   onSubmit: () => {},
 };
 
-export default PipelineFormModal;
+export default ProcessFormModal;

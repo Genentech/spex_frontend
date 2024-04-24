@@ -2,7 +2,7 @@ import { all } from 'redux-saga/effects';
 import fileSlice from './files';
 import jobsSlice from './jobs';
 import omeroSlice from './omero';
-import pipelinesSlice from './pipelines';
+import processesSlice from './processes';
 import projectsSlice from './projects';
 import resourcesSlice from './resources';
 import tasksSlice from './tasks';
@@ -17,7 +17,7 @@ const rootSlices = [
   authSlice,
   omeroSlice,
   projectsSlice,
-  pipelinesSlice,
+  processesSlice,
   jobsSlice,
   tasksSlice,
   fileSlice,
