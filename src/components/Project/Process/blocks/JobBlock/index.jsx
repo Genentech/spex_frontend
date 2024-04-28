@@ -74,7 +74,7 @@ const JobBlock = (props) => {
           {data.status === -3 && (
             <IconButton
               style={iconButtonStyle}
-              disabled={data.id === 'new'}
+              disabled={data.id === 'new' || data.id === 'IdForNewBlock'}
               onClick={() => data.onInfo(data)}
             >
               <InfoIcon fontSize="small" />
@@ -84,7 +84,7 @@ const JobBlock = (props) => {
           {data.name === 'feature_extraction' && (
             <IconButton
               style={iconButtonStyle}
-              disabled={data.id === 'new'}
+              disabled={data.id === 'new' || data.id === 'IdForNewBlock'}
               onClick={() => data.onInfo(data)}
             >
               <InfoIcon fontSize="small" />
@@ -93,7 +93,7 @@ const JobBlock = (props) => {
 
           {data.onDelete ? <IconButton
             style={iconButtonStyle}
-            disabled={data.id === 'new'}
+            disabled={data.id === 'new' || data.id === 'IdForNewBlock'}
             onClick={() => data.onDelete(data)}
                            >
             <DeleteIcon fontSize="small" />
@@ -101,7 +101,7 @@ const JobBlock = (props) => {
 
           {data.onRestart ? <IconButton
             style={iconButtonStyle}
-            disabled={data.id === 'new'}
+            disabled={data.id === 'new' || data.id === 'IdForNewBlock'}
             onClick={() => data.onRestart(data)}
                             >
             <PlayArrowIcon fontSize="small" />
