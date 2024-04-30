@@ -173,6 +173,7 @@ const Process = ( { sidebarWidth } ) => {
     const [elements, setElements] = useState([]);
     const [parentIdForFlow, setParentIdForFlow] = useState([]);
     const [prevSelectedBlock, setPrevSelectedBlock] = useState(null);
+    const [isLoadingInitial, setIsLoadingInitial] = useState(false);
 
     const initialBlocks = useMemo(() => {
         let blocks = [];
@@ -293,14 +294,27 @@ const Process = ( { sidebarWidth } ) => {
         return projectImagesDetails;
     }, [selectedBlock, projectImagesDetails]);
 
+    useEffect(()=> {
+        if(elements.length === 1 && elements[0].id !== 'IdForNewBlock' && isLoadingInitial ) {
+            setIsLoadingInitial(false);
+        }
+    }, [ elements, isLoadingInitial]);
 
     useEffect(
         () => {
-            if (availableBlocks['initial'] === undefined && initialBlocks.length > 0) {
-                setAvailableBlocks({ ...availableBlocks, initial: elements.length ? [] : initialBlocks });
+            if ( availableBlocks['initial'] === undefined && initialBlocks.length > 0 && elements.length > 0) {
+                setAvailableBlocks({ ...availableBlocks, initial: [] });
+            }
+
+            if(elements.length === 0 && initialBlocks.length > 0 && !isLoadingInitial && !availableBlocks?.initial?.length) {
+                setAvailableBlocks({ initial: initialBlocks });
+            }
+
+            if(isLoadingInitial && elements.length === 0 && availableBlocks?.initial) {
+                setAvailableBlocks({ ...availableBlocks, initial: undefined });
             }
         },
-        [availableBlocks, initialBlocks, elements]);
+        [availableBlocks, initialBlocks, elements, isLoadingInitial]);
 
     const onJobRestart = useCallback(
         (_) => {
@@ -339,6 +353,7 @@ const Process = ( { sidebarWidth } ) => {
             setParentIdForFlow([]);
             setActionWithBlock(null);
             setSelectedBlock(null);
+            setIsLoadingInitial(true);
 
             let validOmeroIds = jobs[values.rootId]?.omeroIds || [];
 
@@ -463,7 +478,7 @@ const Process = ( { sidebarWidth } ) => {
                 setPrevSelectedBlock(nextBlock);
             }
         },
-        [dispatch, processId, jobs, jobTypes, projectId],
+        [dispatch, processId, jobs, jobTypes, projectId, elements.length],
     );
 
     const onBlockDelete = useCallback(
@@ -723,7 +738,7 @@ const Process = ( { sidebarWidth } ) => {
         let _elements = [];
         setElements(_elements);
         if (!process) {
-            setElements(_elements);
+            // setElements(_elements);
             return;
         }
 
@@ -890,8 +905,9 @@ const Process = ( { sidebarWidth } ) => {
 
                 <div>
                   <BlockScrollWrapper>
+
                     <BlocksScroll
-                      items={selectedBlock ? availableBlocks[selectedBlock?.script_path] : availableBlocks['initial']}
+                      items={selectedBlock ? availableBlocks[selectedBlock?.script_path] : !isLoadingInitial ? availableBlocks['initial'] : []}
                       onClick={handleBlockClick}
                     />
                   </BlockScrollWrapper>
