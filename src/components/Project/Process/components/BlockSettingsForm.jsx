@@ -397,28 +397,39 @@ const BlockSettingsForm = (props) => {
               </RightPanel>
 
               <Footer>
-                <Button
-                  color={ButtonColors.secondary}
-                  onClick={(event) => {
-                      onDownload(event);
-                  }}
-                  title="Download"
-                >
-                  <GetAppIcon />
-                </Button>
+                {(block?.id === 'new') ?
+                  <Button
+                    type="submit"
+                    color={ButtonColors.secondary}
+                    onClick={onClose}
+                  >
+                    CANCEL
+                  </Button>
+                    : (
+                      <React.Fragment>
+                        <Button
+                          color={ButtonColors.secondary}
+                          onClick={(event) => {
+                                onDownload(event);
+                          }}
+                          title="Download"
+                        >
+                          <GetAppIcon />
+                        </Button>
 
-                <Button
-                  color={ButtonColors.secondary}
-                  onClick={(event) => {
-                      onReload(event);
-                      form.restart();
-                  }}
-                  title="Refresh state of the block"
-                >
-                  <Refresh />
-                  refresh
-                </Button>
-
+                        <Button
+                          color={ButtonColors.secondary}
+                          onClick={(event) => {
+                                onReload(event);
+                                form.restart();
+                          }}
+                          title="Refresh state of the block"
+                        >
+                          <Refresh />
+                          refresh
+                        </Button>
+                      </React.Fragment>
+                    )}
                 <Button
                   type="submit"
                   color={ButtonColors.primary}
