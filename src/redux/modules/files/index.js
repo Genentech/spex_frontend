@@ -32,7 +32,11 @@ const slice = createSlice({
     fetchFilesSuccess: (state, { payload: data }) => {
       stopFetching(state);
       state.files = data.tree.map((child) => {
-        const [filename, fileData] = Object.entries(child)[0];
+
+        let [filename, fileData] = Object.entries(child)[0];
+        if(filename.endsWith('.tiff.tiff')) {
+          filename = filename.slice(0, -5);
+        }
         return { filename, ...fileData };
       });
     },
@@ -52,7 +56,11 @@ const slice = createSlice({
 
     deleteFileSuccess(state, { payload: name }) {
       stopFetching(state);
-      state.files = state.files.filter((file) => file.filename !== name);
+      let nameToDelete = name;
+      if(nameToDelete.endsWith('.tiff.tiff')) {
+        nameToDelete = nameToDelete.slice(0, -5);
+      }
+      state.files = state.files.filter((file) => file.filename !== nameToDelete);
     },
 
     clearFiles: (state) => {
@@ -125,7 +133,10 @@ const slice = createSlice({
     [actions.deleteFile]: {
       * saga({ payload: file }) {
         initApi();
-        const name = file.name;
+        let name = file.name;
+        if(file.name.endsWith('.tiff')){
+          name += '.tiff';
+        }
         try {
           const url = `${baseUrl}?path=${name}`;
           const { data } = yield call(api.delete, url);
@@ -143,28 +154,28 @@ const slice = createSlice({
 
   selectors: (getState) => ({
     isFetching: createSelector(
-      [getState],
-      (state) => state?.isFetching,
+        [getState],
+        (state) => state?.isFetching,
     ),
 
     getFiles: createSelector(
-      [getState],
-      (state) => state?.files,
+        [getState],
+        (state) => state?.files,
     ),
 
     getFile: (id) => createSelector(
-      [getState],
-      (state) => state?.files[id],
+        [getState],
+        (state) => state?.files[id],
     ),
 
     getFileKeys: createSelector(
-      [getState],
-      (state) => state?.fileKeys,
+        [getState],
+        (state) => state?.fileKeys,
     ),
 
     getError: createSelector(
-      [getState],
-      (state) => state?.error,
+        [getState],
+        (state) => state?.error,
     ),
 
   }),
