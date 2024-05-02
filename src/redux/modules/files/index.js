@@ -32,11 +32,7 @@ const slice = createSlice({
     fetchFilesSuccess: (state, { payload: data }) => {
       stopFetching(state);
       state.files = data.tree.map((child) => {
-
-        let [filename, fileData] = Object.entries(child)[0];
-        if(filename.endsWith('.tiff.tiff')) {
-          filename = filename.slice(0, -5);
-        }
+        const [filename, fileData] = Object.entries(child)[0];
         return { filename, ...fileData };
       });
     },
@@ -56,11 +52,7 @@ const slice = createSlice({
 
     deleteFileSuccess(state, { payload: name }) {
       stopFetching(state);
-      let nameToDelete = name;
-      if(nameToDelete.endsWith('.tiff.tiff')) {
-        nameToDelete = nameToDelete.slice(0, -5);
-      }
-      state.files = state.files.filter((file) => file.filename !== nameToDelete);
+      state.files = state.files.filter((file) => file.filename !== name);
     },
 
     clearFiles: (state) => {
@@ -122,21 +114,18 @@ const slice = createSlice({
           yield put(actions.uploadFileSuccess(data.data));
           yield put(actions.fetchFiles());
         } catch (error) {
-            const errorMessage = error.response?.data?.error || 'An error occurred while uploading the file';
-            yield put(actions.requestFail({ message: errorMessage }));
-            // eslint-disable-next-line no-console
-            console.error(error.message);
-          }
+          const errorMessage = error.response?.data?.error || 'An error occurred while uploading the file';
+          yield put(actions.requestFail({ message: errorMessage }));
+          // eslint-disable-next-line no-console
+          console.error(error.message);
+        }
       },
     },
 
     [actions.deleteFile]: {
       * saga({ payload: file }) {
         initApi();
-        let name = file.name;
-        if(file.name.endsWith('.tiff')){
-          name += '.tiff';
-        }
+        const name = file.name;
         try {
           const url = `${baseUrl}?path=${name}`;
           const { data } = yield call(api.delete, url);
