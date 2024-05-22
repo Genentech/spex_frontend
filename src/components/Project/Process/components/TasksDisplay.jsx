@@ -17,9 +17,9 @@ import DownloadIcon from '@mui/icons-material/Download';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
-import { statusFormatter } from '+utils/statusFormatter';
 import TaskInfoModal from '@/components/Project/Process/components/TaskInfoModal';
 import { actions as jobsActions, selectors as jobsSelectors } from '@/redux/modules/jobs';
+import { statusFormatter } from '+utils/statusFormatter';
 
 
 const StyledAccordionDetails = styled(AccordionDetails)`

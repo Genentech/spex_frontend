@@ -7,12 +7,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 
+import { actions as omeroActions, selectors as omeroSelectors } from '@/redux/modules/omero';
 import { Field, Controls, FormSpy } from '+components/Form';
 import Parsers from '+components/Form/utils/Parsers';
 import FormModalOrigin from '+components/FormModal';
 import Content from '+components/Modal/components/Content';
 import Select, { Group, Option } from '+components/Select';
-import { actions as omeroActions, selectors as omeroSelectors } from '@/redux/modules/omero';
 
 import Row from '../../components/Row';
 

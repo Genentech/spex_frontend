@@ -10,19 +10,19 @@ import { matchPath, useLocation } from 'react-router-dom';
 import SplitPane from 'react-split-pane';
 import styled from 'styled-components';
 
+import PathNames from '@/models/PathNames';
+import { actions as jobsActions, selectors as jobsSelectors } from '@/redux/modules/jobs';
+import { actions as omeroActions, selectors as omeroSelectors } from '@/redux/modules/omero';
+import { actions as processActions, selectors as processSelectors } from '@/redux/modules/processes';
+import { selectors as projectsSelectors } from '@/redux/modules/projects';
+import { actions as tasksActions, selectors as tasksSelectors } from '@/redux/modules/tasks';
 import BlocksScroll from '+components/BlocksScroll';
 import ConfirmModal, { ConfirmActions } from '+components/ConfirmModal';
 import ImageViewer from '+components/ImageViewer';
 import NoData from '+components/NoData';
 import ThumbnailsViewer from '+components/ThumbnailsViewer';
 import { statusColor, statusFormatter } from '+utils/statusFormatter';
-import PathNames from '@/models/PathNames';
-import { actions as jobsActions, selectors as jobsSelectors } from '@/redux/modules/jobs';
-import { actions as omeroActions, selectors as omeroSelectors } from '@/redux/modules/omero';
-import { actions as processActions, selectors as processSelectors } from '@/redux/modules/processes';
 
-import { selectors as projectsSelectors } from '@/redux/modules/projects';
-import { actions as tasksActions, selectors as tasksSelectors } from '@/redux/modules/tasks';
 
 
 import JobBlock from './blocks/JobBlock';

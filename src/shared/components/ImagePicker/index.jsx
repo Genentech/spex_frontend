@@ -11,10 +11,10 @@ import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
+import { actions as omeroActions, selectors as omeroSelectors } from '@/redux/modules/omero';
 import ImageViewer from '+components/ImageViewer';
 import NoData from '+components/NoData';
 import { ScrollBarMixin } from '+components/ScrollBar';
-import { actions as omeroActions, selectors as omeroSelectors } from '@/redux/modules/omero';
 
 const onNoop = () => {};
 

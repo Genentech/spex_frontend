@@ -9,15 +9,15 @@ import { useHistory, useLocation, matchPath } from 'react-router-dom';
 
 
 
+import PathNames from '@/models/PathNames';
+import { actions as processesActions, selectors as processesSelectors } from '@/redux/modules/processes';
+import { actions as projectsActions, selectors as projectsSelectors } from '@/redux/modules/projects';
+import { actions as authActions } from '@/redux/modules/users/auth';
 import Button, { ButtonColors } from '+components/Button';
 import Link from '+components/Link';
 import Progress from '+components/Progress';
 import Select, { Option } from '+components/Select';
 import Typography from '+components/Typography';
-import PathNames from '@/models/PathNames';
-import { actions as processesActions, selectors as processesSelectors } from '@/redux/modules/processes';
-import { actions as projectsActions, selectors as projectsSelectors } from '@/redux/modules/projects';
-import { actions as authActions } from '@/redux/modules/users/auth';
 
 import Body from './components/Body';
 import Container from './components/Container';

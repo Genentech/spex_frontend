@@ -1,10 +1,10 @@
 import React, { useMemo, Fragment, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
-import Tabs, { Tab, TabPanel } from '+components/Tabs';
 import PathNames from '@/models/PathNames';
 import Process from 'components/Project/Process';
 import Results from 'components/Project/Results';
+import Tabs, { Tab, TabPanel } from '+components/Tabs';
 
 const tabMappings = {
     'build': 0,

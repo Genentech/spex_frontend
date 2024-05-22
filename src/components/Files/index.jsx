@@ -2,14 +2,14 @@ import React, { useMemo, useCallback, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { matchPath, useLocation } from 'react-router-dom';
+import PathNames from '@/models/PathNames';
+import { actions as filesActions, selectors as filesSelectors } from '@/redux/modules/files';
+import { selectors as projectsSelectors } from '@/redux/modules/projects';
 import Button, { ButtonSizes, ButtonColors } from '+components/Button';
 import ConfirmModal, { ConfirmActions } from '+components/ConfirmModal';
 import ErrorMessage from '+components/ErrorMessage';
 import FilePicker from '+components/SelectFile';
 import Table, { ButtonsCell } from '+components/Table';
-import PathNames from '@/models/PathNames';
-import { actions as filesActions, selectors as filesSelectors } from '@/redux/modules/files';
-import { selectors as projectsSelectors } from '@/redux/modules/projects';
 
 const Files = ({ hideUploadButton = false }) => {
   const dispatch = useDispatch();
