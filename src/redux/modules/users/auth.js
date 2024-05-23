@@ -1,7 +1,7 @@
 import { call, put } from 'redux-saga/effects';
-import storage from '+utils/storage';
 import backendClient from '@/middleware/backendClient';
 import { createSelector, createSlice, startFetching, stopFetching } from '@/redux/utils';
+import storage from '+utils/storage';
 
 const initialState = {
   isFetching: false,

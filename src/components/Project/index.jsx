@@ -8,13 +8,13 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import classNames from 'classnames';
 import { useDispatch, useSelector } from 'react-redux';
 import { matchPath, useHistory, useLocation } from 'react-router-dom';
-import List, { ListItem, ListItemIcon, ListItemText } from '+components/List';
-import { getFromStorage, saveToStorage } from '+utils/localStorage';
 import PathNames from '@/models/PathNames';
 import { actions as processActions, selectors as processSelectors } from '@/redux/modules/processes';
 
 import ProjectIcon from '@/shared/components/Icons/ProjectIcon';
 import WorkFlowIcon from '@/shared/components/Icons/WorkFlowIcon';
+import List, { ListItem, ListItemIcon, ListItemText } from '+components/List';
+import { getFromStorage, saveToStorage } from '+utils/localStorage';
 
 
 import Container from './components/Container';

@@ -2,8 +2,8 @@
 import React from 'react';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
-import NoDataContainer from './NoDataContainer';
 import { getProps } from '../utils';
+import NoDataContainer from './NoDataContainer';
 
 const Body = (props) => {
     const {

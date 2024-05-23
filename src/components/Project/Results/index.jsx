@@ -16,15 +16,15 @@ import { useHistory } from 'react-router-dom';
 import styled from 'styled-components';
 import { Vitessce } from 'vitessce';
 
-import Button from '+components/Button';
-import Message from '+components/Message';
-import Tabs, { Tab, TabPanel } from '+components/TabsImages';
 import JobBlock from '@/components/Project/Process/blocks/JobBlock';
 import PathNames from '@/models/PathNames';
 
 import { actions as omeroActions, selectors as omeroSelectors } from '@/redux/modules/omero';
 import { actions as processActions, selectors as processSelectors } from '@/redux/modules/processes';
 import { actions as tasksActions, selectors as tasksSelectors } from '@/redux/modules/tasks';
+import Button from '+components/Button';
+import Message from '+components/Message';
+import Tabs, { Tab, TabPanel } from '+components/TabsImages';
 
 const StyledTabLabel = styled.div`
   white-space: normal;

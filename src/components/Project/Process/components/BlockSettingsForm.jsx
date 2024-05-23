@@ -6,13 +6,13 @@ import createFocusOnFirstFieldDecorator from 'final-form-focus-on-first-field';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
+import { actions as omeroActions, selectors as omeroSelectors } from '@/redux/modules/omero';
+import { selectors as projectsSelectors } from '@/redux/modules/projects';
+import { selectors as tasksSelectors } from '@/redux/modules/tasks';
 import Button, { ButtonColors } from '+components/Button';
 import Form, { Controls, Field, FormRenderer, Validators, Parsers } from '+components/Form';
 import NoData from '+components/NoData';
 import { statusFormatter } from '+utils/statusFormatter';
-import { actions as omeroActions, selectors as omeroSelectors } from '@/redux/modules/omero';
-import { selectors as projectsSelectors } from '@/redux/modules/projects';
-import { selectors as tasksSelectors } from '@/redux/modules/tasks';
 
 const Container = styled.div`
   display: flex;

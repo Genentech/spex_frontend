@@ -5,6 +5,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { matchPath, useLocation } from 'react-router-dom';
 
 
+import PathNames from '@/models/PathNames';
+import { actions as omeroActions, selectors as omeroSelectors } from '@/redux/modules/omero';
+import { actions as projectsActions, selectors as projectsSelectors } from '@/redux/modules/projects';
+import { actions as resourcesActions, selectors as resourcesSelectors } from '@/redux/modules/resources';
+import { actions as tasksActions, selectors as tasksSelectors } from '@/redux/modules/tasks';
 import Button, { ButtonSizes, ButtonColors } from '+components/Button';
 import ClickAwayListener from '+components/ClickAwayListener';
 import Grow from '+components/Grow';
@@ -12,20 +17,15 @@ import MenuList, { MenuItem } from '+components/MenuList';
 import Paper from '+components/Paper';
 import Popper from '+components/Popper';
 import Table, { ButtonsCell } from '+components/Table';
-import PathNames from '@/models/PathNames';
-import { actions as omeroActions, selectors as omeroSelectors } from '@/redux/modules/omero';
-import { actions as projectsActions, selectors as projectsSelectors } from '@/redux/modules/projects';
-import { actions as resourcesActions, selectors as resourcesSelectors } from '@/redux/modules/resources';
-import { actions as tasksActions, selectors as tasksSelectors } from '@/redux/modules/tasks';
 
 
+import ButtonsContainer from '../components/ButtonsContainer';
 import ImageCell from './components/ImageCell';
 import ManageFilesModal from './components/ManageFilesModal';
 import ManageImagesFormModal from './components/ManageImagesFormModal';
 import ManageTasksModal from './components/ManageTasksModal';
 import RecourseCell from './components/RecourseCell';
 import TaskCell from './components/TaskCell';
-import ButtonsContainer from '../components/ButtonsContainer';
 
 const Resources = () => {
   const dispatch = useDispatch();

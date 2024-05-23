@@ -3,10 +3,10 @@ import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
+import { actions as filesActions, selectors as filesSelectors } from '@/redux/modules/files';
 import Button, { ButtonColors } from '+components/Button';
 import Modal, { ModalHeader, ModalBody, ModalFooter } from '+components/Modal';
 import Table from '+components/Table';
-import { actions as filesActions, selectors as filesSelectors } from '@/redux/modules/files';
 
 const ManageFilesModal = styled((props) => {
   const {

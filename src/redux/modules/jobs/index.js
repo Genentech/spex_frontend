@@ -1,8 +1,8 @@
 import { all, call, put } from 'redux-saga/effects';
-import hash from '+utils/hash';
 import backendClient from '@/middleware/backendClient';
 import { actions as processActions } from '@/redux/modules/processes';
 import { createSlice, createSelector, startFetching, stopFetching } from '@/redux/utils';
+import hash from '+utils/hash';
 
 
 const initialState = {

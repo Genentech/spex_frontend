@@ -5,7 +5,8 @@ import InputAdornment from '@material-ui/core/InputAdornment';
 import TextField from '@material-ui/core/TextField';
 import FolderOpenIcon from '@material-ui/icons/FolderOpen';
 import PropTypes from 'prop-types';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
+import { actions as fileActions } from '@/redux/modules/files';
 import Button, { ButtonSizes, ButtonColors } from '+components/Button';
 
 const FilePicker = ({ input, meta, onFileChange, ...tail }) => {

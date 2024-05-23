@@ -3,10 +3,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Redirect } from 'react-router-dom';
 
 
+import { actions as authActions, selectors as authSelectors } from '@/redux/modules/users/auth';
 import Button, { ButtonColors } from '+components/Button';
 import Form, { Field, FormRenderer, Controls, Validators } from '+components/Form';
 import Progress from '+components/Progress';
-import { actions as authActions, selectors as authSelectors } from '@/redux/modules/users/auth';
 
 import Alert from './components/Alert';
 import Container from './components/Container';
