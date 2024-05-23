@@ -1,7 +1,4 @@
 import React, { useMemo, useCallback, useState, useEffect } from 'react';
-import PathNames from '@/models/PathNames';
-import { actions as filesActions, selectors as filesSelectors } from '@/redux/modules/files';
-import { selectors as projectsSelectors } from '@/redux/modules/projects';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { matchPath, useLocation } from 'react-router-dom';
@@ -98,94 +95,83 @@ const Files = ({ hideUploadButton = false }) => {
     [dispatch],
   );
 
-    const columns = useMemo(
-        () => [
-            {
-                id: 'name',
-                accessor: 'name',
-                Header: 'File Name',
-            },
-            {
-                id: 'type',
-                accessor: 'type',
-                Header: 'Type',
-            },
-            {
-                id: 'actions',
-                Header: 'Actions',
-                minWidth: 80,
-                maxWidth: 80,
-                Cell: ({ row: { original } }) =>
-                    useMemo(
-                        () => (
-                          <ButtonsCell>
-                            {original.type !== 'file' || !original.name.endsWith('.tiff') ? (
-                              <React.Fragment>
-                                <Button
-                                  size={ButtonSizes.small}
-                                  color={ButtonColors.secondary}
-                                  variant="outlined"
-                                  onClick={() => onDeleteFileModalOpen(original)}
-                                >
-                                  Delete
-                                </Button>
-                                <Button
-                                  size={ButtonSizes.small}
-                                  color={ButtonColors.secondary}
-                                  variant="outlined"
-                                  onClick={() => onCheckFile(original)}
-                                >
-                                  Check
-                                </Button>
-                              </React.Fragment>
-                                ) : (
-                                  <Button
-                                    size={ButtonSizes.small}
-                                    color={ButtonColors.secondary}
-                                    variant="outlined"
-                                    onClick={() => onDeleteFileModalOpen(original)}
-                                  >
-                                    Delete
-                                  </Button>
-                                )}
-                          </ButtonsCell>
-                        ),
-                        [original, onDeleteFileModalOpen, onCheckFile],
-                    ),
-            },
-            {
-                id: 'keys',
-                Header: 'Keys',
-                Cell: ({ row: { original } }) =>
-                    useMemo(() => <div>{fileKeys[original.name] ? fileKeys[original.name].join(', ') : null}</div>, [
-                        original,
-                        fileKeys,
-                    ]),
-            },
-        ],
-        [fileKeys, onDeleteFileModalOpen, onCheckFile],
-    );
+  const columns = useMemo(
+    () => [
+      {
+        id: 'name',
+        accessor: 'name',
+        Header: 'File Name',
+      },
+      {
+        id: 'type',
+        accessor: 'type',
+        Header: 'Type',
+      },
+      {
+        id: 'actions',
+        Header: 'Actions',
+        minWidth: 80,
+        maxWidth: 80,
+        Cell: ({ row: { original } }) =>
+          useMemo(
+            () => (
+              <ButtonsCell>
+                <Button
+                  size={ButtonSizes.small}
+                  color={ButtonColors.secondary}
+                  variant="outlined"
+                  onClick={() => onCheckFile(original)}
+                >
+                  Check
+                </Button>
 
+                <Button
+                  size={ButtonSizes.small}
+                  color={ButtonColors.secondary}
+                  variant="outlined"
+                  onClick={() => onDeleteFileModalOpen(original)}
+                >
+                  Delete
+                </Button>
+              </ButtonsCell>
+            ),
+            [original],
+          ),
+      },
+      {
+        id: 'keys',
+        Header: 'Keys',
+        Cell: ({ row: { original } }) =>
+          useMemo(
+            () => (
+              <div>{fileKeys[original.name] ? fileKeys[original.name].join(', ') : null}</div>
+            ),
+            [original],
+          ),
+      },
+    ],
+    [fileKeys, onDeleteFileModalOpen, onCheckFile],
+  );
 
-    return (
-      <React.Fragment>
-        {error ? <ErrorMessage message={error} /> : null}
+  return (
+    <React.Fragment>
+      {error ? <ErrorMessage message={error} /> : null}
 
-        {!hideUploadButton && <FilePicker onFileChange={onFileChange} />}
+      {!hideUploadButton && <FilePicker onFileChange={onFileChange} />}
 
-        <Table
-          columns={columns}
-          data={files}
-        />
+      <Table
+        columns={columns}
+        data={files}
+      />
 
-        {fileToDelete ? <ConfirmModal
-          action={ConfirmActions.delete}
-          item={fileToDelete.name}
-          onClose={onDeleteFileModalClose}
-          onSubmit={onDeleteFileModalSubmit}
-          open
-                        /> : null}
-      </React.Fragment>
+      {fileToDelete ? <ConfirmModal
+        action={ConfirmActions.delete}
+        item={fileToDelete.name}
+        onClose={onDeleteFileModalClose}
+        onSubmit={onDeleteFileModalSubmit}
+        open
+                      /> : null}
+    </React.Fragment>
   );
 };
 
