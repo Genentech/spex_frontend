@@ -28,130 +28,140 @@ const Files = ({ hideUploadButton = false }) => {
   const [localError, setLocalError] = useState(null);
 
   useEffect(() => {
-    dispatch(filesActions.fetchFiles());
+      dispatch(filesActions.fetchFiles());
   }, [dispatch]);
 
   useEffect(() => {
-    if (error) {
-      setLocalError(error);
-    }
+      if (error) {
+          setLocalError(error);
+      }
   }, [error]);
 
   const onFileChange = useCallback(async (file) => {
-    await dispatch(filesActions.uploadFile(file));
+      await dispatch(filesActions.uploadFile(file));
   }, [dispatch]);
 
   const onDeleteFileModalOpen = useCallback(
-    (file) => {
-      setFileToDelete(file);
-    },
-    [],
+      (file) => {
+          setFileToDelete(file);
+      },
+      [],
   );
 
   const onDeleteFileModalClose = useCallback(
-    () => {
-      setFileToDelete(null);
-    },
-    [],
+      () => {
+          setFileToDelete(null);
+      },
+      [],
   );
 
   const onDeleteFileModalSubmit = useCallback(
-    async () => {
-      try {
-        await dispatch(filesActions.deleteFile(fileToDelete));
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error(error);
-      }
-      setFileToDelete(null);
-    },
-    [dispatch, fileToDelete],
+      async () => {
+          try {
+              await dispatch(filesActions.deleteFile(fileToDelete));
+          } catch (error) {
+              // eslint-disable-next-line no-console
+              console.error(error);
+          }
+          setFileToDelete(null);
+      },
+      [dispatch, fileToDelete],
   );
 
   const files = useMemo(() => {
-    let filesArray = [];
+      let filesArray = [];
 
-    if (filesData && Array.isArray(filesData)) {
-      for (const file of filesData) {
-        if (project) {
-          if (file.type === 'file' && project?.file_names.includes(file.filename)) {
-            filesArray.push({ name: file.filename, type: file.type });
+      if (filesData && Array.isArray(filesData)) {
+          for (const file of filesData) {
+              if (project) {
+                  if (file.type === 'file' && project?.file_names.includes(file.filename)) {
+                      filesArray.push({ name: file.filename, type: file.type });
+                  }
+              } else {
+                  if (file.type === 'file') {
+                      filesArray.push({ name: file.filename, type: file.type });
+                  }
+              }
           }
-        } else {
-          if (file.type === 'file') {
-            filesArray.push({ name: file.filename, type: file.type });
-          }
-        }
       }
-    }
 
-    return filesArray;
+      return filesArray;
   }, [filesData, project]);
 
   const onCheckFile = useCallback(
-    (file) => {
-      dispatch(filesActions.checkFile(file));
-    },
-    [dispatch],
+      (file) => {
+          dispatch(filesActions.checkFile(file));
+      },
+      [dispatch],
   );
 
   const columns = useMemo(
-    () => [
-      {
-        id: 'name',
-        accessor: 'name',
-        Header: 'File Name',
-      },
-      {
-        id: 'type',
-        accessor: 'type',
-        Header: 'Type',
-      },
-      {
-        id: 'actions',
-        Header: 'Actions',
-        minWidth: 80,
-        maxWidth: 80,
-        Cell: ({ row: { original } }) =>
-          useMemo(
-            () => (
-              <ButtonsCell>
-                <Button
-                  size={ButtonSizes.small}
-                  color={ButtonColors.secondary}
-                  variant="outlined"
-                  onClick={() => onCheckFile(original)}
-                >
-                  Check
-                </Button>
-
-                <Button
-                  size={ButtonSizes.small}
-                  color={ButtonColors.secondary}
-                  variant="outlined"
-                  onClick={() => onDeleteFileModalOpen(original)}
-                >
-                  Delete
-                </Button>
-              </ButtonsCell>
-            ),
-            [original],
-          ),
-      },
-      {
-        id: 'keys',
-        Header: 'Keys',
-        Cell: ({ row: { original } }) =>
-          useMemo(
-            () => (
-              <div>{fileKeys[original.name] ? fileKeys[original.name].join(', ') : null}</div>
-            ),
-            [original],
-          ),
-      },
-    ],
-    [fileKeys, onDeleteFileModalOpen, onCheckFile],
+      () => [
+          {
+              id: 'name',
+              accessor: 'name',
+              Header: 'File Name',
+          },
+          {
+              id: 'type',
+              accessor: 'type',
+              Header: 'Type',
+          },
+          {
+              id: 'actions',
+              Header: 'Actions',
+              minWidth: 80,
+              maxWidth: 80,
+              Cell: ({ row: { original } }) =>
+                  useMemo(
+                      () => (
+                        <ButtonsCell>
+                          {original.type !== 'file' || !original.name.endsWith('.tiff') ? (
+                            <React.Fragment>
+                              <Button
+                                size={ButtonSizes.small}
+                                color={ButtonColors.secondary}
+                                variant="outlined"
+                                onClick={() => onDeleteFileModalOpen(original)}
+                              >
+                                Delete
+                              </Button>
+                              <Button
+                                size={ButtonSizes.small}
+                                color={ButtonColors.secondary}
+                                variant="outlined"
+                                onClick={() => onCheckFile(original)}
+                              >
+                                Check
+                              </Button>
+                            </React.Fragment>
+                              ) : (
+                                <Button
+                                  size={ButtonSizes.small}
+                                  color={ButtonColors.secondary}
+                                  variant="outlined"
+                                  onClick={() => onDeleteFileModalOpen(original)}
+                                >
+                                  Delete
+                                </Button>
+                              )}
+                        </ButtonsCell>
+                      ),
+                      [original],
+                  ),
+          },
+          {
+              id: 'keys',
+              Header: 'Keys',
+              Cell: ({ row: { original } }) =>
+                  useMemo(() => <div>{fileKeys[original.name] ? fileKeys[original.name].join(', ') : null}</div>, [
+                      original,
+                  ]),
+          },
+      ],
+      [fileKeys, onDeleteFileModalOpen, onCheckFile],
   );
+
 
   return (
     <React.Fragment>
