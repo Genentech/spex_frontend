@@ -339,10 +339,10 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
     if (!searchInput.trim()) {
       return taskToPanels;
     }
-    const searchQuery = searchInput.trim().toLowerCase(); // Приводим к нижнему регистру для регистронезависимого поиска
+    const searchQuery = searchInput.trim().toLowerCase();
     return taskToPanels.filter((type) => {
       if (type.omeroId === '') {
-        return (`id:${type.id}/${type.name}`).toLowerCase().includes(searchQuery);
+       return (`id:${type.id}/${type.name}`).toLowerCase().includes(searchQuery);
       } else {
         return type.omeroId.toLowerCase().includes(searchQuery);
       }
@@ -440,12 +440,12 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
 
                     </div>
 
-                    <DivIcon onClick={() => handleOpenInNewTab(type.omeroId)}>
+                    <DivIcon onClick={() => handleOpenInNewTab(type.id)}>
                       <Launch style={{ fontSize: 16 }} />
                     </DivIcon>
                   </div>
                 }
-                value={type.omeroId}
+                value={type.id}
               />
             ))}
           </Tabs>
@@ -498,11 +498,11 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
 
           { taskToPanels.length !== 0 && taskToPanels.map((type) => {
               return (
-                <TabPanel key={type.id} value={expandedTab} index={type.omeroId}>
+                <TabPanel key={type.id} value={expandedTab} index={type.id}>
                   {
-                    (type.omeroId === expandedTab) && (
+                    (type.id === expandedTab) && (
                       <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <span style={{ marginRight: 10 }}> id:{type.id}/{type.name}
+                        <span style={{ marginRight: 10 }}>id:{type.id}/{type.name}
 
                           <div style={{ display: 'flex', alignItems: 'center' }}>
                             <Button
