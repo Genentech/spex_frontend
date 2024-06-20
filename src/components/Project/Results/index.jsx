@@ -250,7 +250,7 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
     let clusterList = [];
 
     jobs_data.forEach(function (o) {
-      if (o.name !== 'phenograph_cluster') {
+      if (o.name !== 'phenograph_cluster' && o.name !== 'Cluster ST data') {
         taskList.push(...o.tasks);
       } else {
         clusterList.push(...o.tasks);
