@@ -1,9 +1,15 @@
 import React, {
   Fragment, useState, useMemo, useCallback, useEffect, useRef,
 } from 'react';
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+} from '@material-ui/core';
 import { Launch } from '@material-ui/icons';
 import ClearIcon from '@material-ui/icons/Clear';
 import DeleteIcon from '@material-ui/icons/Delete';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Refresh from '@material-ui/icons/Refresh';
 import classNames from 'classnames';
 import dagre from 'dagre';
@@ -24,6 +30,7 @@ import { actions as processActions, selectors as processSelectors } from '@/redu
 import { actions as tasksActions, selectors as tasksSelectors } from '@/redux/modules/tasks';
 import Button from '+components/Button';
 import Message from '+components/Message';
+import SelectNew from '+components/SelectNew';
 import Tabs, { Tab, TabPanel } from '+components/TabsImages';
 
 const StyledTabLabel = styled.div`
@@ -128,7 +135,7 @@ const DivIcon = styled.div`
   `;
 
 const Results = ( { sidebarWidth, processReviewTabName } ) => {
-  const dispatch = useDispatch();
+    const dispatch = useDispatch();
   const location = useLocation();
 
   const matchProjectPath = matchPath(location.pathname, { path: `/${PathNames.projects}/:id` });
@@ -136,18 +143,49 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
   const matchProcessPath = matchPath(location.pathname, {
     path: `/${PathNames.projects}/${projectId}/${PathNames.processes}/:id`,
   });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const processId = matchProcessPath ? matchProcessPath.params.id : undefined;
   const processes = useSelector(processSelectors.getProcessesWithTasksForVis(processId) || {});
   const tasksVitessceConfigs = useSelector(tasksSelectors.getTaskVitessceConfigs || {});
   const [taskToPanels, setTasksToPanels] = useState([]);
   const [taskToProcess, setTasksToProcess] = useState([]);
   const omeroWeb = useSelector(omeroSelectors.getOmeroWeb);
-  // eslint-disable-next-line no-unused-vars
-  const [selectedBlock, setSelectedBlock] = useState(null);
+  const [selectedBlock] = useState(null);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
   const process = useSelector(processSelectors.getProcess(projectId, processId));
   const error = useSelector(tasksSelectors.getDataMessage);
+  const [selectedValues, setSelectedValues] = useState([]);
+  const varNames = useSelector(tasksSelectors.getVarNames || {});
+  const [showVitessce, setShowVitessce] = useState(true);
+
+
+  const fetchZarrStructure = useCallback(async (id) => {
+    try {
+      await dispatch(tasksActions.getVarNames(id));
+    } catch (error) {
+      // handle error
+    }
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (processId) {
+      fetchZarrStructure(processId);
+    }
+  }, [fetchZarrStructure, processId]);
+
+  const handleSelectedChannelsChange = (newValue) => {
+    setSelectedValues(newValue);
+  };
+
+  const options = useMemo(
+    () => Array.isArray(varNames) ? varNames.map((name, index) => ({ value: name, label: name, color: (index % 2 === 0 ? 'red' : 'blue') })) : [],
+    [varNames],
+  );
+
+  useEffect(() => {
+    if (options.length > 0) {
+      setSelectedValues(options.map((option) => option.value));
+    };
+  }, [options]);
 
   const elements = useMemo(
     () => {
@@ -279,6 +317,9 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
     dispatch(tasksActions.checkTaskData(taskId));
   }, [dispatch]);
 
+  const handleSaveZarrData = (id) => {
+    dispatch(tasksActions.saveZarrData({ id, selectedValues }));
+  };
 
   const errorMessage = useMemo(() => {
     return error.message || 'An error occurred';
@@ -305,7 +346,10 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
 
   const [expandedTab, setExpandedTab] = useState( 'dataset');
 
-
+  useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.log(showVitessce);
+  }, [showVitessce]);
 
 
   const history = useHistory();
@@ -342,14 +386,31 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
     const searchQuery = searchInput.trim().toLowerCase();
     return taskToPanels.filter((type) => {
       if (type.omeroId === '') {
-       return (`id:${type.id}/${type.name}`).toLowerCase().includes(searchQuery);
+        return (`id:${type.id}/${type.name}`).toLowerCase().includes(searchQuery);
       } else {
         return type.omeroId.toLowerCase().includes(searchQuery);
       }
     });
   }, [searchInput, taskToPanels]);
 
+  const handleAccordionChange = useCallback(async (taskId) => {
+    try {
+      const varNames = await dispatch(tasksActions.getVarNames(taskId));
+      const newValues = varNames.map((name) => ({ value: name, label: name }));
+      if (selectedValues.length === 0) {
+        setSelectedValues(newValues);
+      };
+    } catch (error) {
 
+    }
+  }, [dispatch, selectedValues.length]);
+
+  const handleRefreshData = useCallback(async () => {
+    if (processId) {
+      await fetchZarrStructure(processId);
+      setShowVitessce((prevShowVitessce) => !prevShowVitessce );
+    }
+  }, [fetchZarrStructure, processId]);
 
   const handleClearSearchInput = () => {
     setSearchInput('');
@@ -450,13 +511,17 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
             ))}
           </Tabs>
 
-          <TabPanel value={expandedTab} index="dataset">
+          <TabPanel value={expandedTab} index="dataset" >
             {(expandedTab === 'dataset') && (
               taskToProcess.map((type) => (
                 <div key={type.id} style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ marginRight: 10 }}> id:{type.id}/{type.name}
-
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <Accordion
+                    key={type.id}
+                    style={{ backgroundColor: 'white' }}
+                    onChange={() => handleAccordionChange(type.id)}
+                  >
+                    <AccordionSummary expandIcon={<ExpandMoreIcon />} style={{ backgroundColor: 'white' }}>
+                      <span style={{ marginRight: 10 }}> id:{type.id}/{type.name} </span>
                       <Button
                         size="small"
                         variant="contained"
@@ -464,26 +529,63 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
                         startIcon={<Refresh />}
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleUpdateTaskData(type.id);
+                          handleRefreshData();
                         }}
                       >
-                        create zarr data
-                      </Button >
+                        Refresh Data
+                      </Button>
+                    </AccordionSummary>
+                    <AccordionDetails style={{ backgroundColor: 'white' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ display: 'flex', marginBottom: '10px' }}>
+                          <Button
+                            size="small"
+                            variant="contained"
+                            color="inherit"
+                            startIcon={<Refresh />}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleUpdateTaskData(type.id);
+                            }}
+                          >
+                            create zarr data
+                          </Button>
 
-                      <Button
-                        size="small"
-                        variant="contained"
-                        color="inherit"
-                        startIcon={<DeleteIcon />}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteTaskData(type.id);
-                        }}
-                      >
-                        delete zarr data
-                      </Button >
-                    </div>
-                  </span>
+                          <Button
+                            size="small"
+                            variant="contained"
+                            color="inherit"
+                            startIcon={<DeleteIcon />}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteTaskData(type.id);
+                            }}
+                          >
+                            delete zarr data
+                          </Button>
+
+                          <Button
+                            size="small"
+                            variant="contained"
+                            color="inherit"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleSaveZarrData(type.id);
+                            }}
+                          >
+                            write zarr
+                          </Button>
+                        </div>
+
+                        <SelectNew
+                          options={options}
+                          value={selectedValues}
+                          onChange={handleSelectedChannelsChange}
+                          multiple
+                        />
+                      </div>
+                    </AccordionDetails>
+                  </Accordion>
 
                   <div style={{ height: '100vh', width: '100vw' }}>
                     <Vitessce
@@ -497,53 +599,56 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
           </TabPanel>
 
           { taskToPanels.length !== 0 && taskToPanels.map((type) => {
-              return (
-                <TabPanel key={type.id} value={expandedTab} index={type.id}>
-                  {
-                    (type.id === expandedTab) && (
-                      <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <span style={{ marginRight: 10 }}>id:{type.id}/{type.name}
+          return (
+            <TabPanel key={type.id} value={expandedTab} index={type.id}>
+              {
+              (type.id === expandedTab) && (
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ marginRight: 10 }}>id:{type.id}/{type.name}
 
-                          <div style={{ display: 'flex', alignItems: 'center' }}>
-                            <Button
-                              size="small"
-                              variant="contained"
-                              color="inherit"
-                              startIcon={<Refresh />}
-                              onClick={(e) => {
-                              e.stopPropagation();
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <Button
+                        size="small"
+                        variant="contained"
+                        color="inherit"
+                        startIcon={<Refresh />}
+                        onClick={(e) => {
+                                e.stopPropagation();
                               handleUpdateTaskData(type.id);
-                              }}
-                            >
-                              create zarr data
-                            </Button >
+                        }}
+                      >
+                        create zarr data
+                      </Button >
 
-                            <Button
-                              size="small"
-                              variant="contained"
-                              color="inherit"
-                              startIcon={<DeleteIcon />}
-                              onClick={(e) => {
+                      <Button
+                        size="small"
+                        variant="contained"
+                        color="inherit"
+                        startIcon={<DeleteIcon />}
+                        onClick={(e) => {
                               e.stopPropagation();
                               handleDeleteTaskData(type.id);
-                              }}
-                            >
-                              delete zarr data
-                            </Button >
-                          </div>
-                        </span>
+                        }}
+                      >
+                        delete zarr data
+                      </Button >
+                    </div>
+                  </span>
 
-                        <div style={{ height: '100vh', width: '100vw' }} id={type.id}>
-                          <Vitessce
-                            config={tasksVitessceConfigs[type.id]}
-                            height={800}
-                            theme="light"
-                          />
-                        </div>
-                      </div>
+                  <div style={{ height: '100vh', width: '100vw' }} id={type.id}>
+                    {showVitessce && (
+                      <Vitessce
+                        key={showVitessce}
+                        config={tasksVitessceConfigs[type.id]}
+                        height={800}
+                        theme="light"
+                      />
+                    )}
+                  </div>
+                </div>
                     )
                   }
-                </TabPanel>
+            </TabPanel>
               );
             },
           )}

@@ -9,6 +9,7 @@ const initialState = {
   error: '',
   tasks: {},
   tasksMessage: {},
+  varNames: [],
   images: {},
   taskKeys: {},
   results: {},
@@ -145,6 +146,8 @@ const slice = createSlice({
     deleteTask: startFetching,
     deleteTaskData: startFetching,
     checkTaskData: startFetching,
+    getVarNames: startFetching,
+    saveZarrData: startFetching,
 
     fetchTasksSuccess: (state, { payload: tasks }) => {
       stopFetching(state);
@@ -202,6 +205,11 @@ const slice = createSlice({
     updateTaskDataSuccess(state, { payload: data }) {
       stopFetching(state);
       state.tasksMessage = data;
+    },
+
+    updateZarrDataSuccess(state, { payload: data }) {
+      stopFetching(state);
+      state.varNames = data.data;
     },
 
     clearTasks: (state) => {
@@ -526,6 +534,38 @@ const slice = createSlice({
         }
       },
     },
+
+    [actions.getVarNames]: {
+      * saga({ payload: id }) {
+        initApi();
+
+        try {
+          const url = `${baseUrl}/zarr_structure/${id}`;
+          const { data } = yield call(api.get, url, {});
+          yield put(actions.updateZarrDataSuccess(data));
+        } catch (error) {
+          yield put(actions.requestFail(error));
+          // eslint-disable-next-line no-console
+          console.error(error.message);
+        }
+      },
+    },
+
+    [actions.saveZarrData]: {
+      * saga({ payload: { id, selectedValues } }) {
+        initApi();
+
+        try {
+          const url = `${baseUrl}/zarr_structure/${id}`;
+          const response = yield call(api.post, url, { data: selectedValues });
+          yield put(actions.updateZarrDataSuccess(response.data));
+        } catch (error) {
+          yield put(actions.requestFail(error));
+          // eslint-disable-next-line no-console
+          console.error(error.message);
+        }
+      },
+    },
   }),
 
   selectors: (getState) => ({
@@ -537,6 +577,11 @@ const slice = createSlice({
     getTasks: createSelector(
       [getState],
       (state) => state?.tasks,
+    ),
+
+    getVarNames: createSelector(
+      [getState],
+      (state) => state?.varNames,
     ),
 
     getResults: createSelector(
