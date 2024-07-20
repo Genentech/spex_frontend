@@ -365,12 +365,21 @@ const Process = ( { sidebarWidth } ) => {
 
             const { filename, ...params } = values.params;
             const file_names = filename ? [filename] : [];
+            let transformedFileNames = [];
+
+            if (Array.isArray(file_names) && file_names.length > 0 && typeof file_names[0] === 'object') {
+              for (let i = 0; i < file_names[0].length; i++) {
+                transformedFileNames.push(file_names[0][i].value);
+              }
+            } else {
+              transformedFileNames = file_names;
+            }
 
             const normalizedValues = {
                 ...values,
                 params: { ...params },
                 omeroIds: validOmeroIds,
-                file_names: file_names,
+                file_names: transformedFileNames,
             };
 
             if (normalizedValues.id === 'new') {

@@ -135,8 +135,9 @@ const DivIcon = styled.div`
   `;
 
 const Results = ( { sidebarWidth, processReviewTabName } ) => {
-    const dispatch = useDispatch();
+  const dispatch = useDispatch();
   const location = useLocation();
+  const [key, setKey] = useState(0);
 
   const matchProjectPath = matchPath(location.pathname, { path: `/${PathNames.projects}/:id` });
   const projectId = matchProjectPath ? matchProjectPath.params.id : undefined;
@@ -155,7 +156,7 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
   const error = useSelector(tasksSelectors.getDataMessage);
   const [selectedValues, setSelectedValues] = useState([]);
   const varNames = useSelector(tasksSelectors.getVarNames || {});
-  const [showVitessce, setShowVitessce] = useState(true);
+  const [showVitessce] = useState(true);
 
 
   const fetchZarrStructure = useCallback(async (id) => {
@@ -408,7 +409,7 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
   const handleRefreshData = useCallback(async () => {
     if (processId) {
       await fetchZarrStructure(processId);
-      setShowVitessce((prevShowVitessce) => !prevShowVitessce );
+      setKey((prevKey) => prevKey + 1);
     }
   }, [fetchZarrStructure, processId]);
 
@@ -638,7 +639,7 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
                   <div style={{ height: '100vh', width: '100vw' }} id={type.id}>
                     {showVitessce && (
                       <Vitessce
-                        key={showVitessce}
+                        key={key}
                         config={tasksVitessceConfigs[type.id]}
                         height={800}
                         theme="light"

@@ -3,7 +3,7 @@ import { FormControlLabel as Label } from '@material-ui/core';
 import { TextField as TextFieldOrigin, Checkbox, Radio, Select } from 'final-form-material-ui';
 import { Form, Field, FormSpy } from 'react-final-form';
 import styled from 'styled-components';
-
+import FilesTransferList from '+components/FilesTransferList';
 import ImagePicker from '+components/ImagePicker';
 import { Option as SelectOption } from '+components/Select';
 import SelectEnum from '+components/SelectEnum';
@@ -50,6 +50,7 @@ const Controls = {
   SingleTransferList,
   TransferList,
   ImagePicker,
+  FilesTransferList,
 };
 
 export {

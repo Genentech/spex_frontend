@@ -10,6 +10,8 @@ const channel = (value) => value?.value ?? value;
 
 const e_num = (value) => value?.value ?? value;
 const file = (value) => value?.value ?? value;
+const files = (value) => value.map(file);
+
 const channels = (value) => value.map(channel);
 
 const Parsers = {
@@ -17,6 +19,7 @@ const Parsers = {
   numberBetween,
   omeroIds,
   file,
+  files,
   channels,
   channel,
   integer,

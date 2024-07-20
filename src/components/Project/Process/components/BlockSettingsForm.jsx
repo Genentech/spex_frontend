@@ -84,7 +84,7 @@ const getFieldComponent = (type) => {
     case 'process_job_id':
       return Controls.SelectJobsProcess;
     case 'file':
-      return Controls.SingleTransferList;
+      return Controls.FilesTransferList;
     case 'channel':
     case 'channels':
       return Select;
@@ -126,9 +126,14 @@ const getFieldAdditionalProps = (type, block, { imagesOptions, imagesChannelsOpt
         options: imagesChannelsOptions,
       };
     case 'file':
+      const formattedFileNames = (block.file_names || []).map((fileName) => {
+        const foundOption = filesOptions.find((option) => option.value === fileName);
+        return foundOption ? foundOption : { id: `file-${Math.random()}`, title: fileName, value: fileName };
+      });
+
       return {
         options: filesOptions,
-        file_names:  block.file_names,
+        file_names:  formattedFileNames,
       };
     case 'int':
       return {
@@ -201,7 +206,7 @@ const BlockSettingsForm = (props) => {
       title: fileName,
       value: fileName,
     })),
-    [project],
+    [project?.file_names],
   );
 
   const projectImagesChannelsOptions = useMemo(() => {
@@ -336,9 +341,8 @@ const BlockSettingsForm = (props) => {
       if (!block?.tasks) {
         return;
       }
-
       // eslint-disable-next-line react-hooks/exhaustive-deps,react/prop-types
-      block?.tasks.forEach(function (task) {
+      block?.tasks.forEach((task) => {
         if (task.id === currentTask) {
           setResuls(taskResults?.dataframe);
         } else
