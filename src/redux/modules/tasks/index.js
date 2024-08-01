@@ -25,7 +25,10 @@ const {
 const replaceURLRootInObject = (obj) => {
   for (let key in obj) {
     if (typeof obj[key] === 'string') {
-      obj[key] = obj[key].replace('REACT_APP_BACKEND_URL_ROOT', REACT_APP_BACKEND_URL_ROOT+'/');
+      let replacedString = obj[key].replace('REACT_APP_BACKEND_URL_ROOT', `${REACT_APP_BACKEND_URL_ROOT}/`);
+      if (replacedString !== obj[key]) {
+        obj[key] = `${replacedString}/noCache=${new Date().getTime()}`;
+      }
     } else if (Array.isArray(obj[key])) {
       obj[key].forEach((item) => {
         if (typeof item === 'object' && item !== null) {
@@ -162,6 +165,8 @@ const slice = createSlice({
 
     fetchTaskVitessceSuccess: (state, { payload: { id, config } }) => {
       stopFetching(state);
+      // eslint-disable-next-line no-console
+      console.log(config);
       state.vt_config[id] = config;
     },
 

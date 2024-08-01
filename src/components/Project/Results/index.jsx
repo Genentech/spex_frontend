@@ -137,8 +137,6 @@ const DivIcon = styled.div`
 const Results = ( { sidebarWidth, processReviewTabName } ) => {
   const dispatch = useDispatch();
   const location = useLocation();
-  const [key, setKey] = useState(0);
-
   const matchProjectPath = matchPath(location.pathname, { path: `/${PathNames.projects}/:id` });
   const projectId = matchProjectPath ? matchProjectPath.params.id : undefined;
   const matchProcessPath = matchPath(location.pathname, {
@@ -406,12 +404,10 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
     }
   }, [dispatch, selectedValues.length]);
 
-  const handleRefreshData = useCallback(async () => {
-    if (processId) {
-      await fetchZarrStructure(processId);
-      setKey((prevKey) => prevKey + 1);
-    }
-  }, [fetchZarrStructure, processId]);
+  const handleRefreshVitessce = (taskId) => {
+    window.location.reload(true);
+    window.location.href = window.location.href.split('?')[0] + '?disableCache=' + new Date().getTime();
+  };
 
   const handleClearSearchInput = () => {
     setSearchInput('');
@@ -530,7 +526,7 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
                         startIcon={<Refresh />}
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleRefreshData();
+                          handleRefreshVitessce(type.id);
                         }}
                       >
                         Refresh Data
@@ -639,7 +635,6 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
                   <div style={{ height: '100vh', width: '100vw' }} id={type.id}>
                     {showVitessce && (
                       <Vitessce
-                        key={key}
                         config={tasksVitessceConfigs[type.id]}
                         height={800}
                         theme="light"
