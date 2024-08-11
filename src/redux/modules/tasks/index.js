@@ -10,6 +10,7 @@ const initialState = {
   tasks: {},
   tasksMessage: {},
   varNames: [],
+  clusters: [],
   images: {},
   taskKeys: {},
   results: {},
@@ -150,6 +151,7 @@ const slice = createSlice({
     deleteTaskData: startFetching,
     checkTaskData: startFetching,
     getVarNames: startFetching,
+    getClusters: startFetching,
     saveZarrData: startFetching,
 
     fetchTasksSuccess: (state, { payload: tasks }) => {
@@ -215,6 +217,7 @@ const slice = createSlice({
     updateZarrDataSuccess(state, { payload: data }) {
       stopFetching(state);
       state.varNames = data.data;
+      state.clusters = data.clusters;
     },
 
     clearTasks: (state) => {
@@ -557,12 +560,11 @@ const slice = createSlice({
     },
 
     [actions.saveZarrData]: {
-      * saga({ payload: { id, selectedValues } }) {
+      * saga({ payload: { id, selectedValues, rows } }) {
         initApi();
-
         try {
           const url = `${baseUrl}/zarr_structure/${id}`;
-          const response = yield call(api.post, url, { data: selectedValues });
+          const response = yield call(api.post, url, { data: selectedValues, clusters: rows });
           yield put(actions.updateZarrDataSuccess(response.data));
         } catch (error) {
           yield put(actions.requestFail(error));
@@ -587,6 +589,11 @@ const slice = createSlice({
     getVarNames: createSelector(
       [getState],
       (state) => state?.varNames,
+    ),
+
+    getClusters: createSelector(
+      [getState],
+      (state) => state?.clusters,
     ),
 
     getResults: createSelector(

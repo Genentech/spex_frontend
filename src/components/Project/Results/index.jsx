@@ -6,11 +6,17 @@ import {
   AccordionDetails,
   AccordionSummary,
 } from '@material-ui/core';
+import BottomNavigation from '@material-ui/core/BottomNavigation';
+import BottomNavigationAction from '@material-ui/core/BottomNavigationAction';
 import { Launch } from '@material-ui/icons';
 import ClearIcon from '@material-ui/icons/Clear';
 import DeleteIcon from '@material-ui/icons/Delete';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import FolderIcon from '@material-ui/icons/Folder';
+import LocationOnIcon from '@material-ui/icons/LocationOn';
 import Refresh from '@material-ui/icons/Refresh';
+import Box from '@mui/material/Box';
+import { DataGrid } from '@mui/x-data-grid';
 import classNames from 'classnames';
 import dagre from 'dagre';
 import cloneDeep from 'lodash/cloneDeep';
@@ -154,7 +160,12 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
   const error = useSelector(tasksSelectors.getDataMessage);
   const [selectedValues, setSelectedValues] = useState([]);
   const varNames = useSelector(tasksSelectors.getVarNames || {});
+  const clusters = useSelector(tasksSelectors.getClusters || {});
+
   const [showVitessce] = useState(true);
+  const [selectedTab, setSelectedTab] = useState(0);
+  const [showSelectNew, setShowSelectNew] = useState(false);
+  const [showSelectGrid, setShowSelectGrid] = useState(false);
 
 
   const fetchZarrStructure = useCallback(async (id) => {
@@ -174,6 +185,10 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
   const handleSelectedChannelsChange = (newValue) => {
     setSelectedValues(newValue);
   };
+
+  useEffect(() => {
+    setShowSelectGrid(true);
+  }, []);
 
   const options = useMemo(
     () => Array.isArray(varNames) ? varNames.map((name, index) => ({ value: name, label: name, color: (index % 2 === 0 ? 'red' : 'blue') })) : [],
@@ -317,14 +332,39 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
   }, [dispatch]);
 
   const handleSaveZarrData = (id) => {
-    dispatch(tasksActions.saveZarrData({ id, selectedValues }));
+    dispatch(tasksActions.saveZarrData({ id, selectedValues, rows }));
   };
 
   const errorMessage = useMemo(() => {
     return error.message || 'An error occurred';
   }, [error]);
 
+  const columns = [
+    {
+      field: 'c1',
+      headerName: 'cluster name',
+      width: 180,
+      editable: false,
+    },
+    {
+      field: 'c2',
+      headerName: 'new cluster name',
+      width: 220,
+      editable: true,
+    },
+  ];
 
+  const rows = useMemo(() => {
+    if (!clusters || clusters.length === 0) {
+      return [];
+    }
+
+    return clusters.map((cluster, index) => ({
+      id: index + 1,
+      c1: cluster,
+      c2: cluster,
+    }));
+  }, [clusters]);
 
   useEffect(() => {
     taskToPanels.forEach((item) => {
@@ -368,6 +408,12 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
     const tabLink = `/projects/${projectId}/processes/${matchProcessPath.params.id}/review/${value}`;
     // eslint-disable-next-line security/detect-non-literal-fs-filename
     window.open(tabLink, '_blank');
+  };
+
+  const handleTabChange = (event, newValue) => {
+    setSelectedTab(newValue);
+    setShowSelectNew(newValue === 1);
+    setShowSelectGrid(newValue === 0);
   };
 
 
@@ -534,7 +580,7 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
                     </AccordionSummary>
                     <AccordionDetails style={{ backgroundColor: 'white' }}>
                       <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <div style={{ display: 'flex', marginBottom: '10px' }}>
+                        <div style={{ display: 'flex', marginBottom: '10px', width: '100%' }}>
                           <Button
                             size="small"
                             variant="contained"
@@ -573,13 +619,32 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
                             write zarr
                           </Button>
                         </div>
+                        <BottomNavigation
+                          value={selectedTab}
+                          onChange={handleTabChange}
+                          showLabels
+                        >
+                          <BottomNavigationAction label="Rename clusters" icon={<LocationOnIcon />} />
+                          <BottomNavigationAction label="Filter genes" icon={<FolderIcon />} />
+                        </BottomNavigation>
 
-                        <SelectNew
-                          options={options}
-                          value={selectedValues}
-                          onChange={handleSelectedChannelsChange}
-                          multiple
-                        />
+                        {showSelectNew && (
+                          <SelectNew
+                            options={options}
+                            value={selectedValues}
+                            onChange={handleSelectedChannelsChange}
+                            multiple
+                          />
+                        )}
+                        {showSelectGrid && (
+                          <Box sx={{ height: 400, width: 1000 }}>
+                            <DataGrid
+                              rows={rows}
+                              columns={columns}
+                              disableRowSelectionOnClick
+                            />
+                          </Box>
+                        )}
                       </div>
                     </AccordionDetails>
                   </Accordion>
