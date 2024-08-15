@@ -332,7 +332,7 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
   }, [dispatch]);
 
   const handleSaveZarrData = (id) => {
-    dispatch(tasksActions.saveZarrData({ id, selectedValues, rows }));
+    dispatch(tasksActions.saveZarrData({ id, selectedValues, rows: modifiedRows }));
   };
 
   const errorMessage = useMemo(() => {
@@ -354,17 +354,34 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
     },
   ];
 
+  // const rows = useMemo(() => {
+  //   if (!clusters || clusters.length === 0) {
+  //     return [];
+  //   }
+  //
+  //   return clusters.map((cluster, index) => ({
+  //     id: index + 1,
+  //     c1: cluster,
+  //     c2: cluster,
+  //   }));
+  // }, [clusters]);
+
   const rows = useMemo(() => {
     if (!clusters || clusters.length === 0) {
       return [];
     }
-
     return clusters.map((cluster, index) => ({
       id: index + 1,
       c1: cluster,
       c2: cluster,
     }));
   }, [clusters]);
+
+  const [modifiedRows, setModifiedRows] = useState(rows);
+
+  useEffect(() => {
+    setModifiedRows(rows);
+  }, [rows]);
 
   useEffect(() => {
     taskToPanels.forEach((item) => {
@@ -403,6 +420,16 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
       history.push(newUrl);
     }
   };
+
+  const handleCellEditCommit = useCallback((params) => {
+    const updatedRows = modifiedRows.map((row) => {
+      if (row.id === params.id) {
+        return { ...row, [params.field]: params.value };
+      }
+      return row;
+    });
+    setModifiedRows(updatedRows);
+  }, [modifiedRows]);
 
   const handleOpenInNewTab = (value) => {
     const tabLink = `/projects/${projectId}/processes/${matchProcessPath.params.id}/review/${value}`;
@@ -639,8 +666,9 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
                         {showSelectGrid && (
                           <Box sx={{ height: 400, width: 1000 }}>
                             <DataGrid
-                              rows={rows}
+                              rows={modifiedRows}
                               columns={columns}
+                              onCellEditCommit={handleCellEditCommit}
                               disableRowSelectionOnClick
                             />
                           </Box>

@@ -563,8 +563,9 @@ const slice = createSlice({
       * saga({ payload: { id, selectedValues, rows } }) {
         initApi();
         try {
+          const clusterList = rows.map((item) => ({ [item.c1]: item.c2 }));
           const url = `${baseUrl}/zarr_structure/${id}`;
-          const response = yield call(api.post, url, { data: selectedValues, clusters: rows });
+          const response = yield call(api.post, url, { data: selectedValues, clusters: clusterList });
           yield put(actions.updateZarrDataSuccess(response.data));
         } catch (error) {
           yield put(actions.requestFail(error));
