@@ -323,12 +323,12 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
 
 
 
-  const handleDeleteTaskData = useCallback((taskId) => {
-    dispatch(tasksActions.deleteTaskData(taskId));
-  }, [dispatch]);
-
   const handleUpdateTaskData = useCallback((taskId) => {
-    dispatch(tasksActions.checkTaskData(taskId));
+    dispatch(tasksActions.deleteTaskData(taskId));
+    setTimeout(() => {
+      dispatch(tasksActions.checkTaskData(taskId));
+    }, 3000);
+
   }, [dispatch]);
 
   const handleSaveZarrData = (id) => {
@@ -509,6 +509,17 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
     fontSize: '18px',
   };
 
+  const buttonWrapperStyle = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginBottom: '10px',
+  };
+
+  const contentWrapperStyle = {
+    width: '100%',
+  };
+
   useEffect(() => {
     if (processReviewTabName && filteredTaskToPanels.length>0) {
       setExpandedTab(processReviewTabName);
@@ -602,12 +613,24 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
                           handleRefreshVitessce(type.id);
                         }}
                       >
-                        Refresh Data
+                        Refresh Page
                       </Button>
                     </AccordionSummary>
-                    <AccordionDetails style={{ backgroundColor: 'white' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <div style={{ display: 'flex', marginBottom: '10px', width: '100%' }}>
+                    <AccordionDetails style={{ backgroundColor: 'white', width: '100%' }}>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+                        <BottomNavigation
+                          value={selectedTab}
+                          onChange={handleTabChange}
+                          showLabels
+                          style={{ width: '100%', marginBottom: '10px' }}
+                        >
+                          <BottomNavigationAction label="Rename clusters" icon={<LocationOnIcon />} />
+                          <BottomNavigationAction label="Filter genes" icon={<FolderIcon />} />
+                        </BottomNavigation>
+
+                        <div style={buttonWrapperStyle}>
+
                           <Button
                             size="small"
                             variant="contained"
@@ -618,20 +641,7 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
                               handleUpdateTaskData(type.id);
                             }}
                           >
-                            create zarr data
-                          </Button>
-
-                          <Button
-                            size="small"
-                            variant="contained"
-                            color="inherit"
-                            startIcon={<DeleteIcon />}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteTaskData(type.id);
-                            }}
-                          >
-                            delete zarr data
+                            Restore zarr data
                           </Button>
 
                           <Button
@@ -643,36 +653,36 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
                               handleSaveZarrData(type.id);
                             }}
                           >
-                            write zarr
+                            Save changes
                           </Button>
                         </div>
-                        <BottomNavigation
-                          value={selectedTab}
-                          onChange={handleTabChange}
-                          showLabels
-                        >
-                          <BottomNavigationAction label="Rename clusters" icon={<LocationOnIcon />} />
-                          <BottomNavigationAction label="Filter genes" icon={<FolderIcon />} />
-                        </BottomNavigation>
 
-                        {showSelectNew && (
-                          <SelectNew
-                            options={options}
-                            value={selectedValues}
-                            onChange={handleSelectedChannelsChange}
-                            multiple
-                          />
-                        )}
-                        {showSelectGrid && (
-                          <Box sx={{ height: 400, width: 1000 }}>
-                            <DataGrid
-                              rows={modifiedRows}
-                              columns={columns}
-                              onCellEditCommit={handleCellEditCommit}
-                              disableRowSelectionOnClick
+                        {/* Контейнер для таблицы и списка выбора, занимающий всю ширину */}
+                        <div style={{ width: '100%', boxSizing: 'border-box', padding: '10px' }}>
+                          {showSelectNew && (
+                            <SelectNew
+                              options={options}
+                              value={selectedValues}
+                              onChange={handleSelectedChannelsChange}
+                              multiple
+                              style={{ width: '100%' }} // Стиль для списка выбора, чтобы занял всю ширину
                             />
-                          </Box>
-                        )}
+                          )}
+
+                          {showSelectGrid && (
+                            <Box sx={{ height: 400, width: '100%' }}> {/* Устанавливаем ширину на 100% */}
+                              <DataGrid
+                                rows={modifiedRows}
+                                columns={columns}
+                                onCellEditCommit={handleCellEditCommit}
+                                disableRowSelectionOnClick
+                                style={{ width: '100%' }} // Стиль для таблицы, чтобы заняла всю ширину
+                              />
+                            </Box>
+                          )}
+                        </div>
+
+
                       </div>
                     </AccordionDetails>
                   </Accordion>
@@ -708,19 +718,6 @@ const Results = ( { sidebarWidth, processReviewTabName } ) => {
                         }}
                       >
                         create zarr data
-                      </Button >
-
-                      <Button
-                        size="small"
-                        variant="contained"
-                        color="inherit"
-                        startIcon={<DeleteIcon />}
-                        onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteTaskData(type.id);
-                        }}
-                      >
-                        delete zarr data
                       </Button >
                     </div>
                   </span>
