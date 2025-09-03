@@ -41,7 +41,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 ## Documentation
 
-- Published docs (GitHub Pages): https://<org>.github.io/<repo>/
+- Published docs (GitHub Pages): https://genentech.github.io/spex_frontend/
   - After enabling Pages for the repo, the workflow `.github/workflows/gh-pages.yml` builds and deploys on every push to `main`/`master`.
 - Local docs serve (MkDocs Material):
   - Install: `pip install mkdocs-material`
