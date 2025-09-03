@@ -32,5 +32,6 @@ nav:
   - UI & Theming:
       - Theme & Global Styles: ui-theming/theme-and-styles.md
   - Development:
+      - Handover Guide: frontend_handover.md
       - Progress Summary & TODOs: development/progress_summary.md
       - Changelog & Release Notes: development/changelog.md
