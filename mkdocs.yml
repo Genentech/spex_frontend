@@ -1,0 +1,36 @@
+site_name: SPEX Frontend Docs
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.tracking
+    - content.code.copy
+    - content.action.edit
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - tables
+  - footnotes
+nav:
+  - Getting Started:
+      - Overview: index.md
+      - Project Structure & Aliases: getting-started/project-structure.md
+  - Tutorials:
+      - UI Navigation Flows: tutorials/ui-navigation-flows.md
+      - Common Workflows: tutorials/common-workflows.md
+  - API Reference (Frontend):
+      - Routing Map & Deep Links: api-reference/routing.md
+      - State Management (Redux + Sagas): api-reference/state-management.md
+      - API Client & Auth: api-reference/api-client-auth.md
+      - Shared Components Reference: api-reference/shared-components.md
+  - Examples:
+      - Example Flows with Code Links: examples/example-flows.md
+  - Reference:
+      - Troubleshooting: reference/troubleshooting.md
+      - Frontend FAQ: reference/faq.md
+  - UI & Theming:
+      - Theme & Global Styles: ui-theming/theme-and-styles.md
+  - Development:
+      - Progress Summary & TODOs: development/progress_summary.md
+      - Changelog & Release Notes: development/changelog.md

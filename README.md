@@ -39,6 +39,24 @@ yarn start
 ```
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
 
+## Documentation
+
+- Published docs (GitHub Pages): https://<org>.github.io/<repo>/
+  - After enabling Pages for the repo, the workflow `.github/workflows/gh-pages.yml` builds and deploys on every push to `main`/`master`.
+- Local docs serve (MkDocs Material):
+  - Install: `pip install mkdocs-material`
+  - Serve: `mkdocs serve -a 0.0.0.0:8000`
+  - Build: `mkdocs build`
+
+Key docs:
+- Overview & Structure: `docs/index.md`, `docs/getting-started/project-structure.md`
+- Tutorials: `docs/tutorials/*`
+- API Reference: `docs/api-reference/*`
+- Examples: `docs/examples/example-flows.md`
+- Reference: `docs/reference/*`
+- Theming: `docs/ui-theming/theme-and-styles.md`
+- Development: `docs/development/*`
+
 ## Prerequisites
 
 What things you need to install the software and how to install them.
@@ -54,4 +72,3 @@ Add additional notes about how to deploy this on a production system.
 ## Resources
 
 Add links to external resources for this project, such as CI server, bug tracker, etc.
-
