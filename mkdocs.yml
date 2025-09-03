@@ -24,6 +24,16 @@ nav:
       - State Management (Redux + Sagas): api-reference/state-management.md
       - API Client & Auth: api-reference/api-client-auth.md
       - Shared Components Reference: api-reference/shared-components.md
+  - Architecture:
+      - Architecture Overview & Patterns: architecture/overview.md
+      - Data Flow (Projects → Processes → Jobs → Tasks): architecture/data-flow.md
+  - Integrations:
+      - OMERO + Leaflet: integrations/omero-leaflet.md
+      - Vitessce: integrations/vitessce.md
+  - Internals:
+      - Process Graph & Block Linking: internals/process-graph.md
+  - Guides:
+      - Extensibility Guide: guides/extensibility.md
   - Examples:
       - Example Flows with Code Links: examples/example-flows.md
   - Reference:
