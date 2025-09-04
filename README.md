@@ -1,4 +1,8 @@
-# spex/frontend
+# SPEX Frontend
+
+SPEX Frontend is a React 17 application using Material‑UI v4, Redux with redux‑saga, and React Router v5. It provides the web UI for SPEX to manage Projects → Processes → Jobs → Tasks, with integrations for OMERO and Vitessce. For the full guide, API reference, and architecture notes, see the documentation below.
+
+Docs: https://genentech.github.io/spex_frontend/
 
 ## Getting Started
 
@@ -10,7 +14,7 @@ HTTPS clone URL: https://github.com/zverozabr/spex_frontend.git
 
 in ubuntu 18.04
 ```
-set NODE_OPTIONS=--max-old-space-size=4096 && yarn build
+NODE_OPTIONS="--max-old-space-size=4096" yarn build
 ``` 
 [in Apple Silicon](readme_Apple.md)
 
